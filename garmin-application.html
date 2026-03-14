@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Garmin Developer Application – TriForce</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 24px; color: #222; line-height: 1.7; }
+    h1 { font-size: 24px; color: #085041; border-bottom: 2px solid #1D9E75; padding-bottom: 10px; }
+    h2 { font-size: 16px; color: #085041; margin-top: 32px; margin-bottom: 4px; }
+    .field { background: #f7f9f7; border-left: 3px solid #1D9E75; padding: 10px 16px; margin-bottom: 16px; border-radius: 0 6px 6px 0; }
+    .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+    .value { font-size: 15px; color: #111; }
+    .note { font-size: 12px; color: #999; margin-top: 4px; font-style: italic; }
+    .section { margin-bottom: 40px; }
+    .placeholder { background: #fff8e1; border-left: 3px solid #BA7517; }
+    .placeholder .label { color: #BA7517; }
+  </style>
+</head>
+<body>
+
+<h1>Garmin Connect Developer Program — Application</h1>
+<p style="font-size:13px;color:#666;">Copy each field value into the Garmin form at:<br>
+<a href="https://www.garmin.com/en-US/forms/GarminConnectDeveloperAccess/">https://www.garmin.com/en-US/forms/GarminConnectDeveloperAccess/</a></p>
+
+<div class="section">
+  <h2>Company Information</h2>
+
+  <div class="field placeholder">
+    <div class="label">Company Name ★ fill in</div>
+    <div class="value">TriForce / Pipman</div>
+    <div class="note">Use your legal name or "Robbie [Last Name] – TriForce" if no registered company</div>
+  </div>
+
+  <div class="field placeholder">
+    <div class="label">Contact Name ★ fill in</div>
+    <div class="value">Robbie [Last Name]</div>
+  </div>
+
+  <div class="field placeholder">
+    <div class="label">Email Address ★ fill in</div>
+    <div class="value">your@email.com</div>
+  </div>
+
+  <div class="field">
+    <div class="label">Job Title</div>
+    <div class="value">Chief Engineer</div>
+  </div>
+
+  <div class="field placeholder">
+    <div class="label">Contact Phone ★ fill in</div>
+    <div class="value">+972-XX-XXXXXXX</div>
+  </div>
+
+  <div class="field">
+    <div class="label">City</div>
+    <div class="value">Yavne</div>
+  </div>
+
+  <div class="field">
+    <div class="label">Country</div>
+    <div class="value">Israel</div>
+  </div>
+
+  <div class="field placeholder">
+    <div class="label">Postal Code ★ fill in</div>
+    <div class="value">8122XXX (Yavne postal code)</div>
+  </div>
+
+  <div class="field">
+    <div class="label">Primary Sales Region</div>
+    <div class="value">EUROPE / AFRICA / MIDDLE EAST</div>
+  </div>
+
+  <div class="field">
+    <div class="label">Technical Support Language</div>
+    <div class="value">English</div>
+  </div>
+
+  <div class="field placeholder">
+    <div class="label">Company Website ★ fill in after hosting</div>
+    <div class="value">https://triforce-app.com (or your GitHub Pages URL after hosting the privacy policy)</div>
+    <div class="note">Host the privacy-policy.html file on GitHub Pages — it's free and takes 10 minutes</div>
+  </div>
+
+  <div class="field placeholder">
+    <div class="label">Privacy Policy URL ★ fill in after hosting</div>
+    <div class="value">https://triforce-app.com/privacy-policy (or GitHub Pages equivalent)</div>
+    <div class="note">This is the privacy-policy.html file I created for you</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Client or Third-Party Integration</h2>
+  <div class="field">
+    <div class="label">Integrating on behalf of a client?</div>
+    <div class="value">No</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Subcontractor</h2>
+  <div class="field">
+    <div class="label">Will you use a subcontractor?</div>
+    <div class="value">No</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>General Program — Most Important Field</h2>
+
+  <div class="field">
+    <div class="label">How do you plan to use the Garmin Connect Developer Program?</div>
+    <div class="value" style="white-space:pre-line;">
+TriForce is a team sports challenge platform designed for multisport athletes — primarily triathletes, runners, cyclists, and swimmers.
+
+The platform enables coaches to create time-bound challenges for their training groups (e.g., weekly distance goals, training load targets, pacing challenges). Athletes connect their Garmin devices to automatically sync activity data, eliminating the need for manual entry.
+
+We plan to use both the Activity API and the Health API:
+
+• Activity API: To pull completed workout data (running, cycling, swimming) and calculate each athlete's progress toward active challenges. This includes distance, duration, pace, and heart rate zone data.
+
+• Health API: To support wellness-based challenges defined by coaches, such as sleep targets, daily step goals, and stress management — metrics that are critical for endurance athletes.
+
+A key feature of TriForce is age-graded scoring (Age Grade Score), which normalizes performance across different ages and genders, allowing fair comparison within mixed-age training groups. Garmin data feeds directly into this scoring engine.
+
+Initially deployed for a group of approximately 40 athletes in Israel, the platform is designed to scale to multiple independent coaching groups, each with their own coach, athletes, and challenge calendar. Future expansion to other countries is planned.
+    </div>
+  </div>
+
+  <div class="field">
+    <div class="label">Do you intend to share data with other platforms?</div>
+    <div class="value">No. All Garmin activity data is used exclusively within the TriForce platform for the athlete who consented to the connection. Data is never sold or shared with third parties.</div>
+  </div>
+
+  <div class="field">
+    <div class="label">Can Garmin contact you for business opportunities?</div>
+    <div class="value">Yes</div>
+  </div>
+
+  <div class="field">
+    <div class="label">Previous contact with Garmin?</div>
+    <div class="value">No</div>
+  </div>
+
+  <div class="field">
+    <div class="label">Integrated with other device companies?</div>
+    <div class="value">We plan to also integrate with Strava API to support athletes using non-Garmin devices. No other device integrations are currently planned.</div>
+  </div>
+
+  <div class="field">
+    <div class="label">Number of end users / members</div>
+    <div class="value">Initially 40 athletes (one coaching group in Israel). Platform is designed for multi-tenant scaling — target is 500+ athletes across multiple groups within 12 months.</div>
+  </div>
+
+  <div class="field">
+    <div class="label">Business Services</div>
+    <div class="value">Fitness or Outdoor – direct to consumer</div>
+  </div>
+
+  <div class="field">
+    <div class="label">Reference / Target Customer</div>
+    <div class="value">General Consumer</div>
+  </div>
+</div>
+
+<hr style="margin:40px 0;border-color:#eee"/>
+<p style="font-size:13px;color:#888;">
+  <strong>Next steps after submitting:</strong><br/>
+  1. Host the privacy-policy.html file on GitHub Pages (free)<br/>
+  2. Garmin typically responds within 2–4 weeks<br/>
+  3. While waiting — we start building with Strava API
+</p>
+
+</body>
+</html>
