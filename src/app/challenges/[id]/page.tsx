@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { cookies } from 'next/headers'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
@@ -32,7 +34,7 @@ export default async function ChallengePage({ params }: { params: { id: string }
       <div className="max-w-2xl mx-auto">
         {/* Back */}
         <div className="pt-6 pb-2">
-          <Link href="/dashboard" className="text-sm text-[#1D9E75] font-medium">← Back</Link>
+          <Link href="/dashboard" className="text-sm text-[#1D9E75] font-medium">â Back</Link>
         </div>
 
         {/* Header */}
@@ -56,7 +58,7 @@ export default async function ChallengePage({ params }: { params: { id: string }
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Leaderboard</h2>
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
           {challenge.entries.length === 0 ? (
-            <div className="p-6 text-center text-sm text-gray-400">No entries yet — start training!</div>
+            <div className="p-6 text-center text-sm text-gray-400">No entries yet â start training!</div>
           ) : (
             <div className="divide-y divide-gray-50">
               {challenge.entries.map((entry, idx) => (
@@ -82,7 +84,7 @@ export default async function ChallengePage({ params }: { params: { id: string }
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold text-[#085041]">
-                      {entry.ageGradeScore?.toFixed(1) ?? '—'}%
+                      {entry.ageGradeScore?.toFixed(1) ?? 'â'}%
                     </p>
                     <p className="text-xs text-gray-400">AGS</p>
                   </div>
