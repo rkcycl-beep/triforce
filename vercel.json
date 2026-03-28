@@ -1,20 +1,13 @@
 {
+  "version": 2,
   "crons": [
     {
       "path": "/api/cron/refresh-tokens",
-      "schedule": "0 */6 * * *"
+      "schedule": "0 2 * * *"
     },
     {
       "path": "/api/cron/sync-activities",
-      "schedule": "0 * * * *"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store" }
-      ]
+      "schedule": "0 3 * * *"
     }
   ]
 }
