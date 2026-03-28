@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -41,10 +43,10 @@ export default function Dashboard() {
   const formatTime = (s: number) => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`
   const sportIcon = (sport: string) => {
     const s = sport.toLowerCase()
-    if (s.includes('run')) return '🏃'
-    if (s.includes('ride') || s.includes('cycl')) return '🚴'
-    if (s.includes('swim')) return '🏊'
-    return '⚡'
+    if (s.includes('run')) return 'ð'
+    if (s.includes('ride') || s.includes('cycl')) return 'ð´'
+    if (s.includes('swim')) return 'ð'
+    return 'â¡'
   }
   const daysLeft = (end: string) => {
     const d = Math.ceil((new Date(end).getTime() - Date.now()) / 86400000)
@@ -120,7 +122,7 @@ export default function Dashboard() {
 
         {activeTab === 'challenges' && challenges.length === 0 && (
           <div className="text-center py-12 text-gray-400">
-            <p className="text-4xl mb-3">🏆</p>
+            <p className="text-4xl mb-3">ð</p>
             <p>No active challenges yet</p>
           </div>
         )}
@@ -143,9 +145,9 @@ function TriForceLogo() {
 
 function BottomNav({ active }: { active: string }) {
   const items = [
-    { href: '/dashboard', label: 'Home', icon: '🏠' },
-    { href: '/challenges', label: 'Challenges', icon: '🏆' },
-    { href: '/coach', label: 'Coach', icon: '📋' },
+    { href: '/dashboard', label: 'Home', icon: 'ð ' },
+    { href: '/challenges', label: 'Challenges', icon: 'ð' },
+    { href: '/coach', label: 'Coach', icon: 'ð' },
   ]
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 pb-safe-bottom">
