@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
@@ -74,7 +76,7 @@ export default async function CoachPage() {
                             <div>
                               <p className="text-sm font-medium text-gray-900">{c.title}</p>
                               <p className="text-xs text-gray-400">
-                                {new Date(c.startDate).toLocaleDateString()} – {new Date(c.endDate).toLocaleDateString()}
+                                {new Date(c.startDate).toLocaleDateString()} â {new Date(c.endDate).toLocaleDateString()}
                               </p>
                             </div>
                             <StatusBadge start={c.startDate} end={c.endDate} />
