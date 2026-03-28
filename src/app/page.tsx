@@ -10,7 +10,7 @@ export default function LandingPage() {
           <span className="text-xl font-bold tracking-tight">TriForce</span>
         </div>
         <Link href="/login" className="text-sm font-medium text-[#1D9E75] hover:text-white transition-colors">
-          Sign in →
+          Sign in â
         </Link>
       </header>
 
@@ -71,10 +71,10 @@ const features = [
   {
     icon: '⚡',
     title: 'Auto-Sync',
-    desc: 'Connect Strava once. Every run, ride, or swim syncs automatically — no manual logging.',
+    desc: 'Connect Strava once. Every run, ride, or swim syncs automatically â no manual logging.',
   },
   {
-    icon: '📊',
+    icon: 'ð',
     title: 'Fair Scoring',
     desc: 'Age Grade Score normalizes performance across ages and genders so everyone can compete.',
   },
