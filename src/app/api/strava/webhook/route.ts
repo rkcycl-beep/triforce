@@ -1,8 +1,10 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { syncAthleteActivities } from '@/lib/strava'
 
-// GET — Strava webhook verification
+// GET â Strava webhook verification
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const mode = searchParams.get('hub.mode')
@@ -16,7 +18,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 }
 
-// POST — Receive activity events from Strava
+// POST â Receive activity events from Strava
 export async function POST(req: NextRequest) {
   const body = await req.json()
 
