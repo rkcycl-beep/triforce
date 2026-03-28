@@ -1,0 +1,20 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/refresh-tokens",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/cron/sync-activities",
+      "schedule": "0 * * * *"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    }
+  ]
+}
