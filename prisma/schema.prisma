@@ -1,0 +1,261 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────
+
+enum Role {
+  COACH
+  ATHLETE
+}
+
+enum ScoringMethod {
+  AGE_GRADE
+  CATEGORY
+  PERSONAL_IMPROVEMENT
+}
+
+enum ChallengeStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum MessageType {
+  CHAT
+  ANNOUNCEMENT
+  SYSTEM
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+// ─── NextAuth Required Models ─────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Core Models ──────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(ATHLETE)
+  sex           String?   // "M" or "F" — for age-grade scoring
+  dateOfBirth   DateTime?
+  createdAt     DateTime  @default(now())
+
+  accounts    Account[]
+  sessions    Session[]
+  memberships GroupMembership[]
+  activities  Activity[]
+  entries     ChallengeEntry[]
+  messages    Message[]
+  events      Event[]           @relation("EventCreator")
+  payments    Payment[]
+}
+
+model Group {
+  id         String   @id @default(cuid())
+  name       String
+  slug       String   @unique
+  inviteCode String   @unique // 6-char code athletes use to join
+  timezone   String   @default("Asia/Jerusalem")
+  locale     String   @default("he")
+  createdAt  DateTime @default(now())
+
+  memberships GroupMembership[]
+  activities  Activity[]
+  challenges  Challenge[]
+  messages    Message[]
+  events      Event[]
+  payments    Payment[]
+}
+
+model GroupMembership {
+  id        String   @id @default(cuid())
+  userId    String
+  groupId   String
+  role      Role     @default(ATHLETE)
+  joinedAt  DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+}
+
+model Activity {
+  id                 String   @id @default(cuid())
+  userId             String
+  groupId            String?
+  provider           String   // "strava" | "garmin"
+  providerActivityId String
+  name               String
+  sportType          String   // normalized: "run" | "ride" | "swim" | "walk" | "hike" | "other"
+  rawSportType       String
+  startDate          DateTime
+  distance           Float    // meters
+  movingTime         Int      // seconds
+  elapsedTime        Int      // seconds
+  elevationGain      Float    // meters
+  averageSpeed       Float    // m/s
+  maxSpeed           Float    // m/s
+  averageHeartrate   Float?   // BPM
+  maxHeartrate       Float?   // BPM
+  hasHeartrate       Boolean  @default(false)
+  mapPolyline        String?  @db.Text
+  calories           Float?
+  isDuplicate        Boolean  @default(false)
+  duplicateOfId      String?
+
+  user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group                  Group?                  @relation(fields: [groupId], references: [id])
+  challengeActivityLinks ChallengeActivityLink[]
+
+  @@unique([provider, providerActivityId, userId])
+  @@index([userId, startDate])
+  @@index([groupId, startDate])
+}
+
+model Challenge {
+  id            String          @id @default(cuid())
+  groupId       String
+  name          String
+  description   String?
+  sportTypes    String[]        // ["run", "ride", ...]
+  scoringMethod ScoringMethod
+  startDate     DateTime
+  endDate       DateTime
+  status        ChallengeStatus @default(DRAFT)
+  config        Json?           // scoring-method-specific params
+  createdAt     DateTime        @default(now())
+
+  group   Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  entries ChallengeEntry[]
+  prizes  Prize[]
+}
+
+model ChallengeEntry {
+  id          String   @id @default(cuid())
+  challengeId String
+  userId      String
+  score       Float    @default(0)
+  rank        Int?
+  metadata    Json?    // method-specific scoring data
+  updatedAt   DateTime @updatedAt
+
+  challenge       Challenge              @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activityLinks   ChallengeActivityLink[]
+
+  @@unique([challengeId, userId])
+}
+
+model ChallengeActivityLink {
+  id               String @id @default(cuid())
+  challengeEntryId String
+  activityId       String
+  pointsAwarded    Float  @default(0)
+
+  entry    ChallengeEntry @relation(fields: [challengeEntryId], references: [id], onDelete: Cascade)
+  activity Activity       @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeEntryId, activityId])
+}
+
+model Message {
+  id        String      @id @default(cuid())
+  groupId   String
+  userId    String
+  content   String      @db.Text
+  type      MessageType @default(CHAT)
+  createdAt DateTime    @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  groupId     String
+  createdById String
+  name        String
+  description String?  @db.Text
+  location    String?
+  eventDate   DateTime
+  createdAt   DateTime @default(now())
+
+  group     Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdBy User  @relation("EventCreator", fields: [createdById], references: [id])
+}
+
+model Prize {
+  id          String  @id @default(cuid())
+  challengeId String
+  rank        Int
+  description String
+  imageUrl    String?
+
+  challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  groupId   String
+  userId    String
+  amount    Float
+  currency  String        @default("ILS")
+  status    PaymentStatus @default(PENDING)
+  provider  String?       // "stripe" etc.
+  createdAt DateTime      @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
