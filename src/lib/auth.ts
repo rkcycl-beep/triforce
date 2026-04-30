@@ -48,6 +48,7 @@ const StravaProvider: OAuthConfig<StravaProfile> = {
           client_secret: process.env.STRAVA_CLIENT_SECRET,
           code,
           grant_type: "authorization_code",
+          redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/callback/strava`,
         }),
       });
 
