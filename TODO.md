@@ -24,20 +24,20 @@
 ---
 
 ## Phase 1A: Database Foundation
-- [ ] Install Prisma + create prisma/schema.prisma
-- [ ] Define all models: User, Group, GroupMembership, ProviderAccount, Activity, Challenge, ChallengeEntry, ChallengeActivityLink, Message, Event, Prize
-- [ ] Define enums: Role, ScoringMethod, ChallengeStatus, MessageType
-- [ ] Set up local PostgreSQL database
-- [ ] Run initial migration
-- [ ] Create src/lib/prisma.ts (Prisma client singleton)
-- [ ] Add @next-auth/prisma-adapter to NextAuth config
+- [x] Install Prisma + create prisma/schema.prisma
+- [x] Define all models: User, Group, GroupMembership, ProviderAccount, Activity, Challenge, ChallengeEntry, ChallengeActivityLink, Message, Event, Prize
+- [x] Define enums: Role, ScoringMethod, ChallengeStatus, MessageType
+- [x] Set up Neon PostgreSQL database (eu-central-1)
+- [x] Run initial schema push (npx prisma db push)
+- [x] Create src/lib/prisma.ts (Prisma client singleton)
+- [x] Add @next-auth/prisma-adapter to NextAuth config
 - [ ] Verify: Strava login still works + User/Account rows appear in DB
-- [ ] Create services/user.service.ts
-- [ ] Create services/activity.service.ts (CRUD + upsert)
-- [ ] Create services/sync.service.ts (sync Strava activities to DB)
-- [ ] Trigger activity sync on login (signIn callback)
-- [ ] Create /api/athlete/activities route (reads from DB)
-- [ ] Update useActivities hook to use new endpoint
+- [~] Create services/user.service.ts (deferred — only one helper needed; inlined for now)
+- [x] Create services/activity.service.ts (CRUD + upsert)
+- [x] Create services/sync.service.ts (sync Strava activities to DB)
+- [x] Trigger activity sync on login (jwt callback first-sign-in branch — signIn fires too early under JWT strategy)
+- [x] Create /api/athlete/activities route (reads from DB)
+- [x] Update useActivities hook to use new endpoint (renamed from useStravaActivities; 3 callers updated)
 - [ ] Verify: dashboard shows activities from DB, not live Strava API
 
 ---
@@ -134,4 +134,4 @@
 ---
 
 ## Current Focus
-**Phase 1A: Database Foundation** — next task: Install Prisma + define schema
+**Phase 1A: Database Foundation** — code complete; awaiting end-to-end runtime verification (sign in via Strava, confirm Activity rows appear in Neon, confirm dashboard hits `/api/athlete/activities` not `/api/strava/activities`). Once verified: delete `/api/strava/activities` and start Phase 1B (Groups + Roles).

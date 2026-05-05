@@ -8,14 +8,14 @@
  * distance, time, and heart rate.
  */
 
-import { useStravaActivities } from "@/hooks/useStravaActivities";
+import { useActivities } from "@/hooks/useActivities";
 import ActivityCard from "@/components/activities/ActivityCard";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import EmptyState from "@/components/ui/EmptyState";
 
 export default function ActivitiesPage() {
-  const { data, isLoading, error } = useStravaActivities(1, 50);
+  const { data, isLoading, error } = useActivities(1, 50);
 
   return (
     <div className="space-y-4">

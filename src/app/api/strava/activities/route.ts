@@ -1,8 +1,9 @@
 /**
  * GET /api/strava/activities — Fetch the user's Strava activities.
  *
- * The browser calls this → we call Strava → return normalized data.
- * This keeps the Strava access token on the server (never sent to browser).
+ * @deprecated Superseded by /api/athlete/activities (DB-backed) in Phase 1A.
+ * Kept temporarily for the transition; remove once dashboard reads are
+ * verified end-to-end against the new endpoint.
  *
  * Query params:
  *   ?page=1    — Which page (default: 1)

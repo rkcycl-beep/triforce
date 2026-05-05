@@ -8,7 +8,7 @@
  * This gives a quick "am I training consistently?" view.
  */
 
-import { useStravaActivities } from "@/hooks/useStravaActivities";
+import { useActivities } from "@/hooks/useActivities";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import {
   BarChart,
@@ -64,7 +64,7 @@ function getWeekLabel(date: Date): string {
 
 export default function WeeklySummary() {
   // Fetch more activities to cover ~4 weeks
-  const { data, isLoading } = useStravaActivities(1, 50);
+  const { data, isLoading } = useActivities(1, 50);
 
   if (isLoading) {
     return (

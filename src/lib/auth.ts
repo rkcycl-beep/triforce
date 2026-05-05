@@ -12,11 +12,12 @@
  * This file handles ALL of that automatically.
  */
 
-import type { AuthOptions, Account } from "next-auth";
+import type { AuthOptions, Account, User } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import type { OAuthConfig } from "next-auth/providers/oauth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "./prisma";
+import { syncStravaActivitiesForUser } from "@/services/sync.service";
 
 // ─── Custom Strava Provider ───────────────────────────────────
 // NextAuth doesn't have a built-in Strava provider, so we define one.
@@ -140,18 +141,41 @@ export const authOptions: AuthOptions = {
     /**
      * JWT callback — runs every time the token is created or accessed.
      *
-     * First login: saves the access_token, refresh_token, and expiry.
+     * First login: saves the access_token, refresh_token, expiry, AND
+     * triggers an initial Strava-activity sync so the dashboard has data
+     * to read from the DB on first dashboard load.
      * Later visits: checks if the token expired and refreshes if needed.
      */
-    async jwt({ token, account }: { token: JWT; account: Account | null }) {
-      // First sign-in: save the tokens from Strava
-      if (account) {
+    async jwt({
+      token,
+      account,
+      user,
+    }: {
+      token: JWT;
+      account: Account | null;
+      user?: User;
+    }) {
+      // First sign-in: `account` and `user` are both populated.
+      // `user.id` is the Prisma User.id (cuid) — the adapter has already
+      // persisted the User and Account rows by the time this fires.
+      if (account && user) {
+        let syncError: string | undefined;
+        if (account.access_token) {
+          try {
+            await syncStravaActivitiesForUser(user.id, account.access_token);
+          } catch (error) {
+            console.error("Initial Strava sync failed:", error);
+            syncError = "InitialSyncError";
+          }
+        }
         return {
           ...token,
+          userId: user.id,
           accessToken: account.access_token,
           refreshToken: account.refresh_token,
           expiresAt: account.expires_at,
           athleteId: account.providerAccountId,
+          error: syncError,
         };
       }
 
@@ -169,12 +193,13 @@ export const authOptions: AuthOptions = {
     /**
      * Session callback — controls what data the browser can see.
      *
-     * We add the accessToken and athleteId to the session so our
-     * API routes can use them to fetch data from Strava.
+     * We add user.id (DB cuid), accessToken, and athleteId so server-side
+     * route handlers can scope DB queries and call Strava on the user's behalf.
      */
     async session({ session, token }) {
       return {
         ...session,
+        user: { ...session.user, id: token.userId as string },
         accessToken: token.accessToken as string,
         athleteId: token.athleteId as string,
         error: token.error as string | undefined,

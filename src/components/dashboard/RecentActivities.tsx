@@ -8,7 +8,7 @@
  * error message if something goes wrong.
  */
 
-import { useStravaActivities } from "@/hooks/useStravaActivities";
+import { useActivities } from "@/hooks/useActivities";
 import ActivityCard from "@/components/activities/ActivityCard";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ErrorMessage from "@/components/ui/ErrorMessage";
@@ -16,7 +16,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import Link from "next/link";
 
 export default function RecentActivities() {
-  const { data, isLoading, error } = useStravaActivities(1, 10);
+  const { data, isLoading, error } = useActivities(1, 10);
 
   if (isLoading) {
     return (
