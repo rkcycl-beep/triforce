@@ -15,7 +15,9 @@
 import type { AuthOptions, Account, User } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import type { OAuthConfig } from "next-auth/providers/oauth";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { syncStravaActivitiesForUser } from "@/services/sync.service";
 
@@ -133,9 +135,43 @@ async function refreshStravaToken(token: JWT): Promise<JWT> {
 
 // ─── NextAuth Options ─────────────────────────────────────────
 
+// ─── Credentials Provider (coach email/password) ──────────────
+// PrismaAdapter does NOT auto-create User rows for Credentials sign-ins —
+// users register via /api/coach/register first, then sign in here.
+
+const CoachCredentialsProvider = CredentialsProvider({
+  id: "credentials",
+  name: "Email and password",
+  credentials: {
+    email: { label: "Email", type: "email" },
+    password: { label: "Password", type: "password" },
+  },
+  async authorize(credentials) {
+    const email = credentials?.email?.toLowerCase().trim();
+    const password = credentials?.password;
+    if (!email || !password) return null;
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !user.passwordHash) return null;
+
+    const ok = await bcrypt.compare(password, user.passwordHash);
+    if (!ok) return null;
+
+    // Return shape becomes the `user` argument in the jwt callback.
+    // `id` MUST be the Prisma cuid — it propagates to JWT.userId.
+    return {
+      id: user.id,
+      name: user.name ?? null,
+      email: user.email,
+      image: user.image,
+      role: user.role,
+    };
+  },
+});
+
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
-  providers: [StravaProvider],
+  providers: [StravaProvider, CoachCredentialsProvider],
 
   callbacks: {
     /**
@@ -153,12 +189,15 @@ export const authOptions: AuthOptions = {
     }: {
       token: JWT;
       account: Account | null;
-      user?: User;
+      user?: User & { role?: "COACH" | "ATHLETE" };
     }) {
-      // First sign-in: `account` and `user` are both populated.
-      // `user.id` is the Prisma User.id (cuid) — the adapter has already
-      // persisted the User and Account rows by the time this fires.
-      if (account && user) {
+      // OAuth (Strava) first sign-in: account + user both populated by the adapter.
+      if (account && user && account.provider !== "credentials") {
+        // Look up role once on first sign-in. Stale role survives until re-login.
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { role: true },
+        });
         let syncError: string | undefined;
         if (account.access_token) {
           try {
@@ -171,6 +210,7 @@ export const authOptions: AuthOptions = {
         return {
           ...token,
           userId: user.id,
+          role: dbUser?.role ?? "ATHLETE",
           accessToken: account.access_token,
           refreshToken: account.refresh_token,
           expiresAt: account.expires_at,
@@ -179,14 +219,28 @@ export const authOptions: AuthOptions = {
         };
       }
 
-      // On later requests: check if the token is still valid
-      const expiresAt = token.expiresAt as number | undefined;
-      if (expiresAt && Date.now() < expiresAt * 1000) {
-        // Token is still good — return it as-is
+      // Credentials first sign-in: no account.access_token, no Strava sync.
+      // `user.role` comes straight from CoachCredentialsProvider.authorize().
+      if (user) {
+        return {
+          ...token,
+          userId: user.id,
+          role: user.role ?? "ATHLETE",
+        };
+      }
+
+      // Subsequent requests with no Strava token — pure Credentials sessions.
+      if (!token.expiresAt && !token.refreshToken) {
         return token;
       }
 
-      // Token expired — refresh it
+      // Strava-backed token: check if still valid.
+      const expiresAt = token.expiresAt as number | undefined;
+      if (expiresAt && Date.now() < expiresAt * 1000) {
+        return token;
+      }
+
+      // Expired — refresh.
       return refreshStravaToken(token);
     },
 
@@ -199,9 +253,13 @@ export const authOptions: AuthOptions = {
     async session({ session, token }) {
       return {
         ...session,
-        user: { ...session.user, id: token.userId as string },
-        accessToken: token.accessToken as string,
-        athleteId: token.athleteId as string,
+        user: {
+          ...session.user,
+          id: token.userId as string,
+          role: (token.role as "COACH" | "ATHLETE") ?? "ATHLETE",
+        },
+        accessToken: token.accessToken as string | undefined,
+        athleteId: token.athleteId as string | undefined,
         error: token.error as string | undefined,
       };
     },

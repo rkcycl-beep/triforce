@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Providers from "@/providers/Providers";
-import Shell from "@/components/layout/Shell";
 import "./globals.css";
 
 /**
@@ -10,11 +9,10 @@ import "./globals.css";
  * It loads:
  * 1. Google Fonts (Geist) — clean, modern font
  * 2. Providers — auth session + data caching
- * 3. Shell — responsive header + bottom nav layout
  *
- * This is a Server Component (no 'use client') — it renders on the server
- * for faster initial page load. The Providers and Shell inside it are
- * Client Components, which is fine — Server Components can render Client Components.
+ * The per-shell wrapping (Shell for athletes, CoachShell for coaches) lives
+ * in the route-group layouts below this one, so each shell is isolated.
+ * Public pages (landing, /join/[code]) render with no shell at all.
  */
 
 const geistSans = Geist({
@@ -51,9 +49,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        <Providers>
-          <Shell>{children}</Shell>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
