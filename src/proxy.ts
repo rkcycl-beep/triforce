@@ -26,7 +26,11 @@ export function proxy(request: NextRequest): NextResponse {
     request.cookies.has("next-auth.session-token") ||
     request.cookies.has("__Secure-next-auth.session-token");
 
-  // These paths require the user to be logged in
+  // These paths require the user to be logged in (any role).
+  // Role-based protection (e.g. /coach) is handled in the route group's
+  // server-component layout via getServerSession — proxy can't decode the
+  // JWT under Next 16 without triggering "Router action dispatched before
+  // initialization" errors (see comment block above).
   const protectedPaths = ["/dashboard", "/activities", "/settings"];
   const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
 
@@ -35,10 +39,8 @@ export function proxy(request: NextRequest): NextResponse {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // If the user IS logged in and visits "/" → send them to dashboard
-  if (pathname === "/" && hasSession) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
+  // The "/" → role-aware redirect is handled by app/page.tsx (server component).
+  // We don't redirect from here because we can't read the role from the cookie.
 
   return NextResponse.next();
 }
