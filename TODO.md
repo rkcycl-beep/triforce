@@ -43,18 +43,18 @@
 ---
 
 ## Phase 1B: Groups + Roles
-- [ ] Coach registration: add Credentials provider (email/password)
-- [ ] Create services/group.service.ts
-- [ ] Create /api/coach/groups route (create group)
-- [ ] Create /api/athlete/groups/join route (join via invite code)
-- [ ] Add role to NextAuth session
-- [ ] Update proxy.ts: coach routes require COACH role
-- [ ] Create coach layout with sidebar navigation
-- [ ] Coach dashboard page (basic)
-- [ ] Group creation form UI
-- [ ] Invite code display for coach
-- [ ] Athlete join flow UI (enter invite code)
-- [ ] Member list page for coach
+- [x] Coach registration: add Credentials provider (email/password)
+- [x] Create services/group.service.ts
+- [x] Create /api/coach/groups route (create group)
+- [x] Create /api/athlete/groups/join route (join via invite code)
+- [x] Add role to NextAuth session
+- [x] Update proxy.ts: coach routes require COACH role
+- [x] Create coach layout with sidebar navigation
+- [x] Coach dashboard page (basic)
+- [x] Group creation form UI
+- [x] Invite code display for coach
+- [x] Athlete join flow UI (enter invite code)
+- [x] Member list page for coach
 
 ---
 
@@ -134,4 +134,4 @@
 ---
 
 ## Current Focus
-**Phase 1A: Database Foundation** — code complete; awaiting end-to-end runtime verification (sign in via Strava, confirm Activity rows appear in Neon, confirm dashboard hits `/api/athlete/activities` not `/api/strava/activities`). Once verified: delete `/api/strava/activities` and start Phase 1B (Groups + Roles).
+**Phase 1B: Complete.** Next: Phase 1C — Challenges (scoring engine, challenge creation, leaderboard). Before starting 1C, verify the full 1B flow end-to-end: sign up as coach, create a group, share the invite code, sign in as athlete, join the group via Settings.
