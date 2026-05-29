@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { authOptions } from "@/lib/auth";
 import { getGroupWithMembers } from "@/services/group.service";
+import { getChallengesByGroup } from "@/services/challenge.service";
 import CopyInviteCode from "@/components/groups/CopyInviteCode";
 
 interface Props {
@@ -14,7 +15,10 @@ export default async function GroupDetailPage({ params }: Props) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) notFound();
 
-  const group = await getGroupWithMembers(groupId, session.user.id);
+  const [group, challenges] = await Promise.all([
+    getGroupWithMembers(groupId, session.user.id),
+    getChallengesByGroup(groupId),
+  ]);
   if (!group) notFound();
 
   const athletes = group.memberships.filter((m) => m.role === "ATHLETE");
@@ -90,6 +94,50 @@ export default async function GroupDetailPage({ params }: Props) {
                     year: "numeric",
                   })}
                 </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Challenges */}
+      <div className="rounded-xl border border-gray-200 bg-white">
+        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+          <h2 className="font-semibold text-gray-900">
+            Challenges
+            <span className="ms-2 text-sm font-normal text-gray-500">({challenges.length})</span>
+          </h2>
+          <Link
+            href={`/coach/groups/${groupId}/challenges/new`}
+            className="text-sm font-medium text-blue-600 hover:text-blue-700"
+          >
+            + New
+          </Link>
+        </div>
+        {challenges.length === 0 ? (
+          <p className="px-5 py-4 text-sm text-gray-500">
+            No challenges yet.{" "}
+            <Link href={`/coach/groups/${groupId}/challenges/new`} className="text-blue-600 hover:underline">
+              Create one
+            </Link>{" "}
+            to get your athletes competing.
+          </p>
+        ) : (
+          <ul className="divide-y divide-gray-100">
+            {challenges.map((ch) => (
+              <li key={ch.id} className="flex items-center justify-between px-5 py-3">
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{ch.name}</p>
+                  <p className="text-xs text-gray-500">
+                    {ch.scoringMethod.replace("_", " ").toLowerCase()} ·{" "}
+                    {ch._count.entries} athlete{ch._count.entries !== 1 ? "s" : ""}
+                  </p>
+                </div>
+                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                  ch.status === "ACTIVE" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+                }`}>
+                  {ch.status.charAt(0) + ch.status.slice(1).toLowerCase()}
+                </span>
               </li>
             ))}
           </ul>

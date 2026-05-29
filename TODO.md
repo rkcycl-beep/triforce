@@ -59,20 +59,20 @@
 ---
 
 ## Phase 1C: Challenges
-- [ ] Create services/challenge.service.ts
-- [ ] Create /api/coach/groups/[groupId]/challenges routes
-- [ ] Create /api/athlete/challenges routes
-- [ ] Challenge creation form (sport type, goals, dates, scoring method)
-- [ ] Scoring engine dispatcher: lib/scoring/index.ts
-- [ ] Personal Improvement scoring: lib/scoring/personal-improvement.ts
-- [ ] Category scoring: lib/scoring/category.ts
-- [ ] Age Grade scoring: lib/scoring/age-grade.ts
-- [ ] Import WMA age-grade tables: lib/scoring/age-grade-tables.json
-- [ ] Athlete challenge view with progress bars
-- [ ] Leaderboard component (overall + by category)
-- [ ] Challenge detail page
-- [ ] Recalculate scores on new activity
-- [ ] Prize display on challenge
+- [x] Create services/challenge.service.ts
+- [x] Create /api/coach/groups/[groupId]/challenges routes
+- [x] Create /api/athlete/challenges routes
+- [x] Challenge creation form (sport type, goals, dates, scoring method)
+- [x] Scoring engine dispatcher: lib/scoring/index.ts
+- [x] Personal Improvement scoring: lib/scoring/personal-improvement.ts
+- [x] Category scoring: lib/scoring/category.ts
+- [x] Age Grade scoring: lib/scoring/age-grade.ts
+- [x] Import WMA age-grade tables: lib/scoring/age-grade-tables.json
+- [x] Athlete challenge view (leaderboard + own score card)
+- [x] Leaderboard component (overall + category label per athlete)
+- [x] Challenge detail page
+- [x] Recalculate scores on leaderboard request (pull model — Phase 1D webhooks will push)
+- [ ] Prize display on challenge (deferred to Phase 1F polish)
 
 ---
 
@@ -134,4 +134,4 @@
 ---
 
 ## Current Focus
-**Phase 1B: Complete.** Next: Phase 1C — Challenges (scoring engine, challenge creation, leaderboard). Before starting 1C, verify the full 1B flow end-to-end: sign up as coach, create a group, share the invite code, sign in as athlete, join the group via Settings.
+**Phase 1C: Complete.** Next: Phase 1D — Strava Webhooks (auto-ingest activities on Strava event, trigger score recalculation). Before starting 1D, verify Phase 1C end-to-end: create a challenge, athlete joins group + views leaderboard.
