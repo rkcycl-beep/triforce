@@ -1,42 +1,60 @@
-import { getServerSession } from "next-auth";
-import Link from "next/link";
-import { authOptions } from "@/lib/auth";
-import { getAthleteChallenges } from "@/services/challenge.service";
+"use client";
 
-function statusBadge(status: string) {
-  const cls =
-    status === "ACTIVE"
-      ? "bg-green-100 text-green-700"
-      : status === "COMPLETED"
-      ? "bg-gray-100 text-gray-600"
-      : "bg-yellow-100 text-yellow-700";
-  return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>
-      {status.charAt(0) + status.slice(1).toLowerCase()}
-    </span>
-  );
+import Link from "next/link";
+import { useChallenges } from "@/hooks/useChallenges";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import ErrorMessage from "@/components/ui/ErrorMessage";
+import EmptyState from "@/components/ui/EmptyState";
+import { useTranslation } from "@/hooks/useTranslation";
+
+function statusBadgeClass(status: string) {
+  return status === "ACTIVE"
+    ? "bg-green-100 text-green-700"
+    : status === "COMPLETED"
+    ? "bg-gray-100 text-gray-600"
+    : "bg-yellow-100 text-yellow-700";
 }
 
-export default async function ChallengesPage() {
-  const session = await getServerSession(authOptions);
-  const challenges = session?.user?.id
-    ? await getAthleteChallenges(session.user.id)
-    : [];
+function statusLabel(status: string, t: (k: string) => string) {
+  if (status === "ACTIVE") return t("challenges.active");
+  if (status === "COMPLETED") return t("challenges.completed");
+  return t("challenges.draft");
+}
+
+export default function ChallengesPage() {
+  const { data: challenges, isLoading, error } = useChallenges();
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-900">Challenges</h1>
+      <h1 className="text-2xl font-bold text-gray-900">{t("challenges.title")}</h1>
 
-      {challenges.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center">
-          <p className="text-sm font-medium text-gray-900">No challenges yet</p>
-          <p className="mt-1 text-sm text-gray-500">
-            Join a group first — challenges are created by your coach.
-          </p>
+      {isLoading && (
+        <div className="flex justify-center py-12">
+          <LoadingSpinner />
         </div>
-      ) : (
+      )}
+
+      {error && <ErrorMessage message={t("activities.loadError")} />}
+
+      {challenges && challenges.length === 0 && (
+        <EmptyState
+          title={t("challenges.emptyTitle")}
+          message={t("challenges.emptyMessage")}
+        />
+      )}
+
+      {challenges && challenges.length > 0 && (
         <ul className="space-y-3">
-          {challenges.map((c) => {
+          {challenges.map((c: {
+            id: string;
+            name: string;
+            status: string;
+            startDate: string;
+            endDate: string;
+            group: { name: string };
+            entries: { rank?: number | null; score: number }[];
+          }) => {
             const entry = c.entries[0];
             const now = new Date();
             const start = new Date(c.startDate);
@@ -54,18 +72,20 @@ export default async function ChallengesPage() {
                       <p className="truncate font-semibold text-gray-900">{c.name}</p>
                       <p className="mt-0.5 text-xs text-gray-500">{c.group.name}</p>
                     </div>
-                    {statusBadge(c.status)}
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusBadgeClass(c.status)}`}>
+                      {statusLabel(c.status, t)}
+                    </span>
                   </div>
                   <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
                     <span>
-                      {start.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                      {start.toLocaleDateString("he-IL", { day: "numeric", month: "short" })}
                       {" – "}
-                      {end.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                      {c.status === "ACTIVE" && daysLeft > 0 && ` · ${daysLeft}d left`}
+                      {end.toLocaleDateString("he-IL", { day: "numeric", month: "short", year: "numeric" })}
+                      {c.status === "ACTIVE" && daysLeft > 0 && ` · ${daysLeft} ${daysLeft === 1 ? t("challenges.dayLeft") : t("challenges.daysLeft")}`}
                     </span>
                     {entry && (
                       <span className="font-medium text-gray-700">
-                        Rank #{entry.rank ?? "—"} · {entry.score.toFixed(1)}pts
+                        {t("challenges.rankOf", { rank: String(entry.rank ?? "—"), total: String(c.entries.length) })} · {entry.score.toFixed(1)}pts
                       </span>
                     )}
                   </div>

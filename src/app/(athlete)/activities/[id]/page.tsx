@@ -23,9 +23,12 @@ import {
   formatSportType,
 } from "@/lib/utils";
 import Link from "next/link";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function ActivityDetailPage() {
   const params = useParams();
+  const { t, locale } = useTranslation();
+
   // The URL param is like "strava_12345" — we need just "12345" for the API
   const rawId = params.id as string;
   const stravaId = rawId.replace("strava_", "");
@@ -43,8 +46,8 @@ export default function ActivityDetailPage() {
   if (error || !data?.activity) {
     return (
       <div className="space-y-4">
-        <BackButton />
-        <ErrorMessage message="Could not load this activity." />
+        <BackButton t={t} />
+        <ErrorMessage message={t("activities.loadError")} />
       </div>
     );
   }
@@ -52,24 +55,16 @@ export default function ActivityDetailPage() {
   const a = data.activity;
   const hasMap = a.map?.summary_polyline && a.map.summary_polyline.length > 0;
 
-  // Temporary debug — remove after confirming map works
-  console.log("Activity map data:", {
-    hasMap,
-    mapExists: !!a.map,
-    polylineLength: a.map?.summary_polyline?.length ?? 0,
-    polylinePreview: a.map?.summary_polyline?.substring(0, 50) ?? "none",
-  });
-
   return (
     <div className="space-y-5">
       {/* Back button */}
-      <BackButton />
+      <BackButton t={t} />
 
       {/* Activity header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">{a.name}</h1>
         <p className="text-sm text-gray-500">
-          {formatSportType(a.sport_type)} &middot; {formatDate(a.start_date_local)}
+          {formatSportType(a.sport_type, locale)} &middot; {formatDate(a.start_date_local, locale)}
         </p>
       </div>
 
@@ -81,52 +76,52 @@ export default function ActivityDetailPage() {
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <StatCard
-          label="Distance"
-          value={formatDistance(a.distance)}
+          label={t("activities.distance")}
+          value={formatDistance(a.distance, locale)}
         />
         <StatCard
-          label="Moving Time"
-          value={formatDuration(a.moving_time)}
+          label={t("activities.movingTime")}
+          value={formatDuration(a.moving_time, locale)}
         />
         {a.average_speed > 0 && (
           <StatCard
-            label={a.sport_type.toLowerCase().includes("ride") ? "Avg Speed" : "Avg Pace"}
+            label={a.sport_type.toLowerCase().includes("ride") ? t("activities.avgSpeed") : t("activities.avgPace")}
             value={
               a.sport_type.toLowerCase().includes("ride")
                 ? `${(a.average_speed * 3.6).toFixed(1)} km/h`
-                : formatPace(a.average_speed)
+                : formatPace(a.average_speed, locale)
             }
           />
         )}
         <StatCard
-          label="Elevation"
+          label={t("activities.elevation")}
           value={`${Math.round(a.total_elevation_gain)}`}
           unit="m"
         />
         {a.has_heartrate && a.average_heartrate && (
           <StatCard
-            label="Avg HR"
+            label={t("activities.avgHr")}
             value={`${Math.round(a.average_heartrate)}`}
             unit="bpm"
           />
         )}
         {a.has_heartrate && a.max_heartrate && (
           <StatCard
-            label="Max HR"
+            label={t("activities.maxHr")}
             value={`${Math.round(a.max_heartrate)}`}
             unit="bpm"
           />
         )}
         {a.calories > 0 && (
           <StatCard
-            label="Calories"
+            label={t("activities.calories")}
             value={`${Math.round(a.calories)}`}
             unit="kcal"
           />
         )}
         {a.suffer_score && (
           <StatCard
-            label="Effort"
+            label={t("activities.effort")}
             value={`${a.suffer_score}`}
           />
         )}
@@ -134,14 +129,14 @@ export default function ActivityDetailPage() {
 
       {/* Splits table (if available) */}
       {a.splits_metric && a.splits_metric.length > 0 && (
-        <SplitsTable splits={a.splits_metric} />
+        <SplitsTable splits={a.splits_metric} t={t} locale={locale} />
       )}
     </div>
   );
 }
 
 /** Back navigation button */
-function BackButton() {
+function BackButton({ t }: { t: (key: string) => string }) {
   return (
     <Link
       href="/activities"
@@ -157,10 +152,11 @@ function BackButton() {
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
+        className="rtl:rotate-180"
       >
         <polyline points="15 18 9 12 15 6" />
       </svg>
-      Back to Activities
+      {t("activities.backToActivities")}
     </Link>
   );
 }
@@ -168,21 +164,25 @@ function BackButton() {
 /** Per-km splits table */
 function SplitsTable({
   splits,
+  t,
+  locale,
 }: {
   splits: { split: number; distance: number; moving_time: number; average_speed: number; average_heartrate?: number }[];
+  t: (key: string) => string;
+  locale: "he" | "en";
 }) {
   return (
     <div className="space-y-2">
-      <h2 className="text-lg font-semibold text-gray-900">Splits</h2>
+      <h2 className="text-lg font-semibold text-gray-900">{t("activities.splits")}</h2>
       <div className="overflow-hidden rounded-xl border border-gray-100 bg-white">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs uppercase text-gray-500">
-              <th className="px-3 py-2">KM</th>
-              <th className="px-3 py-2">Pace</th>
-              <th className="px-3 py-2">Time</th>
+            <tr className="border-b border-gray-100 bg-gray-50 text-start text-xs uppercase text-gray-500">
+              <th className="px-3 py-2">{t("activities.km")}</th>
+              <th className="px-3 py-2">{t("activities.pace")}</th>
+              <th className="px-3 py-2">{t("activities.time")}</th>
               {splits.some((s) => s.average_heartrate) && (
-                <th className="px-3 py-2">HR</th>
+                <th className="px-3 py-2">{t("activities.hr")}</th>
               )}
             </tr>
           </thead>
@@ -193,10 +193,10 @@ function SplitsTable({
                   {split.split}
                 </td>
                 <td className="px-3 py-2 text-gray-600">
-                  {formatPace(split.average_speed)}
+                  {formatPace(split.average_speed, locale)}
                 </td>
                 <td className="px-3 py-2 text-gray-600">
-                  {formatDuration(split.moving_time)}
+                  {formatDuration(split.moving_time, locale)}
                 </td>
                 {splits.some((s) => s.average_heartrate) && (
                   <td className="px-3 py-2 text-gray-600">

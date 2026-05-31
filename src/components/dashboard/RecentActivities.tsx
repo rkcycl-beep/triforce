@@ -14,15 +14,17 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import EmptyState from "@/components/ui/EmptyState";
 import Link from "next/link";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function RecentActivities() {
   const { data, isLoading, error } = useActivities(1, 10);
+  const { t } = useTranslation();
 
   if (isLoading) {
     return (
       <div className="space-y-3">
         <h2 className="text-lg font-semibold text-gray-900">
-          Recent Activities
+          {t("dashboard.recentActivities")}
         </h2>
         <div className="flex justify-center py-8">
           <LoadingSpinner />
@@ -35,9 +37,9 @@ export default function RecentActivities() {
     return (
       <div className="space-y-3">
         <h2 className="text-lg font-semibold text-gray-900">
-          Recent Activities
+          {t("dashboard.recentActivities")}
         </h2>
-        <ErrorMessage message="Could not load activities. Please try again." />
+        <ErrorMessage message={t("activities.loadError")} />
       </div>
     );
   }
@@ -48,11 +50,11 @@ export default function RecentActivities() {
     return (
       <div className="space-y-3">
         <h2 className="text-lg font-semibold text-gray-900">
-          Recent Activities
+          {t("dashboard.recentActivities")}
         </h2>
         <EmptyState
-          title="No activities yet"
-          message="Go for a run or ride and it will show up here!"
+          title={t("activities.emptyTitle")}
+          message={t("activities.emptyMessage")}
         />
       </div>
     );
@@ -62,13 +64,13 @@ export default function RecentActivities() {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900">
-          Recent Activities
+          {t("dashboard.recentActivities")}
         </h2>
         <Link
           href="/activities"
           className="text-sm font-medium text-blue-600 hover:text-blue-700"
         >
-          View all
+          {t("dashboard.viewAll")}
         </Link>
       </div>
 

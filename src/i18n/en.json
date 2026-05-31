@@ -1,0 +1,158 @@
+{
+  "appName": "TriForce",
+  "appTagline": "Track your training and challenges — all in one place",
+  "appDescription": "Track your activities, heart rate, and routes in one place.",
+
+  "landing": {
+    "connectStrava": "Connect with Strava",
+    "coachPrompt": "Coaching a group?",
+    "coachSignIn": "Coach sign-in",
+    "garminNote": "Garmin can be connected after sign-in via Settings."
+  },
+
+  "nav": {
+    "dashboard": "Dashboard",
+    "activities": "Activities",
+    "challenges": "Challenges",
+    "settings": "Settings",
+    "signOut": "Sign out",
+    "back": "Back"
+  },
+
+  "dashboard": {
+    "greeting": "Hey, {name}!",
+    "overview": "Here's your training overview.",
+    "yearToDate": "Year to Date",
+    "weeklyDistance": "Weekly Distance",
+    "recentActivities": "Recent Activities",
+    "viewAll": "View all"
+  },
+
+  "stats": {
+    "runs": "Runs",
+    "rides": "Rides",
+    "swims": "Swims",
+    "runDistance": "Run Distance",
+    "rideDistance": "Ride Distance",
+    "swimDistance": "Swim Distance",
+    "runTime": "Run Time",
+    "count": "count"
+  },
+
+  "activities": {
+    "title": "Activities",
+    "loadError": "Could not load activities. Please try again.",
+    "emptyTitle": "No activities yet",
+    "emptyMessage": "Go for a run or ride and it will show up here!",
+    "backToActivities": "Back to Activities",
+    "distance": "Distance",
+    "movingTime": "Moving Time",
+    "avgPace": "Avg Pace",
+    "avgSpeed": "Avg Speed",
+    "elevation": "Elevation",
+    "avgHr": "Avg HR",
+    "maxHr": "Max HR",
+    "calories": "Calories",
+    "effort": "Effort",
+    "splits": "Splits",
+    "km": "KM",
+    "pace": "Pace",
+    "time": "Time",
+    "hr": "HR"
+  },
+
+  "sportTypes": {
+    "run": "Run",
+    "ride": "Ride",
+    "swim": "Swim",
+    "walk": "Walk",
+    "hike": "Hike",
+    "other": "Activity"
+  },
+
+  "challenges": {
+    "title": "Challenges",
+    "emptyTitle": "No challenges yet",
+    "emptyMessage": "Join a group first — challenges are created by your coach.",
+    "active": "Active",
+    "completed": "Completed",
+    "draft": "Draft",
+    "daysLeft": "days left",
+    "dayLeft": "day left",
+    "yourResult": "Your result",
+    "rankOf": "Rank #{rank} of {total}",
+    "category": "Category",
+    "leaderboard": "Leaderboard",
+    "noScores": "No scores yet.",
+    "you": "You",
+    "personalImprovement": "Personal Improvement",
+    "ageGrade": "Age Grade",
+    "categoryScoring": "Category"
+  },
+
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "joinGroup": "Join a group",
+    "joinPrompt": "Enter the 6-character invite code your coach shared with you.",
+    "invitePlaceholder": "e.g. ABC123",
+    "join": "Join",
+    "joinSuccess": "Joined \"{groupName}\" successfully!",
+    "joinError": "Failed to join group.",
+    "genericError": "Something went wrong. Try again.",
+    "strava": "Strava",
+    "connected": "Connected",
+    "notConnected": "Not connected",
+    "account": "Account",
+    "signOutDesc": "Sign out of TriForce.",
+    "signOut": "Sign out",
+    "garmin": "Garmin",
+    "garminNote": "Garmin connection will be available in the next phase."
+  },
+
+  "coach": {
+    "title": "Dashboard",
+    "newGroup": "New group",
+    "noGroups": "No groups yet",
+    "noGroupsPrompt": "Create a group to get your athletes connected.",
+    "createFirstGroup": "Create your first group",
+    "members": "Members",
+    "member": "member",
+    "athletes": "athletes",
+    "athlete": "athlete",
+    "inviteCode": "Invite code",
+    "invitePrompt": "Share this with athletes. They enter it in Settings → Join a group.",
+    "noAthletes": "No athletes yet. Share the invite code above to get started.",
+    "challenges": "Challenges",
+    "newChallenge": "New challenge",
+    "noChallenges": "No challenges yet.",
+    "noChallengesPrompt": "Create one to get your athletes competing.",
+    "createChallenge": "Create challenge",
+    "challengeName": "Challenge name",
+    "description": "Description",
+    "sportTypes": "Sport types",
+    "scoringMethod": "Scoring method",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "targetDistance": "Target distance",
+    "metric": "Metric",
+    "save": "Save",
+    "cancel": "Cancel",
+    "status": {
+      "active": "Active",
+      "completed": "Completed",
+      "draft": "Draft",
+      "cancelled": "Cancelled"
+    }
+  },
+
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "close": "Close",
+    "open": "Open"
+  }
+}

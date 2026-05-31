@@ -8,9 +8,11 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function Header() {
   const { data: session } = useSession();
+  const { t } = useTranslation();
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-md">
@@ -23,14 +25,13 @@ export default function Header() {
           TriForce
         </Link>
 
-        {/* Right side — settings icon when logged in */}
+        {/* Settings icon when logged in */}
         {session && (
           <Link
             href="/settings"
             className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
-            aria-label="Settings"
+            aria-label={t("nav.settings")}
           >
-            {/* Simple gear icon (SVG) — no external icon library needed */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="22"

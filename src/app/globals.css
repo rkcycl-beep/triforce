@@ -1,21 +1,50 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f9fafb;
-  --foreground: #111827;
+  --background: #f5f5f5;
+  --foreground: #222222;
+  --green-primary: #1D9E75;
+  --green-dark: #085041;
+  --green-light: #E1F5EE;
+  --green-border: #9FE1CB;
+  --green-mid: #5DCAA5;
+  --blue-primary: #185FA5;
+  --blue-dark: #0C447C;
+  --blue-light: #E6F1FB;
+  --blue-border: #85B7EB;
+  --orange: #D85A30;
+  --orange-light: #FAECE7;
+  --orange-border: #F0997B;
+  --orange-dark: #993C1D;
+  --yellow: #FAEEDA;
+  --yellow-border: #FAC775;
+  --yellow-dark: #854F0B;
+  --yellow-darker: #633806;
+  --purple-light: #EEEDFE;
+  --purple: #3C3489;
+  --gold: #BA7517;
+  --silver: #888888;
+  --bronze: #D85A30;
+  --gray-bg: #f5f5f5;
+  --gray-card: #ffffff;
+  --gray-border: #eeeeee;
+  --gray-mid: #888888;
+  --gray-light: #aaaaaa;
+  --text-primary: #222222;
+  --text-secondary: #888888;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-heebo), var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 

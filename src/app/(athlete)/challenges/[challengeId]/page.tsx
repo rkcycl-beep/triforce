@@ -1,53 +1,54 @@
+"use client";
+
 import { notFound } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { computeLeaderboard } from "@/services/challenge.service";
-import { prisma } from "@/lib/prisma";
+import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useChallengeDetail } from "@/hooks/useChallengeDetail";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import ErrorMessage from "@/components/ui/ErrorMessage";
 import { formatDistance, formatDuration } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 
-interface Props {
-  params: Promise<{ challengeId: string }>;
+function methodLabel(m: string, t: (k: string) => string) {
+  if (m === "PERSONAL_IMPROVEMENT") return t("challenges.personalImprovement");
+  if (m === "AGE_GRADE") return t("challenges.ageGrade");
+  return t("challenges.categoryScoring");
 }
 
-function methodLabel(m: string) {
-  if (m === "PERSONAL_IMPROVEMENT") return "Personal Improvement";
-  if (m === "AGE_GRADE") return "Age Grade";
-  return "Category";
-}
-
-function formatScore(score: number, method: string, cfg: Record<string, unknown>): string {
+function formatScore(score: number, method: string, cfg: Record<string, unknown>, locale: "he" | "en"): string {
   if (method === "PERSONAL_IMPROVEMENT") return `${score >= 0 ? "+" : ""}${score.toFixed(1)}%`;
   if (method === "AGE_GRADE") return `${score.toFixed(1)}%`;
   const metric = (cfg.metric as string) ?? "distance";
-  if (metric === "distance") return formatDistance(score);
-  if (metric === "movingTime") return formatDuration(-score); // stored negated
+  if (metric === "distance") return formatDistance(score, locale);
+  if (metric === "movingTime") return formatDuration(-score, locale); // stored negated
   return `${(score * 3.6).toFixed(1)} km/h`;
 }
 
-export default async function ChallengeDetailPage({ params }: Props) {
-  const { challengeId } = await params;
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) notFound();
+export default function ChallengeDetailPage() {
+  const params = useParams();
+  const { challengeId } = params as { challengeId: string };
+  const { data: session } = useSession();
+  const { data, isLoading, error } = useChallengeDetail(challengeId);
+  const { t, locale } = useTranslation();
 
-  // Verify membership
-  const challenge = await prisma.challenge.findUnique({
-    where: { id: challengeId },
-    select: { groupId: true },
-  });
-  if (!challenge) notFound();
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-16">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
-  const membership = await prisma.groupMembership.findUnique({
-    where: { userId_groupId: { userId: session.user.id, groupId: challenge.groupId } },
-  });
-  if (!membership) notFound();
+  if (error || !data) {
+    return <ErrorMessage message={t("activities.loadError")} />;
+  }
 
-  // Compute fresh leaderboard
-  const result = await computeLeaderboard(challengeId);
-  if (!result) notFound();
+  const { challenge: c, entries } = data;
+  if (!c) notFound();
 
-  const { challenge: c, entries } = result;
   const cfg = (c.config ?? {}) as Record<string, unknown>;
-  const myEntry = entries.find((e) => e.user.id === session.user.id);
+  const myUserId = session?.user?.id ?? "";
+  const myEntry = entries.find((e: { user: { id: string } }) => e.user.id === myUserId);
   const totalAthletes = entries.length;
 
   return (
@@ -56,29 +57,29 @@ export default async function ChallengeDetailPage({ params }: Props) {
         <h1 className="text-2xl font-bold text-gray-900">{c.name}</h1>
         {c.description && <p className="mt-1 text-sm text-gray-600">{c.description}</p>}
         <p className="mt-1 text-xs text-gray-500">
-          {methodLabel(c.scoringMethod)} ·{" "}
-          {new Date(c.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+          {methodLabel(c.scoringMethod, t)} ·{" "}
+          {new Date(c.startDate).toLocaleDateString(locale === "he" ? "he-IL" : "en-US", { day: "numeric", month: "short" })}
           {" – "}
-          {new Date(c.endDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+          {new Date(c.endDate).toLocaleDateString(locale === "he" ? "he-IL" : "en-US", { day: "numeric", month: "short", year: "numeric" })}
         </p>
       </div>
 
       {/* My result card */}
       {myEntry && (
         <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
-          <p className="text-xs font-medium uppercase tracking-wide text-blue-600">Your result</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-blue-600">{t("challenges.yourResult")}</p>
           <div className="mt-1 flex items-baseline gap-3">
             <span className="text-3xl font-bold text-blue-900">
-              {formatScore(myEntry.score, c.scoringMethod, cfg)}
+              {formatScore(myEntry.score, c.scoringMethod, cfg, locale)}
             </span>
             <span className="text-sm text-blue-700">
-              Rank #{myEntry.rank ?? "—"} of {totalAthletes}
+              {t("challenges.rankOf", { rank: String(myEntry.rank ?? "—"), total: String(totalAthletes) })}
             </span>
           </div>
           {myEntry.metadata && typeof myEntry.metadata === "object" &&
-            typeof (myEntry.metadata as Record<string,unknown>).category === "string" && (
+            typeof (myEntry.metadata as Record<string, unknown>).category === "string" && (
             <p className="mt-1 text-xs text-blue-600">
-              Category: {String((myEntry.metadata as Record<string,unknown>).category)}
+              {t("challenges.category")}: {String((myEntry.metadata as Record<string, unknown>).category)}
             </p>
           )}
         </div>
@@ -87,14 +88,14 @@ export default async function ChallengeDetailPage({ params }: Props) {
       {/* Leaderboard */}
       <div className="rounded-xl border border-gray-200 bg-white">
         <div className="border-b border-gray-100 px-5 py-4">
-          <h2 className="font-semibold text-gray-900">Leaderboard</h2>
+          <h2 className="font-semibold text-gray-900">{t("challenges.leaderboard")}</h2>
         </div>
         {entries.length === 0 ? (
-          <p className="px-5 py-4 text-sm text-gray-500">No scores yet.</p>
+          <p className="px-5 py-4 text-sm text-gray-500">{t("challenges.noScores")}</p>
         ) : (
           <ol className="divide-y divide-gray-100">
-            {entries.map((entry) => {
-              const isMe = entry.user.id === session.user.id;
+            {entries.map((entry: { id: string; rank: number; user: { id: string; name: string | null; image: string | null }; score: number; metadata?: unknown }) => {
+              const isMe = entry.user.id === myUserId;
               return (
                 <li
                   key={entry.id}
@@ -113,17 +114,17 @@ export default async function ChallengeDetailPage({ params }: Props) {
                   )}
                   <div className="min-w-0 flex-1">
                     <p className={`truncate text-sm font-medium ${isMe ? "text-blue-900" : "text-gray-900"}`}>
-                      {entry.user.name ?? "Athlete"}{isMe && " (you)"}
+                      {entry.user.name ?? t("nav.dashboard")}{isMe && ` (${t("challenges.you")})`}
                     </p>
                     {entry.metadata && typeof entry.metadata === "object" &&
-                      typeof (entry.metadata as Record<string,unknown>).category === "string" && (
+                      typeof (entry.metadata as Record<string, unknown>).category === "string" ? (
                       <p className="text-xs text-gray-500">
-                        {String((entry.metadata as Record<string,unknown>).category)}
+                        {String((entry.metadata as Record<string, unknown>).category)}
                       </p>
-                    )}
+                    ) : null}
                   </div>
                   <span className="shrink-0 text-sm font-semibold text-gray-700">
-                    {formatScore(entry.score, c.scoringMethod, cfg)}
+                    {formatScore(entry.score, c.scoringMethod, cfg, locale)}
                   </span>
                 </li>
               );

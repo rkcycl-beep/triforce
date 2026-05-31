@@ -9,6 +9,8 @@
  * the data comes from, the UI always sees the same shape.
  */
 
+import type { Locale } from "@/lib/i18n";
+
 /** Where did this activity come from? */
 export type ActivitySource = "strava" | "garmin";
 
@@ -74,8 +76,17 @@ export function normalizeSportType(rawType: string): SportType {
 }
 
 /** Get a display-friendly label for a sport type */
-export function sportTypeLabel(type: SportType): string {
-  const labels: Record<SportType, string> = {
+export function sportTypeLabel(type: SportType, locale: Locale = "he"): string {
+  const labelsHe: Record<SportType, string> = {
+    run: "ריצה",
+    ride: "אופניים",
+    swim: "שחייה",
+    walk: "הליכה",
+    hike: "טיול",
+    other: "פעילות",
+  };
+
+  const labelsEn: Record<SportType, string> = {
     run: "Run",
     ride: "Ride",
     swim: "Swim",
@@ -83,7 +94,8 @@ export function sportTypeLabel(type: SportType): string {
     hike: "Hike",
     other: "Activity",
   };
-  return labels[type];
+
+  return (locale === "he" ? labelsHe : labelsEn)[type];
 }
 
 /** Get an emoji icon for a sport type */

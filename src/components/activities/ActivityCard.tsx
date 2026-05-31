@@ -17,6 +17,7 @@ import {
   formatRelativeTime,
   formatPace,
 } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ActivityCardProps {
   activity: Activity;
@@ -33,6 +34,8 @@ const sportIcons: Record<string, string> = {
 };
 
 export default function ActivityCard({ activity }: ActivityCardProps) {
+  const { t, locale } = useTranslation();
+
   return (
     <Link
       href={`/activities/${activity.source}_${activity.sourceId}`}
@@ -49,8 +52,8 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
               {activity.name}
             </h3>
             <p className="text-xs text-gray-500">
-              {sportTypeLabel(activity.sportType)} &middot;{" "}
-              {formatRelativeTime(activity.startDate)}
+              {sportTypeLabel(activity.sportType, locale)} &middot;{" "}
+              {formatRelativeTime(activity.startDate, locale)}
             </p>
           </div>
         </div>
@@ -58,14 +61,14 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
 
       {/* Stats row */}
       <div className="mt-3 flex items-center gap-4 text-sm">
-        <Stat label="Distance" value={formatDistance(activity.distance)} />
-        <Stat label="Time" value={formatDuration(activity.movingTime)} />
+        <Stat label={t("activities.distance")} value={formatDistance(activity.distance, locale)} />
+        <Stat label={t("activities.time")} value={formatDuration(activity.movingTime, locale)} />
         {activity.sportType === "run" && activity.averageSpeed > 0 && (
-          <Stat label="Pace" value={formatPace(activity.averageSpeed)} />
+          <Stat label={t("activities.pace")} value={formatPace(activity.averageSpeed, locale)} />
         )}
         {activity.hasHeartrate && activity.averageHeartrate && (
           <Stat
-            label="HR"
+            label={t("activities.hr")}
             value={`${Math.round(activity.averageHeartrate)} bpm`}
           />
         )}

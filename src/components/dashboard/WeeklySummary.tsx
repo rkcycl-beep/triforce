@@ -18,6 +18,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface WeekData {
   week: string;
@@ -65,11 +66,12 @@ function getWeekLabel(date: Date): string {
 export default function WeeklySummary() {
   // Fetch more activities to cover ~4 weeks
   const { data, isLoading } = useActivities(1, 50);
+  const { t, locale } = useTranslation();
 
   if (isLoading) {
     return (
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold text-gray-900">Weekly Distance</h2>
+        <h2 className="text-lg font-semibold text-gray-900">{t("dashboard.weeklyDistance")}</h2>
         <div className="flex justify-center py-8">
           <LoadingSpinner />
         </div>
@@ -85,9 +87,11 @@ export default function WeeklySummary() {
   // Don't show if all weeks are 0
   if (weekData.every((w) => w.distance === 0)) return null;
 
+  const unit = locale === "he" ? 'ק"מ' : "km";
+
   return (
     <div className="space-y-3">
-      <h2 className="text-lg font-semibold text-gray-900">Weekly Distance</h2>
+      <h2 className="text-lg font-semibold text-gray-900">{t("dashboard.weeklyDistance")}</h2>
       <div className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={weekData}>
@@ -102,10 +106,10 @@ export default function WeeklySummary() {
               axisLine={false}
               tickLine={false}
               width={40}
-              unit=" km"
+              unit={` ${unit}`}
             />
             <Tooltip
-              formatter={(value) => [`${value} km`, "Distance"]}
+              formatter={(value) => [`${value} ${unit}`, t("activities.distance")]}
               contentStyle={{
                 borderRadius: "8px",
                 border: "1px solid #E5E7EB",

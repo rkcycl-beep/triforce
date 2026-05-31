@@ -2,19 +2,22 @@
 
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function LandingHero() {
+  const { t } = useTranslation();
+
   return (
     <div className="flex min-h-screen flex-1 flex-col items-center justify-center px-4 py-16">
       <div className="text-center">
         <h1 className="text-4xl font-bold tracking-tight text-gray-900 md:text-5xl">
-          TriForce
+          {t("appName")}
         </h1>
         <p className="mt-3 text-lg text-gray-600 md:text-xl">
-          Your Strava &amp; Garmin data, unified.
+          {t("appTagline")}
         </p>
         <p className="mt-1 text-sm text-gray-400">
-          Track activities, heart rate, VO2max, and routes in one place.
+          {t("appDescription")}
         </p>
       </div>
 
@@ -35,20 +38,20 @@ export default function LandingHero() {
         >
           <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
         </svg>
-        Connect with Strava
+        {t("landing.connectStrava")}
       </button>
 
       <p className="mt-6 text-center text-xs text-gray-400">
-        Garmin can be connected after sign-in via Settings.
+        {t("landing.garminNote")}
       </p>
 
       <p className="mt-10 text-center text-sm text-gray-500">
-        Coaching a group?{" "}
+        {t("landing.coachPrompt")}{" "}
         <Link
           href="/coach/sign-in"
           className="font-medium text-blue-600 hover:text-blue-700"
         >
-          Coach sign-in
+          {t("landing.coachSignIn")}
         </Link>
       </p>
     </div>

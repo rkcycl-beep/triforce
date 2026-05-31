@@ -12,15 +12,17 @@ import { useStravaStats } from "@/hooks/useStravaStats";
 import StatCard from "@/components/ui/StatCard";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { formatDistance, formatDuration } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function StatsOverview() {
   const { data, isLoading, error } = useStravaStats();
+  const { t, locale } = useTranslation();
 
   if (isLoading) {
     return (
       <div className="space-y-3">
         <h2 className="text-lg font-semibold text-gray-900">
-          Year to Date
+          {t("dashboard.yearToDate")}
         </h2>
         <div className="flex justify-center py-8">
           <LoadingSpinner />
@@ -40,41 +42,41 @@ export default function StatsOverview() {
 
   if (ytd_run_totals.count > 0) {
     cards.push({
-      label: "Runs (YTD)",
+      label: t("stats.runs"),
       value: String(ytd_run_totals.count),
-      unit: "runs",
+      unit: t("stats.count"),
     });
     cards.push({
-      label: "Run Distance",
-      value: formatDistance(ytd_run_totals.distance),
+      label: t("stats.runDistance"),
+      value: formatDistance(ytd_run_totals.distance, locale),
     });
     cards.push({
-      label: "Run Time",
-      value: formatDuration(ytd_run_totals.moving_time),
+      label: t("stats.runTime"),
+      value: formatDuration(ytd_run_totals.moving_time, locale),
     });
   }
 
   if (ytd_ride_totals.count > 0) {
     cards.push({
-      label: "Rides (YTD)",
+      label: t("stats.rides"),
       value: String(ytd_ride_totals.count),
-      unit: "rides",
+      unit: t("stats.count"),
     });
     cards.push({
-      label: "Ride Distance",
-      value: formatDistance(ytd_ride_totals.distance),
+      label: t("stats.rideDistance"),
+      value: formatDistance(ytd_ride_totals.distance, locale),
     });
   }
 
   if (ytd_swim_totals.count > 0) {
     cards.push({
-      label: "Swims (YTD)",
+      label: t("stats.swims"),
       value: String(ytd_swim_totals.count),
-      unit: "swims",
+      unit: t("stats.count"),
     });
     cards.push({
-      label: "Swim Distance",
-      value: formatDistance(ytd_swim_totals.distance),
+      label: t("stats.swimDistance"),
+      value: formatDistance(ytd_swim_totals.distance, locale),
     });
   }
 
@@ -84,7 +86,7 @@ export default function StatsOverview() {
 
   return (
     <div className="space-y-3">
-      <h2 className="text-lg font-semibold text-gray-900">Year to Date</h2>
+      <h2 className="text-lg font-semibold text-gray-900">{t("dashboard.yearToDate")}</h2>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         {cards.map((card) => (
           <StatCard key={card.label} label={card.label} value={card.value} unit={card.unit} />

@@ -2,11 +2,16 @@
 
 import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { useLocale } from "@/providers/LocaleProvider";
+import { useTranslation } from "@/hooks/useTranslation";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 
 export default function SettingsPage() {
   const { data: session } = useSession();
+  const { locale, setLocale } = useLocale();
+  const { t } = useTranslation();
+
   const [inviteCode, setInviteCode] = useState("");
   const [joinStatus, setJoinStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [joinMessage, setJoinMessage] = useState("");
@@ -24,27 +29,54 @@ export default function SettingsPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setJoinStatus("error");
-        setJoinMessage(data.error ?? "Failed to join group.");
+        setJoinMessage(data.error ?? t("settings.joinError"));
         return;
       }
       setJoinStatus("success");
-      setJoinMessage(`Joined "${data.groupName}" successfully!`);
+      setJoinMessage(t("settings.joinSuccess", { groupName: data.groupName }));
       setInviteCode("");
     } catch {
       setJoinStatus("error");
-      setJoinMessage("Something went wrong. Try again.");
+      setJoinMessage(t("settings.genericError"));
     }
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+      <h1 className="text-2xl font-bold text-gray-900">{t("settings.title")}</h1>
+
+      {/* Language switcher */}
+      <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <h2 className="font-semibold text-gray-900">{t("settings.language")}</h2>
+        <div className="mt-3 flex gap-2">
+          <button
+            onClick={() => setLocale("he")}
+            className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
+              locale === "he"
+                ? "bg-blue-600 text-white"
+                : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+            }`}
+          >
+            עברית
+          </button>
+          <button
+            onClick={() => setLocale("en")}
+            className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
+              locale === "en"
+                ? "bg-blue-600 text-white"
+                : "border border-gray-300 text-gray-700 hover:bg-gray-50"
+            }`}
+          >
+            English
+          </button>
+        </div>
+      </div>
 
       {/* Join a group */}
       <div className="rounded-xl border border-gray-200 bg-white p-4">
-        <h2 className="font-semibold text-gray-900">Join a group</h2>
+        <h2 className="font-semibold text-gray-900">{t("settings.joinGroup")}</h2>
         <p className="mt-1 text-sm text-gray-500">
-          Enter the 6-character invite code your coach shared with you.
+          {t("settings.joinPrompt")}
         </p>
         <form onSubmit={onJoin} className="mt-3 flex items-end gap-2">
           <div className="flex-1">
@@ -54,7 +86,7 @@ export default function SettingsPage() {
               type="text"
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-              placeholder="e.g. ABC123"
+              placeholder={t("settings.invitePlaceholder")}
               maxLength={6}
               className="font-mono uppercase tracking-widest"
             />
@@ -64,7 +96,7 @@ export default function SettingsPage() {
             loading={joinStatus === "loading"}
             disabled={inviteCode.trim().length !== 6}
           >
-            Join
+            {t("settings.join")}
           </Button>
         </form>
         {joinMessage && (
@@ -80,25 +112,25 @@ export default function SettingsPage() {
 
       {/* Strava connection status */}
       <div className="rounded-xl border border-gray-200 bg-white p-4">
-        <h2 className="font-semibold text-gray-900">Strava</h2>
+        <h2 className="font-semibold text-gray-900">{t("settings.strava")}</h2>
         {session?.accessToken ? (
-          <p className="mt-2 text-sm text-green-600">Connected</p>
+          <p className="mt-2 text-sm text-green-600">{t("settings.connected")}</p>
         ) : (
-          <p className="mt-2 text-sm text-gray-500">Not connected</p>
+          <p className="mt-2 text-sm text-gray-500">{t("settings.notConnected")}</p>
         )}
       </div>
 
       {/* Account actions */}
       {session && (
         <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <h2 className="font-semibold text-gray-900">Account</h2>
+          <h2 className="font-semibold text-gray-900">{t("settings.account")}</h2>
           <div className="mt-2 flex items-center justify-between">
-            <span className="text-sm text-gray-600">Sign out of TriForce.</span>
+            <span className="text-sm text-gray-600">{t("settings.signOutDesc")}</span>
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
               className="min-h-[44px] rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 active:scale-95"
             >
-              Sign out
+              {t("settings.signOut")}
             </button>
           </div>
         </div>
@@ -106,9 +138,9 @@ export default function SettingsPage() {
 
       {/* Garmin placeholder */}
       <div className="rounded-xl border border-dashed border-gray-300 bg-white p-4">
-        <h2 className="font-semibold text-gray-900">Garmin</h2>
+        <h2 className="font-semibold text-gray-900">{t("settings.garmin")}</h2>
         <p className="mt-2 text-sm text-gray-500">
-          Garmin connection will be available in Phase C.
+          {t("settings.garminNote")}
         </p>
       </div>
     </div>

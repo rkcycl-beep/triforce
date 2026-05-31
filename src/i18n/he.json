@@ -1,0 +1,157 @@
+{
+  "appName": "TriForce",
+  "appTagline": "מעקב אימונים ואתגרים — מאוחד במקום אחד",
+  "appDescription": "עקוב אחרי האימונים, הדופק והמסלולים שלך במקום אחד.",
+
+  "landing": {
+    "connectStrava": "התחבר עם Strava",
+    "coachPrompt": "מאמנ/ת קבוצה?",
+    "coachSignIn": "כניסת מאמנ/ת",
+    "garminNote": "ניתן לחבר Garmin אחרי הכניסה בהגדרות."
+  },
+
+  "nav": {
+    "dashboard": "בית",
+    "activities": "פעילויות",
+    "challenges": "אתגרים",
+    "settings": "הגדרות",
+    "signOut": "התנתק/י",
+    "back": "חזרה"
+  },
+
+  "dashboard": {
+    "greeting": "היי, {name}!",
+    "overview": "סקירת האימונים שלך.",
+    "yearToDate": "השנה נכון לעכשיו",
+    "weeklyDistance": "מרחק שבועי",
+    "recentActivities": "פעילויות אחרונות",
+    "viewAll": "הצג הכל"
+  },
+
+  "stats": {
+    "runs": "ריצות",
+    "rides": "טיולי אופניים",
+    "swims": "שחיות",
+    "runDistance": "מרחק ריצה",
+    "rideDistance": "מרחק אופניים",
+    "swimDistance": "מרחק שחייה",
+    "runTime": "זמן ריצה",
+    "count": "כמות"
+  },
+
+  "activities": {
+    "title": "פעילויות",
+    "loadError": "לא ניתן לטעון פעילויות. נסה/י שוב.",
+    "emptyTitle": "אין פעילויות עדיין",
+    "emptyMessage": "צא/י לרוץ או לרכוב והפעילות תופיע כאן!",
+    "backToActivities": "חזרה לפעילויות",
+    "distance": "מרחק",
+    "movingTime": "זמן תנועה",
+    "avgPace": "קצב ממוצע",
+    "avgSpeed": "מהירות ממוצעת",
+    "elevation": "גובה",
+    "avgHr": "דופק ממוצע",
+    "maxHr": "דופק מקסימלי",
+    "calories": "קלוריות",
+    "effort": "מאמץ",
+    "splits": "פילוגים",
+    "km": "ק\"מ",
+    "pace": "קצב",
+    "time": "זמן",
+    "hr": "דופק"
+  },
+
+  "sportTypes": {
+    "run": "ריצה",
+    "ride": "אופניים",
+    "swim": "שחייה",
+    "walk": "הליכה",
+    "hike": "טיול",
+    "other": "פעילות"
+  },
+
+  "challenges": {
+    "title": "אתגרים",
+    "emptyTitle": "אין אתגרים עדיין",
+    "emptyMessage": "הצטרף/י לקבוצה קודם — האתגרים נוצרים על ידי המאמן/ת שלך.",
+    "active": "פעיל",
+    "completed": "הסתיים",
+    "draft": "טיוטה",
+    "daysLeft": "ימים נותרו",
+    "dayLeft": "יום נותר",
+    "yourResult": "התוצאה שלך",
+    "rankOf": "מקום {rank} מתוך {total}",
+    "category": "קטגוריה",
+    "leaderboard": "טבלת מובילים",
+    "noScores": "אין תוצאות עדיין.",
+    "you": "את/ה",
+    "personalImprovement": "שיפור אישי",
+    "ageGrade": "ציון גיל",
+    "categoryScoring": "קטגוריה"
+  },
+
+  "settings": {
+    "title": "הגדרות",
+    "joinGroup": "הצטרף/י לקבוצה",
+    "joinPrompt": "הזן/י את קוד ההזמנה בן 6 התווים שהמאמן/ת שיתף/ה איתך.",
+    "invitePlaceholder": "למשל ABC123",
+    "join": "הצטרף/י",
+    "joinSuccess": "הצטרפת לקבוצה \"{groupName}\" בהצלחה!",
+    "joinError": "ההצטרפות לקבוצה נכשלה.",
+    "genericError": "משהו השתבש. נסה/י שוב.",
+    "strava": "Strava",
+    "connected": "מחובר/ת",
+    "notConnected": "לא מחובר/ת",
+    "account": "חשבון",
+    "signOutDesc": "התנתק/י מ-TriForce.",
+    "signOut": "התנתק/י",
+    "garmin": "Garmin",
+    "garminNote": "חיבור ל-Garmin יהיה זמין בשלב הבא."
+  },
+
+  "coach": {
+    "title": "לוח בקרה",
+    "newGroup": "קבוצה חדשה",
+    "noGroups": "אין קבוצות עדיין",
+    "noGroupsPrompt": "צור/י קבוצה כדי לחבר את המתאמנים שלך.",
+    "createFirstGroup": "צור/י את הקבוצה הראשונה",
+    "members": "מתאמנים",
+    "member": "מתאמן",
+    "athletes": "מתאמנים",
+    "athlete": "מתאמן",
+    "inviteCode": "קוד הזמנה",
+    "invitePrompt": "שתף/י זאת עם המתאמנים. הם יזינו אותו בהגדרות ← הצטרפות לקבוצה.",
+    "noAthletes": "אין מתאמנים עדיין. שתף/י את קוד ההזמנה למעלה כדי להתחיל.",
+    "challenges": "אתגרים",
+    "newChallenge": "אתגר חדש",
+    "noChallenges": "אין אתגרים עדיין.",
+    "noChallengesPrompt": "צור/י אתגר כדי לגרום למתאמנים שלך להתחרות.",
+    "createChallenge": "צור/י אתגר",
+    "challengeName": "שם האתגר",
+    "description": "תיאור",
+    "sportTypes": "סוגי ספורט",
+    "scoringMethod": "שיטת ניקוד",
+    "startDate": "תאריך התחלה",
+    "endDate": "תאריך סיום",
+    "targetDistance": "מרחק יעד",
+    "metric": "מדד",
+    "save": "שמור",
+    "cancel": "ביטול",
+    "status": {
+      "active": "פעיל",
+      "completed": "הסתיים",
+      "draft": "טיוטה",
+      "cancelled": "בוטל"
+    }
+  },
+
+  "common": {
+    "loading": "טוען...",
+    "error": "שגיאה",
+    "retry": "נסה/י שוב",
+    "copy": "העתק",
+    "copied": "הועתק!",
+    "close": "סגור",
+    "open": "פתח"
+  }
+}

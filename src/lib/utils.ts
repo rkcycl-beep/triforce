@@ -1,26 +1,38 @@
 /**
  * utils.ts — Shared utility functions used across the app.
  * Formatting helpers for distances, durations, dates, etc.
+ *
+ * All formatters accept an optional `locale` parameter ("he" | "en").
+ * Default is Hebrew.
  */
+
+import type { Locale } from "@/lib/i18n";
 
 /**
  * Format meters into km with 1 decimal place.
- * Example: 10543 → "10.5 km"
+ * Example: 10543 → "10.5 ק"מ" (he) or "10.5 km" (en)
  */
-export function formatDistance(meters: number): string {
+export function formatDistance(meters: number, locale: Locale = "he"): string {
   const km = meters / 1000;
-  return `${km.toFixed(1)} km`;
+  const unit = locale === "he" ? 'ק"מ' : "km";
+  return `${km.toFixed(1)} ${unit}`;
 }
 
 /**
  * Format seconds into a human-readable duration.
- * Example: 3665 → "1h 01m"
- * Example: 1830 → "30m 30s"
+ * Example: 3665 → "שעה ו-01 דק'" (he) or "1h 01m" (en)
  */
-export function formatDuration(seconds: number): string {
+export function formatDuration(seconds: number, locale: Locale = "he"): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = Math.floor(seconds % 60);
+
+  if (locale === "he") {
+    if (hours > 0) {
+      return `${hours} שעות ${minutes.toString().padStart(2, "0")} דק'`;
+    }
+    return `${minutes} דק' ${secs.toString().padStart(2, "0")} ש"`;
+  }
 
   if (hours > 0) {
     return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
@@ -30,23 +42,24 @@ export function formatDuration(seconds: number): string {
 
 /**
  * Format pace from meters/second to min/km.
- * Example: 3.5 m/s → "4:46 /km"
+ * Example: 3.5 m/s → "4:46 דק'/ק"מ" (he) or "4:46 /km" (en)
  */
-export function formatPace(metersPerSecond: number): string {
+export function formatPace(metersPerSecond: number, locale: Locale = "he"): string {
   if (metersPerSecond <= 0) return "-";
   const minutesPerKm = 1000 / metersPerSecond / 60;
   const mins = Math.floor(minutesPerKm);
   const secs = Math.round((minutesPerKm - mins) * 60);
-  return `${mins}:${secs.toString().padStart(2, "0")} /km`;
+  const unit = locale === "he" ? 'דק\'/ק"מ' : "/km";
+  return `${mins}:${secs.toString().padStart(2, "0")} ${unit}`;
 }
 
 /**
  * Format a date string into a friendly format.
- * Example: "2024-03-15T10:30:00Z" → "Mar 15, 2024"
+ * Example: "2024-03-15T10:30:00Z" → "15 במרץ 2024" (he) or "Mar 15, 2024" (en)
  */
-export function formatDate(dateString: string): string {
+export function formatDate(dateString: string, locale: Locale = "he"): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
+  return date.toLocaleDateString(locale === "he" ? "he-IL" : "en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -55,9 +68,9 @@ export function formatDate(dateString: string): string {
 
 /**
  * Format a date string into a relative time.
- * Example: 2 hours ago → "2h ago", 3 days ago → "3d ago"
+ * Example: 2 hours ago → "לפני 2 שעות" (he) or "2h ago" (en)
  */
-export function formatRelativeTime(dateString: string): string {
+export function formatRelativeTime(dateString: string, locale: Locale = "he"): string {
   const now = new Date();
   const date = new Date(dateString);
   const diffMs = now.getTime() - date.getTime();
@@ -65,18 +78,25 @@ export function formatRelativeTime(dateString: string): string {
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
 
+  if (locale === "he") {
+    if (diffMins < 60) return `לפני ${diffMins} דק'`;
+    if (diffHours < 24) return `לפני ${diffHours} שעות`;
+    if (diffDays < 7) return `לפני ${diffDays} ימים`;
+    return formatDate(dateString, locale);
+  }
+
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7) return `${diffDays}d ago`;
-  return formatDate(dateString);
+  return formatDate(dateString, locale);
 }
 
 /**
  * Get a friendly sport name from Strava's sport type.
  * Example: "MountainBikeRide" → "Mountain Bike"
  */
-export function formatSportType(type: string): string {
-  const map: Record<string, string> = {
+export function formatSportType(type: string, locale: Locale = "he"): string {
+  const mapEn: Record<string, string> = {
     Run: "Run",
     Ride: "Ride",
     Swim: "Swim",
@@ -89,5 +109,20 @@ export function formatSportType(type: string): string {
     WeightTraining: "Weights",
     Yoga: "Yoga",
   };
-  return map[type] ?? type;
+
+  const mapHe: Record<string, string> = {
+    Run: "ריצה",
+    Ride: "אופניים",
+    Swim: "שחייה",
+    Walk: "הליכה",
+    Hike: "טיול",
+    MountainBikeRide: "אופני הרים",
+    VirtualRide: "אופניים וירטואליים",
+    VirtualRun: "ריצה וירטואלית",
+    TrailRun: "ריצת שטח",
+    WeightTraining: "אימון משקולות",
+    Yoga: "יוגה",
+  };
+
+  return (locale === "he" ? mapHe : mapEn)[type] ?? type;
 }

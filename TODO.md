@@ -31,14 +31,14 @@
 - [x] Run initial schema push (npx prisma db push)
 - [x] Create src/lib/prisma.ts (Prisma client singleton)
 - [x] Add @next-auth/prisma-adapter to NextAuth config
-- [ ] Verify: Strava login still works + User/Account rows appear in DB
+- [x] Verify: Strava login still works + User/Account rows appear in DB
 - [~] Create services/user.service.ts (deferred — only one helper needed; inlined for now)
 - [x] Create services/activity.service.ts (CRUD + upsert)
 - [x] Create services/sync.service.ts (sync Strava activities to DB)
 - [x] Trigger activity sync on login (jwt callback first-sign-in branch — signIn fires too early under JWT strategy)
 - [x] Create /api/athlete/activities route (reads from DB)
 - [x] Update useActivities hook to use new endpoint (renamed from useStravaActivities; 3 callers updated)
-- [ ] Verify: dashboard shows activities from DB, not live Strava API
+- [x] Verify: dashboard shows activities from DB, not live Strava API
 
 ---
 
@@ -133,5 +133,11 @@
 
 ---
 
+## Session 2026-05-31 — Landing Page Refresh + Polish
+- [x] Landing page simplified — athlete-only (removed disabled coach button)
+- [x] Created seed script (`scripts/seed.ts`) for quick demo data
+- [x] Seeded DB with group + active challenge for athlete user
+- [~] New landing page design in progress — 4-cube "Gates" layout (Trainer, Coach, Challenges, Setup)
+
 ## Current Focus
-**Phase 1C: Complete.** Next: Phase 1D — Strava Webhooks (auto-ingest activities on Strava event, trigger score recalculation). Before starting 1D, verify Phase 1C end-to-end: create a challenge, athlete joins group + views leaderboard.
+**Phase 1C: Complete.** Next: Phase 1D — Strava Webhooks (auto-ingest activities on Strava event, trigger score recalculation).

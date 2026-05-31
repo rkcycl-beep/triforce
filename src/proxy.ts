@@ -31,7 +31,7 @@ export function proxy(request: NextRequest): NextResponse {
   // server-component layout via getServerSession — proxy can't decode the
   // JWT under Next 16 without triggering "Router action dispatched before
   // initialization" errors (see comment block above).
-  const protectedPaths = ["/dashboard", "/activities", "/settings", "/challenges"];
+  const protectedPaths = ["/dashboard", "/activities", "/challenges", "/profile", "/messages", "/events"];
   const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
 
   // If the route is protected and user has no session → redirect to home

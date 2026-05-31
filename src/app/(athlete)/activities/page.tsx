@@ -13,13 +13,15 @@ import ActivityCard from "@/components/activities/ActivityCard";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import EmptyState from "@/components/ui/EmptyState";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function ActivitiesPage() {
   const { data, isLoading, error } = useActivities(1, 50);
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-900">Activities</h1>
+      <h1 className="text-2xl font-bold text-gray-900">{t("activities.title")}</h1>
 
       {isLoading && (
         <div className="flex justify-center py-12">
@@ -28,13 +30,13 @@ export default function ActivitiesPage() {
       )}
 
       {error && (
-        <ErrorMessage message="Could not load activities. Please try again." />
+        <ErrorMessage message={t("activities.loadError")} />
       )}
 
       {data && data.activities.length === 0 && (
         <EmptyState
-          title="No activities yet"
-          message="Go for a run or ride and it will show up here!"
+          title={t("activities.emptyTitle")}
+          message={t("activities.emptyMessage")}
         />
       )}
 
