@@ -31,6 +31,18 @@ export default function DashboardPage() {
 
   const firstName = session?.user?.name?.split(" ")[0] ?? "ספורטאי";
   const hasStrava = Boolean(session?.accessToken);
+
+  // Most recent activity date = last time user uploaded to Strava
+  const mostRecentActivity = activities?.activities?.[0];
+  const stravaUpdateText = mostRecentActivity?.startDate
+    ? new Date(mostRecentActivity.startDate).toLocaleString("he-IL", {
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null;
+
   const lastSyncText = lastSync
     ? new Date(lastSync).toLocaleString("he-IL", {
         day: "numeric",
@@ -38,7 +50,7 @@ export default function DashboardPage() {
         hour: "2-digit",
         minute: "2-digit",
       })
-    : "עודכן לאחרונה";
+    : null;
 
   const activeChallenge = challenges?.find?.((c: { status: string }) => c.status === "ACTIVE");
 
@@ -71,7 +83,15 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between rounded-lg border border-[#9FE1CB] bg-[#E1F5EE] px-3 py-2">
           <div className="text-xs text-[#085041]">
             <span className="block font-bold">Strava מחובר</span>
-            <span>{lastSyncText}</span>
+            {stravaUpdateText && (
+              <span className="block opacity-80">עודכן אחרון ב-Strava: {stravaUpdateText}</span>
+            )}
+            {lastSyncText && (
+              <span className="block opacity-80">סונכרן לאחרונה: {lastSyncText}</span>
+            )}
+            {!stravaUpdateText && !lastSyncText && (
+              <span className="block opacity-80">אין נתוני סנכרון</span>
+            )}
           </div>
           <button
             onClick={handleSync}
