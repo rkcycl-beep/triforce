@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useActivities } from "@/hooks/useActivities";
@@ -13,10 +13,24 @@ export default function DashboardPage() {
   const { data: activities, isLoading: actLoading } = useActivities(1, 10);
   const { data: challenges, isLoading: chalLoading } = useChallenges();
   const [syncing, setSyncing] = useState(false);
+  const [lastSync, setLastSync] = useState<string | null>(session?.lastStravaSync ?? null);
+
+  // Fetch fresh lastStravaSync from DB (session token may be stale)
+  useEffect(() => {
+    fetch("/api/athlete/me")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.lastStravaSync) {
+          setLastSync(data.lastStravaSync);
+        }
+      })
+      .catch(() => {
+        // ignore
+      });
+  }, []);
 
   const firstName = session?.user?.name?.split(" ")[0] ?? "ספורטאי";
   const hasStrava = Boolean(session?.accessToken);
-  const lastSync = session?.lastStravaSync;
   const lastSyncText = lastSync
     ? new Date(lastSync).toLocaleString("he-IL", {
         day: "numeric",
@@ -186,7 +200,7 @@ function daysLeft(endDate: string): number {
 }
 
 function timeAgo(dateStr: string): string {
-  const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60001);
+  const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
   if (mins < 60) return `לפני ${mins} דק'`;
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `לפני ${hours} שעות`;
