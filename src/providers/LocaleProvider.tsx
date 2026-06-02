@@ -39,25 +39,26 @@ function setLocaleCookie(locale: Locale) {
   }
 }
 
-export default function LocaleProvider({ children }: LocaleProviderProps) {
-  const [locale, setLocaleState] = useState<Locale>("he");
+function getInitialLocale(): Locale {
+  try {
+    const saved = localStorage.getItem("locale") as Locale | null;
+    if (saved === "en" || saved === "he") return saved;
+  } catch {
+    // localStorage not available
+  }
+  return "he";
+}
 
-  // On mount: read saved preference from localStorage
+export default function LocaleProvider({ children }: LocaleProviderProps) {
+  const [locale, setLocaleState] = useState<Locale>(getInitialLocale);
+
+  // Sync <html> attributes whenever locale changes (including initial)
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("locale") as Locale | null;
-      if (saved === "en" || saved === "he") {
-        setLocaleState(saved);
-        const dir = saved === "he" ? "rtl" : "ltr";
-        if (typeof document !== "undefined") {
-          document.documentElement.lang = saved;
-          document.documentElement.dir = dir;
-        }
-      }
-    } catch {
-      // localStorage not available
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = locale;
+      document.documentElement.dir = locale === "he" ? "rtl" : "ltr";
     }
-  }, []);
+  }, [locale]);
 
   // When locale changes, update <html> attributes and persist
   const setLocale = useCallback((next: Locale) => {
