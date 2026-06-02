@@ -83,15 +83,20 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between rounded-lg border border-[#9FE1CB] bg-[#E1F5EE] px-3 py-2">
           <div className="text-xs text-[#085041]">
             <span className="block font-bold">Strava מחובר</span>
-            {stravaUpdateText && (
-              <span className="block opacity-80">עודכן אחרון ב-Strava: {stravaUpdateText}</span>
-            )}
-            {lastSyncText && (
-              <span className="block opacity-80">סונכרן לאחרונה: {lastSyncText}</span>
-            )}
-            {!stravaUpdateText && !lastSyncText && (
-              <span className="block opacity-80">אין נתוני סנכרון</span>
-            )}
+            <div className="flex flex-wrap gap-x-2 opacity-80">
+              {stravaUpdateText && (
+                <span>עודכן ב-Strava: {stravaUpdateText}</span>
+              )}
+              {stravaUpdateText && lastSyncText && (
+                <span>·</span>
+              )}
+              {lastSyncText && (
+                <span>סונכרן: {lastSyncText}</span>
+              )}
+              {!stravaUpdateText && !lastSyncText && (
+                <span>אין נתוני סנכרון</span>
+              )}
+            </div>
           </div>
           <button
             onClick={handleSync}
