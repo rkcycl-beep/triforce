@@ -77,13 +77,13 @@
 ---
 
 ## Phase 1D: Strava Webhooks
-- [ ] Create /api/webhooks/strava route (GET for validation, POST for events)
-- [ ] Handle activity.create event
-- [ ] Handle activity.update event
-- [ ] Handle activity.delete event
-- [ ] Auto-ingest activity on webhook -> normalize -> persist -> score
-- [ ] Register webhook subscription with Strava
-- [ ] Test with ngrok (dev) or staging deployment
+- [x] Create /api/webhooks/strava route (GET for validation, POST for events)
+- [x] Handle activity.create event
+- [x] Handle activity.update event
+- [x] Handle activity.delete event
+- [x] Auto-ingest activity on webhook -> normalize -> persist -> score
+- [x] Register webhook subscription with Strava
+- [~] Test with ngrok (dev) or staging deployment
 
 ---
 
@@ -140,4 +140,12 @@
 - [~] New landing page design in progress — 4-cube "Gates" layout (Trainer, Coach, Challenges, Setup)
 
 ## Current Focus
-**Phase 1C: Complete.** Next: Phase 1D — Strava Webhooks (auto-ingest activities on Strava event, trigger score recalculation).
+**Phase 1D: Complete.** Next: Phase 1E — RTL / Hebrew (Heebo font, logical CSS audit, Hebrew formatters).
+
+## Session 2026-06-01 — Phase 1D: Strava Webhooks
+- [x] Created `src/lib/strava-webhooks.ts` — token refresh + subscription management
+- [x] Created `src/services/webhook.service.ts` — activity ingest + challenge recalculation
+- [x] Created `src/app/api/webhooks/strava/route.ts` — GET validation + POST event handler
+- [x] Created `scripts/register-strava-webhook.ts` — CLI to register webhook with Strava
+- [x] Handles activity.create, activity.update, activity.delete, and athlete deauthorization
+- [~] Test with ngrok when ready
