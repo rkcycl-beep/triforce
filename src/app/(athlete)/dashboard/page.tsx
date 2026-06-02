@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useActivities } from "@/hooks/useActivities";
@@ -11,6 +12,7 @@ export default function DashboardPage() {
   const { data: session } = useSession();
   const { data: activities, isLoading: actLoading } = useActivities(1, 10);
   const { data: challenges, isLoading: chalLoading } = useChallenges();
+  const [syncing, setSyncing] = useState(false);
 
   const firstName = session?.user?.name?.split(" ")[0] ?? "ספורטאי";
   const hasStrava = Boolean(session?.accessToken);
@@ -25,6 +27,22 @@ export default function DashboardPage() {
     : "עודכן לאחרונה";
 
   const activeChallenge = challenges?.find?.((c: { status: string }) => c.status === "ACTIVE");
+
+  async function handleSync() {
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/athlete/sync", { method: "POST" });
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        alert("סנכרון נכשל. נסה שוב.");
+        setSyncing(false);
+      }
+    } catch {
+      alert("סנכרון נכשל. נסה שוב.");
+      setSyncing(false);
+    }
+  }
 
   return (
     <div className="space-y-3 pb-20">
@@ -42,10 +60,11 @@ export default function DashboardPage() {
             <span>{lastSyncText}</span>
           </div>
           <button
-            onClick={() => window.location.reload()}
-            className="rounded-md bg-[#1D9E75] px-3 py-1.5 text-xs font-medium text-white"
+            onClick={handleSync}
+            disabled={syncing}
+            className="rounded-md bg-[#1D9E75] px-3 py-1.5 text-xs font-medium text-white disabled:opacity-60"
           >
-            סנכרן
+            {syncing ? "מסנכרן..." : "סנכרן"}
           </button>
         </div>
       )}
@@ -167,7 +186,7 @@ function daysLeft(endDate: string): number {
 }
 
 function timeAgo(dateStr: string): string {
-  const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
+  const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60001);
   if (mins < 60) return `לפני ${mins} דק'`;
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `לפני ${hours} שעות`;
