@@ -26,6 +26,8 @@ declare module "next-auth" {
     accessToken?: string;
     /** The athlete's Strava numeric ID (only for users with Strava linked) */
     athleteId?: string;
+    /** ISO timestamp of last Strava activity sync */
+    lastStravaSync?: string;
     /** "RefreshTokenError" if Strava refresh failed,
      *  "InitialSyncError" if the first-sign-in activity sync failed. */
     error?: string;
@@ -42,6 +44,7 @@ declare module "next-auth/jwt" {
     refreshToken?: string;
     expiresAt?: number;
     athleteId?: string;
+    lastStravaSync?: string;
     error?: string;
   }
 }

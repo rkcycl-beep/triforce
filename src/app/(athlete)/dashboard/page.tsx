@@ -14,6 +14,15 @@ export default function DashboardPage() {
 
   const firstName = session?.user?.name?.split(" ")[0] ?? "ספורטאי";
   const hasStrava = Boolean(session?.accessToken);
+  const lastSync = session?.lastStravaSync;
+  const lastSyncText = lastSync
+    ? new Date(lastSync).toLocaleString("he-IL", {
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "עודכן לאחרונה";
 
   const activeChallenge = challenges?.find?.((c: { status: string }) => c.status === "ACTIVE");
 
@@ -30,7 +39,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between rounded-lg border border-[#9FE1CB] bg-[#E1F5EE] px-3 py-2">
           <div className="text-xs text-[#085041]">
             <span className="block font-bold">Strava מחובר</span>
-            <span>עודכן לאחרונה</span>
+            <span>{lastSyncText}</span>
           </div>
           <button
             onClick={() => window.location.reload()}

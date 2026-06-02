@@ -193,10 +193,10 @@ export const authOptions: AuthOptions = {
     }) {
       // OAuth (Strava) first sign-in: account + user both populated by the adapter.
       if (account && user && account.provider !== "credentials") {
-        // Look up role once on first sign-in. Stale role survives until re-login.
+        // Look up role + last sync once on first sign-in.
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { role: true },
+          select: { role: true, lastStravaSync: true },
         });
         let syncError: string | undefined;
         if (account.access_token) {
@@ -211,6 +211,7 @@ export const authOptions: AuthOptions = {
           ...token,
           userId: user.id,
           role: dbUser?.role ?? "ATHLETE",
+          lastStravaSync: dbUser?.lastStravaSync?.toISOString() ?? null,
           accessToken: account.access_token,
           refreshToken: account.refresh_token,
           expiresAt: account.expires_at,
@@ -260,6 +261,7 @@ export const authOptions: AuthOptions = {
         },
         accessToken: token.accessToken as string | undefined,
         athleteId: token.athleteId as string | undefined,
+        lastStravaSync: token.lastStravaSync as string | undefined,
         error: token.error as string | undefined,
       };
     },

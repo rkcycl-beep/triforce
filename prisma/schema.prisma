@@ -87,10 +87,11 @@ model User {
   emailVerified DateTime?
   image         String?
   role          Role      @default(ATHLETE)
-  passwordHash  String?   // bcrypt hash; null for OAuth-only users
-  sex           String?   // "M" or "F" — for age-grade scoring
-  dateOfBirth   DateTime?
-  createdAt     DateTime  @default(now())
+  passwordHash    String?   // bcrypt hash; null for OAuth-only users
+  sex             String?   // "M" or "F" — for age-grade scoring
+  dateOfBirth     DateTime?
+  lastStravaSync  DateTime?
+  createdAt       DateTime  @default(now())
 
   accounts    Account[]
   sessions    Session[]

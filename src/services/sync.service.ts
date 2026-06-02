@@ -6,6 +6,7 @@
  */
 
 import { getActivities } from "@/lib/strava";
+import { prisma } from "@/lib/prisma";
 import { normalizeSportType } from "@/types/activity";
 import type { StravaActivity } from "@/types/strava";
 import { upsertActivity, type UpsertActivityInput } from "./activity.service";
@@ -58,6 +59,12 @@ export async function syncStravaActivitiesForUser(
       failures.map((f) => (f as PromiseRejectedResult).reason)
     );
   }
+
+  // Record sync timestamp
+  await prisma.user.update({
+    where: { id: userId },
+    data: { lastStravaSync: new Date() },
+  });
 
   return { synced: results.length - failures.length };
 }
