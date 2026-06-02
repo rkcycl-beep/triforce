@@ -140,12 +140,30 @@
 - [~] New landing page design in progress — 4-cube "Gates" layout (Trainer, Coach, Challenges, Setup)
 
 ## Current Focus
-**Phase 1D: Complete.** Next: Phase 1E — RTL / Hebrew (Heebo font, logical CSS audit, Hebrew formatters).
+**Phase 1D: Complete.** Landing page + nav polish complete. Next: Phase 1E — RTL / Hebrew.
 
-## Session 2026-06-01 — Phase 1D: Strava Webhooks
+## Session 2026-06-01 — Phase 1D: Strava Webhooks + Landing Page + Dashboard Polish
 - [x] Created `src/lib/strava-webhooks.ts` — token refresh + subscription management
 - [x] Created `src/services/webhook.service.ts` — activity ingest + challenge recalculation
 - [x] Created `src/app/api/webhooks/strava/route.ts` — GET validation + POST event handler
 - [x] Created `scripts/register-strava-webhook.ts` — CLI to register webhook with Strava
 - [x] Handles activity.create, activity.update, activity.delete, and athlete deauthorization
 - [~] Test with ngrok when ready
+
+## Session 2026-06-01 — Landing Page & Navigation Polish
+- [x] 4-cube landing page (`page.tsx`) — מאמן, מתאמן, אתגרים, הגדרות
+- [x] Landing page is permanent home base — removed auto-redirect to dashboard
+- [x] Header TriForce logo always links to "/"
+- [x] Bottom nav "בית" links to "/" (main page) instead of "/dashboard"
+- [x] Created `scripts/demo-setup.ts` — demo coach + athlete + sample data
+
+## Session 2026-06-01 — Dashboard Polish
+- [x] Fix LocaleProvider lint error (react-hooks/set-state-in-effect)
+- [x] Empty challenge state is clickable — links to /challenges
+- [x] Added `lastStravaSync` field to User model + DB
+- [x] Sync service records timestamp after every sync
+- [x] Created `/api/athlete/sync` — manual sync endpoint
+- [x] Created `/api/athlete/me` — profile endpoint (avoids stale JWT)
+- [x] Dashboard sync button performs real Strava sync (not just reload)
+- [x] Dashboard shows dual timestamps: last Strava activity + last app sync
+- [x] Timestamps use flex-wrap for responsive layout
