@@ -1,23 +1,13 @@
 "use client";
 
-import { useSession, signIn } from "next-auth/react";
+import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export default function LandingPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-
-  // If already logged in, redirect to dashboard
-  useEffect(() => {
-    if (status === "authenticated" && session?.user?.role) {
-      if (session.user.role === "COACH") {
-        router.replace("/coach");
-      } else {
-        router.replace("/dashboard");
-      }
-    }
-  }, [status, session, router]);
+  const isAuth = status === "authenticated";
+  const role = session?.user?.role;
 
   if (status === "loading") {
     return (
@@ -65,30 +55,53 @@ export default function LandingPage() {
           מעקב אימונים ואתגרים לקבוצה
         </p>
 
+        {/* User greeting when logged in */}
+        {isAuth && (
+          <p className="mt-2 text-sm font-medium text-[#1D9E75]">
+            שלום, {session?.user?.name || "משתמש"}
+          </p>
+        )}
+
         {/* 4 Cubes Grid */}
         <div className="mt-10 grid grid-cols-2 gap-4">
           {/* Cube 1: Athlete */}
           <button
-            onClick={() => signIn("strava", { callbackUrl: "/dashboard" })}
+            onClick={() => {
+              if (isAuth && role === "ATHLETE") {
+                router.push("/dashboard");
+              } else {
+                signIn("strava", { callbackUrl: "/dashboard" });
+              }
+            }}
             className="group flex aspect-square flex-col items-center justify-center gap-2 rounded-[20px] border border-white/15 bg-gradient-to-br from-[#1D9E75] via-[#158a63] to-[#0d6b4d] shadow-[0_12px_28px_rgba(29,158,117,0.3),0_4px_8px_rgba(29,158,117,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1.5 hover:scale-[1.04] hover:shadow-[0_20px_40px_rgba(29,158,117,0.4),0_6px_12px_rgba(29,158,117,0.2)] active:translate-y-0.5 active:scale-[0.98]"
           >
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-xl backdrop-blur-sm">
               🏃
             </div>
             <span className="text-base font-bold text-white">מתאמן</span>
-            <span className="text-xs text-white/60">Strava</span>
+            <span className="text-xs text-white/60">
+              {isAuth && role === "ATHLETE" ? "לדשבורד" : "Strava"}
+            </span>
           </button>
 
           {/* Cube 2: Coach */}
           <button
-            onClick={() => router.push("/coach/sign-in")}
+            onClick={() => {
+              if (isAuth && role === "COACH") {
+                router.push("/coach");
+              } else {
+                router.push("/coach/sign-in");
+              }
+            }}
             className="group flex aspect-square flex-col items-center justify-center gap-2 rounded-[20px] border border-white/15 bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 shadow-[0_12px_28px_rgba(51,65,85,0.25),0_4px_8px_rgba(51,65,85,0.12)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1.5 hover:scale-[1.04] hover:shadow-[0_20px_40px_rgba(51,65,85,0.35),0_6px_12px_rgba(51,65,85,0.18)] active:translate-y-0.5 active:scale-[0.98]"
           >
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-xl backdrop-blur-sm">
               👤
             </div>
             <span className="text-base font-bold text-white">מאמן</span>
-            <span className="text-xs text-white/60">כניסת מאמנים</span>
+            <span className="text-xs text-white/60">
+              {isAuth && role === "COACH" ? "לדשבורד" : "כניסת מאמנים"}
+            </span>
           </button>
 
           {/* Cube 3: Challenges */}
@@ -116,8 +129,18 @@ export default function LandingPage() {
           </button>
         </div>
 
+        {/* Sign out link when logged in */}
+        {isAuth && (
+          <button
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="mt-6 text-sm text-slate-400 underline underline-offset-2 transition-colors hover:text-slate-600"
+          >
+            התנתק
+          </button>
+        )}
+
         {/* Footer hint */}
-        <p className="mt-8 text-xs text-slate-300">
+        <p className="mt-6 text-xs text-slate-300">
           ניתן לחבר Garmin בשלב מאוחר יותר
         </p>
       </div>
