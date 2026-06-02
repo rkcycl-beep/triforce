@@ -64,9 +64,12 @@ export default function DashboardPage() {
           <LoadingSpinner />
         </div>
       ) : (
-        <div className="rounded-xl border border-dashed border-gray-300 bg-white p-4 text-center">
-          <p className="text-sm text-gray-500">אין אתגר פעיל כרגע</p>
-        </div>
+        <Link href="/challenges">
+          <div className="rounded-xl border border-dashed border-gray-300 bg-white p-4 text-center transition-colors hover:bg-gray-50">
+            <p className="text-sm text-gray-500">אין אתגר פעיל כרגע</p>
+            <p className="mt-1 text-xs text-[#1D9E75]">צפה באתגרים ←</p>
+          </div>
+        </Link>
       )}
 
       {/* Progress card */}
