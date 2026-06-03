@@ -167,3 +167,14 @@
 - [x] Dashboard sync button performs real Strava sync (not just reload)
 - [x] Dashboard shows dual timestamps: last Strava activity + last app sync
 - [x] Timestamps use flex-wrap for responsive layout
+
+## Session 2026-06-02 — Screenshots + Bug Fixes
+- [x] Took screenshots of all 10 pages (landing, dashboard, activities, activity detail, challenges, challenge detail, settings, coach sign-in, coach dashboard, coach groups)
+- [x] **Fix:** Activity detail page broken — rewrote to use DB API instead of Strava proxy
+- [x] **Fix:** Created `/api/athlete/activities/[id]` endpoint for single activity fetch
+- [x] **Fix:** Coach groups page returned 404 — created `src/app/(coach)/coach/groups/page.tsx`
+- [x] **Fix:** Settings showed `settings.language` — added missing Hebrew translation key
+- [x] **Fix:** Activity links were `strava_null` — changed `sourceId` from `number` to `string`
+- [x] **Fix:** `formatSportType` now handles lowercase sport types
+- [x] **Fix:** Added explicit `secret` to `authOptions` for JWT compatibility
+- [x] Created `scripts/take-screenshots.ts` — automated screenshot script with real UI sign-in
