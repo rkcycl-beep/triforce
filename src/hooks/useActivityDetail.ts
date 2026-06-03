@@ -8,17 +8,17 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
-import type { StravaDetailedActivity } from "@/types/strava";
+import type { Activity } from "@/types/activity";
 
 interface ActivityDetailResponse {
-  activity: StravaDetailedActivity;
+  activity: Activity;
 }
 
 export function useActivityDetail(activityId: string) {
   return useQuery<ActivityDetailResponse>({
     queryKey: ["activity-detail", activityId],
     queryFn: async () => {
-      const res = await fetch(`/api/strava/activities/${activityId}`);
+      const res = await fetch(`/api/athlete/activities/${activityId}`);
       if (!res.ok) {
         throw new Error("Failed to fetch activity details");
       }
@@ -28,3 +28,4 @@ export function useActivityDetail(activityId: string) {
     staleTime: 10 * 60 * 1000,
   });
 }
+

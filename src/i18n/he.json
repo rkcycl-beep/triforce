@@ -92,6 +92,7 @@
 
   "settings": {
     "title": "הגדרות",
+    "language": "שפה",
     "joinGroup": "הצטרף/י לקבוצה",
     "joinPrompt": "הזן/י את קוד ההזמנה בן 6 התווים שהמאמן/ת שיתף/ה איתך.",
     "invitePlaceholder": "למשל ABC123",

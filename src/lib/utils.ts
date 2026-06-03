@@ -96,6 +96,7 @@ export function formatRelativeTime(dateString: string, locale: Locale = "he"): s
  * Example: "MountainBikeRide" → "Mountain Bike"
  */
 export function formatSportType(type: string, locale: Locale = "he"): string {
+  const normalized = type.charAt(0).toUpperCase() + type.slice(1);
   const mapEn: Record<string, string> = {
     Run: "Run",
     Ride: "Ride",
@@ -124,5 +125,5 @@ export function formatSportType(type: string, locale: Locale = "he"): string {
     Yoga: "יוגה",
   };
 
-  return (locale === "he" ? mapHe : mapEn)[type] ?? type;
+  return (locale === "he" ? mapHe : mapEn)[normalized] ?? normalized;
 }

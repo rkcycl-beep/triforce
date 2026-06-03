@@ -171,6 +171,7 @@ const CoachCredentialsProvider = CredentialsProvider({
 
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [StravaProvider, CoachCredentialsProvider],
 
   callbacks: {
@@ -190,7 +191,7 @@ export const authOptions: AuthOptions = {
       token: JWT;
       account: Account | null;
       user?: User & { role?: "COACH" | "ATHLETE" };
-    }) {
+    }): Promise<JWT> {
       // OAuth (Strava) first sign-in: account + user both populated by the adapter.
       if (account && user && account.provider !== "credentials") {
         // Look up role + last sync once on first sign-in.
@@ -211,7 +212,7 @@ export const authOptions: AuthOptions = {
           ...token,
           userId: user.id,
           role: dbUser?.role ?? "ATHLETE",
-          lastStravaSync: dbUser?.lastStravaSync?.toISOString() ?? null,
+          lastStravaSync: dbUser?.lastStravaSync?.toISOString() ?? undefined,
           accessToken: account.access_token,
           refreshToken: account.refresh_token,
           expiresAt: account.expires_at,

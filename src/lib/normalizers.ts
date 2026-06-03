@@ -20,7 +20,7 @@ export function normalizeStravaActivity(raw: StravaActivity): Activity {
   return {
     id: `strava_${raw.id}`,
     source: "strava",
-    sourceId: raw.id,
+    sourceId: String(raw.id),
     name: raw.name,
     sportType: normalizeSportType(raw.sport_type),
     rawSportType: raw.sport_type,
@@ -56,7 +56,7 @@ export function dbActivityToUnified(row: DbActivity): Activity {
   return {
     id: `${row.provider}_${row.providerActivityId}`,
     source: row.provider as ActivitySource,
-    sourceId: Number(row.providerActivityId),
+    sourceId: row.providerActivityId,
     name: row.name,
     sportType: normalizeSportType(row.rawSportType),
     rawSportType: row.rawSportType,

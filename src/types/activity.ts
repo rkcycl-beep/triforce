@@ -21,7 +21,7 @@ export interface Activity {
   /** Which service this came from */
   source: ActivitySource;
   /** Original ID from the source API */
-  sourceId: number;
+  sourceId: string;
   /** Activity name (e.g., "Morning Run") */
   name: string;
   /** Sport type normalized to a common set */
