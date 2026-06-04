@@ -62,7 +62,7 @@ export default function LandingPage() {
           </p>
         )}
 
-        {/* 4 Cubes Grid */}
+        {/* 5 Cubes Grid */}
         <div className="mt-10 grid grid-cols-2 gap-4">
           {/* Cube 1: Athlete */}
           <button
@@ -116,10 +116,22 @@ export default function LandingPage() {
             <span className="text-xs text-white/60">האתגרים שלך</span>
           </button>
 
-          {/* Cube 4: Settings */}
+          {/* Cube 4: Members */}
+          <button
+            onClick={() => router.push("/members")}
+            className="group flex aspect-square flex-col items-center justify-center gap-2 rounded-[20px] border border-white/15 bg-gradient-to-br from-[#9b59b6] via-[#8e44ad] to-[#6c3483] shadow-[0_12px_28px_rgba(155,89,182,0.25),0_4px_8px_rgba(155,89,182,0.12)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1.5 hover:scale-[1.04] hover:shadow-[0_20px_40px_rgba(155,89,182,0.35),0_6px_12px_rgba(155,89,182,0.18)] active:translate-y-0.5 active:scale-[0.98]"
+          >
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-xl backdrop-blur-sm">
+              👥
+            </div>
+            <span className="text-base font-bold text-white">חברים</span>
+            <span className="text-xs text-white/60">חברי הקבוצה</span>
+          </button>
+
+          {/* Cube 5: Settings */}
           <button
             onClick={() => router.push("/settings")}
-            className="group flex aspect-square flex-col items-center justify-center gap-2 rounded-[20px] border border-white/15 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 shadow-[0_12px_28px_rgba(37,99,235,0.25),0_4px_8px_rgba(37,99,235,0.12)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1.5 hover:scale-[1.04] hover:shadow-[0_20px_40px_rgba(37,99,235,0.35),0_6px_12px_rgba(37,99,235,0.18)] active:translate-y-0.5 active:scale-[0.98]"
+            className="group col-span-2 mx-auto flex aspect-[2/1] w-full max-w-[200px] flex-col items-center justify-center gap-2 rounded-[20px] border border-white/15 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 shadow-[0_12px_28px_rgba(37,99,235,0.25),0_4px_8px_rgba(37,99,235,0.12)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1.5 hover:scale-[1.04] hover:shadow-[0_20px_40px_rgba(37,99,235,0.35),0_6px_12px_rgba(37,99,235,0.18)] active:translate-y-0.5 active:scale-[0.98]"
           >
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-xl backdrop-blur-sm">
               ⚙️
