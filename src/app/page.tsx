@@ -125,7 +125,7 @@ export default function LandingPage() {
               👥
             </div>
             <span className="text-base font-bold text-white">חברים</span>
-            <span className="text-xs text-white/60">חברי הקבוצה</span>
+            <span className="text-xs text-white/60">חברים שלי</span>
           </button>
 
           {/* Cube 5: Settings */}
