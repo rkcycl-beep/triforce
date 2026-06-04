@@ -177,4 +177,17 @@
 - [x] **Fix:** Activity links were `strava_null` — changed `sourceId` from `number` to `string`
 - [x] **Fix:** `formatSportType` now handles lowercase sport types
 - [x] **Fix:** Added explicit `secret` to `authOptions` for JWT compatibility
+
+## Session 2026-06-02 — Members Cube + Follow System (In Progress)
+- [x] Added 5th cube "חברים" (Members) to landing page
+- [x] Created `/members` page — lists all group members with avatars
+- [x] Created `/api/athlete/members` API — fetches group members from DB
+- [x] Updated bottom nav to 5 items (בית, חברים, היסטוריה, אתגרים, פרופיל)
+- [x] Added members Hebrew translations
+- [~] **Follow system** — DB schema ready (Follow model added), UI pending
+  - [ ] Push Follow model to Neon DB
+  - [ ] Create follow/unfollow API
+  - [ ] Add follow buttons on members page
+  - [ ] Create friend profile page
+  - [ ] Create compare stats page
 - [x] Created `scripts/take-screenshots.ts` — automated screenshot script with real UI sign-in
