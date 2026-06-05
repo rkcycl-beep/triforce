@@ -66,7 +66,23 @@ export async function GET() {
         return true;
       });
 
-    return NextResponse.json({ members: uniqueMembers });
+    // Check who the current user follows among these members
+    const memberIds = uniqueMembers.map((m) => m.id);
+    const follows = await prisma.follow.findMany({
+      where: {
+        followerId: session.user.id,
+        followingId: { in: memberIds },
+      },
+      select: { followingId: true },
+    });
+    const followingSet = new Set(follows.map((f) => f.followingId));
+
+    const membersWithFollowStatus = uniqueMembers.map((m) => ({
+      ...m,
+      isFollowing: followingSet.has(m.id),
+    }));
+
+    return NextResponse.json({ members: membersWithFollowStatus });
   } catch (error) {
     console.error("Failed to fetch members:", error);
     return NextResponse.json(

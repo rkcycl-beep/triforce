@@ -113,3 +113,40 @@ export interface StravaLap {
   max_heartrate?: number;
   lap_index: number;
 }
+
+/** A Strava athlete the user follows (from /athlete/friends) */
+export interface StravaFriend {
+  id: number;
+  firstname: string;
+  lastname: string;
+  profile: string; // Profile picture URL
+  profile_medium: string;
+  city?: string;
+  state?: string;
+  country?: string;
+}
+
+/** A Strava club the athlete belongs to */
+export interface StravaClub {
+  id: number;
+  name: string;
+  profile_medium: string;
+  profile: string;
+  member_count: number;
+  sport_type: string;
+  city: string;
+  state: string;
+  country: string;
+  private: boolean;
+}
+
+/** A member of a Strava club */
+export interface StravaClubMember {
+  id: number;
+  firstname: string;
+  lastname: string;
+  profile_medium: string;
+  profile: string;
+  admin: boolean;
+  owner: boolean;
+}

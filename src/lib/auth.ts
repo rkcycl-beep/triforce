@@ -31,7 +31,7 @@ const StravaProvider: OAuthConfig<StravaProfile> = {
   authorization: {
     url: "https://www.strava.com/oauth/authorize",
     params: {
-      scope: "read,activity:read_all",
+      scope: "read,read_all,profile:read_all,activity:read_all",
       response_type: "code",
       approval_prompt: "auto",
     },

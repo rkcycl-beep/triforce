@@ -40,7 +40,7 @@ export default function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
           onClick={onRetry}
           className="mt-4 min-h-[44px] rounded-lg bg-red-600 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 active:scale-95"
         >
-          Try Again
+          נסה/י שוב
         </button>
       )}
     </div>

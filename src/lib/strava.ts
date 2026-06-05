@@ -14,6 +14,9 @@ import type {
   StravaAthlete,
   StravaAthleteStats,
   StravaDetailedActivity,
+  StravaFriend,
+  StravaClub,
+  StravaClubMember,
 } from "@/types/strava";
 
 const STRAVA_API = "https://www.strava.com/api/v3";
@@ -105,4 +108,64 @@ export async function getActivityById(
     `/activities/${activityId}`,
     accessToken
   );
+}
+
+/**
+ * Fetch the athletes the user follows on Strava.
+ * Requires the "read" scope (which we already request).
+ */
+export async function getStravaFriends(
+  accessToken: string,
+  page: number = 1,
+  perPage: number = 30
+): Promise<StravaFriend[]> {
+  return stravaFetch<StravaFriend[]>("/athlete/friends", accessToken, {
+    page: String(page),
+    per_page: String(perPage),
+  });
+}
+
+/**
+ * Fetch clubs the authenticated athlete belongs to.
+ */
+export async function getAthleteClubs(
+  accessToken: string,
+  page: number = 1,
+  perPage: number = 30
+): Promise<StravaClub[]> {
+  return stravaFetch<StravaClub[]>("/athlete/clubs", accessToken, {
+    page: String(page),
+    per_page: String(perPage),
+  });
+}
+
+/**
+ * Fetch members of a specific Strava club.
+ */
+export async function getClubMembers(
+  accessToken: string,
+  clubId: number,
+  page: number = 1,
+  perPage: number = 30
+): Promise<StravaClubMember[]> {
+  return stravaFetch<StravaClubMember[]>(`/clubs/${clubId}/members`, accessToken, {
+    page: String(page),
+    per_page: String(perPage),
+  });
+}
+
+/**
+ * Fetch athletes who kudoed (liked) a specific activity.
+ * These are likely friends of the activity owner.
+ */
+export async function getActivityKudos(
+  accessToken: string,
+  activityId: number,
+  page: number = 1,
+  perPage: number = 30
+): Promise<StravaFriend[]> {
+  return stravaFetch<StravaFriend[]>(`/activities/${activityId}/kudos`, accessToken, {
+    page: String(page),
+    per_page: String(perPage),
+  });
 }
