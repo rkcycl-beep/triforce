@@ -288,7 +288,21 @@ src/
       layout.tsx                 -- coach Shell (sidebar nav)
     api/
       auth/[...nextauth]/route.ts
-      athlete/...
+      athlete/
+        activities/route.ts
+        activities/[id]/route.ts
+        challenges/route.ts
+        friends/route.ts
+        groups/route.ts
+        groups/join/route.ts
+        members/route.ts
+        members/[id]/follow/route.ts
+        me/route.ts
+        strava-clubs/route.ts
+        strava-clubs/[id]/members/route.ts
+        strava-kudos/route.ts
+        sync/route.ts
+        users/search/route.ts
       coach/...
       webhooks/strava/route.ts
     layout.tsx                   -- root layout (RTL, fonts, providers)
@@ -372,6 +386,9 @@ prisma/
 3. Group creation UI for coaches
 4. Invite-code join flow for athletes
 5. Role in session + proxy routing (coach vs athlete)
+6. **Follow system** — Follow model, follow/unfollow API, friends list
+7. **Strava Clubs discovery** — fetch clubs, cross-reference members with TriForce
+8. **Kudos-based discovery** — find friends through activity likes
 
 ### Phase 1C: Challenges (Week 3-5)
 1. Challenge, ChallengeEntry, ChallengeActivityLink models

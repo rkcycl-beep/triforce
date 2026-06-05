@@ -191,3 +191,21 @@
   - [ ] Create friend profile page
   - [ ] Create compare stats page
 - [x] Created `scripts/take-screenshots.ts` — automated screenshot script with real UI sign-in
+
+## Session 2026-06-05 — Friends Discovery System (Complete)
+- [x] Push Follow model to Neon DB (`npx prisma db push`)
+- [x] Create `/api/athlete/members/[id]/follow` — toggle follow/unfollow
+- [x] Create `/api/athlete/friends` — list people you follow on TriForce
+- [x] Create `/api/athlete/users/search` — search TriForce users by name
+- [x] Create `/api/athlete/groups` — list athlete's groups with invite codes
+- [x] Add "Add Friend" modal with search + invite link copy
+- [x] **Strava Clubs discovery**: `/api/athlete/strava-clubs` + club members cross-reference
+- [x] **Kudos-based discovery**: `/api/athlete/strava-kudos` — find friends who liked your activities
+- [x] Update OAuth scope to `read,read_all,profile:read_all,activity:read_all`
+- [x] Add retry buttons to error states (`ErrorMessage` component)
+- [x] Update members page: 4 sections (My Friends, Strava Clubs, Kudos Friends, Group Members)
+- [x] Full Hebrew translations for all new features
+- [x] Commit + push to GitHub
+
+## Current Focus
+**Phase 1E: RTL / Hebrew + Phase 1F Messages/Events polish.** Friends system complete. Next: full RTL audit, messaging, events.
