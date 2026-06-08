@@ -88,12 +88,15 @@ export async function getAthleteStats(
 export async function getActivities(
   accessToken: string,
   page: number = 1,
-  perPage: number = 30
+  perPage: number = 30,
+  after?: number
 ): Promise<StravaActivity[]> {
-  return stravaFetch<StravaActivity[]>("/athlete/activities", accessToken, {
+  const params: Record<string, string> = {
     page: String(page),
     per_page: String(perPage),
-  });
+  };
+  if (after !== undefined) params.after = String(after);
+  return stravaFetch<StravaActivity[]>("/athlete/activities", accessToken, params);
 }
 
 /**

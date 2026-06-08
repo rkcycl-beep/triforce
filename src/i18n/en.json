@@ -208,10 +208,34 @@
     "kudosTitle": "Friends Who Liked Your Activities",
     "kudosSubtitle": "People who liked your recent Strava activities",
     "kudosError": "Could not load data from Strava.",
-    "noKudosFriends": "None of your Strava followers are registered on TriForce yet.",
+    "noKudosFriends": "No one found who gave you kudos on recent activities.",
     "likedYourActivity": "liked your activity",
+    "kudosScanned": "Scanned {count} recent activities",
+    "kudosNote": "Strava does not expose who you give kudos to — only who gave kudos to you.",
     "showClubs": "Strava Clubs",
     "hideClubs": "Close"
+  },
+  "messages": {
+    "title": "Messages",
+    "subtitle": "Messages from your coach",
+    "loadError": "Could not load messages. Please try again.",
+    "empty": "No messages yet.",
+    "emptyDesc": "Your coach will send messages to the group here.",
+    "type": {
+      "announcement": "Announcement",
+      "chat": "Message",
+      "system": "System"
+    }
+  },
+  "events": {
+    "title": "Events",
+    "subtitle": "Upcoming group events",
+    "loadError": "Could not load events. Please try again.",
+    "empty": "No upcoming events.",
+    "emptyDesc": "Your coach will add events here.",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "today": "Today"
   },
   "common": {
     "loading": "Loading...",

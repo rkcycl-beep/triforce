@@ -85,6 +85,7 @@ export async function getGroupWithMembers(groupId: string, coachId: string) {
 export async function joinGroupByCode(userId: string, inviteCode: string) {
   const group = await prisma.group.findUnique({
     where: { inviteCode: inviteCode.toUpperCase().trim() },
+    include: { memberships: { select: { userId: true } } },
   });
   if (!group) return null;
 
@@ -93,6 +94,22 @@ export async function joinGroupByCode(userId: string, inviteCode: string) {
     update: {},
     create: { userId, groupId: group.id, role: "ATHLETE" },
   });
+
+  // Auto-follow all existing group members (mutual)
+  const existingIds = group.memberships
+    .map((m) => m.userId)
+    .filter((id) => id !== userId);
+
+  if (existingIds.length > 0) {
+    await prisma.follow.createMany({
+      data: [
+        ...existingIds.map((otherId) => ({ followerId: userId, followingId: otherId })),
+        ...existingIds.map((otherId) => ({ followerId: otherId, followingId: userId })),
+      ],
+      skipDuplicates: true,
+    });
+  }
+
   return group;
 }
 

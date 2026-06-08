@@ -100,6 +100,22 @@ export default async function GroupDetailPage({ params }: Props) {
         )}
       </div>
 
+      {/* Quick links */}
+      <div className="grid grid-cols-2 gap-3">
+        <Link
+          href={`/coach/groups/${groupId}/messages`}
+          className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          <span>💬</span> Messages
+        </Link>
+        <Link
+          href={`/coach/groups/${groupId}/events`}
+          className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          <span>📅</span> Events
+        </Link>
+      </div>
+
       {/* Challenges */}
       <div className="rounded-xl border border-gray-200 bg-white">
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">

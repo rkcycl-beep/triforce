@@ -70,6 +70,22 @@ interface KudosFriend {
   isFollowing: boolean;
 }
 
+interface KudosDebugEntry {
+  id: number;
+  kudos_count: number;
+  returned: number;
+  error?: string;
+}
+
+interface KudosResponse {
+  kudosFriends: KudosFriend[];
+  scanned: number;
+  withKudos: number;
+  uniquePeople: number;
+  errors: number;
+  debug: KudosDebugEntry[];
+}
+
 /* ─── Shared Components ─── */
 
 function Avatar({
@@ -323,7 +339,7 @@ function StravaClubsContent({ onFollowToggle }: { onFollowToggle: () => void }) 
 function KudosFriendsContent({ onFollowToggle }: { onFollowToggle: () => void }) {
   const { t } = useTranslation();
 
-  const { data, isLoading, error, refetch } = useQuery<{ kudosFriends: KudosFriend[] }>({
+  const { data, isLoading, error, refetch } = useQuery<KudosResponse>({
     queryKey: ["strava-kudos"],
     queryFn: async () => {
       const res = await fetch("/api/athlete/strava-kudos");
@@ -332,7 +348,7 @@ function KudosFriendsContent({ onFollowToggle }: { onFollowToggle: () => void })
     },
   });
 
-  const onTriForceFriends = data?.kudosFriends.filter((f) => f.isOnTriForce) ?? [];
+  const allFriends = data?.kudosFriends ?? [];
 
   if (isLoading) {
     return <div className="flex justify-center py-8"><LoadingSpinner /></div>;
@@ -342,26 +358,82 @@ function KudosFriendsContent({ onFollowToggle }: { onFollowToggle: () => void })
     return <ErrorMessage message={t("friends.kudosError")} onRetry={() => refetch()} />;
   }
 
-  if (onTriForceFriends.length === 0) {
+  if (allFriends.length === 0) {
     return (
       <div className="py-8 text-center">
         <div className="text-4xl">👍</div>
         <p className="mt-2 text-sm text-gray-500">{t("friends.noKudosFriends")}</p>
+        {data && (
+          <p className="mt-1 text-xs text-gray-400">
+            סרקנו {data.scanned} פעילויות · {data.withKudos} עם לייקים · {data.errors} שגיאות
+          </p>
+        )}
+        <p className="mt-2 text-xs text-gray-300">{t("friends.kudosNote")}</p>
       </div>
     );
   }
 
+  const [showDebug, setShowDebug] = useState(false);
+
   return (
     <div className="space-y-2">
-      {onTriForceFriends.map((friend) => (
-        <div key={friend.stravaId} className="flex items-center gap-3 rounded-xl bg-[#FFF8E1]/80 p-3">
-          <Avatar src={friend.triForceImage ?? friend.image} name={friend.triForceName ?? friend.name} size={40} />
+      {data && (
+        <p className="pb-1 text-center text-xs text-gray-400">
+          סרקנו {data.scanned} פעילויות · {data.withKudos} עם לייקים · {data.uniquePeople} אנשים נמצאו
+          {data.errors > 0 && <span className="text-red-400"> · {data.errors} שגיאות</span>}
+        </p>
+      )}
+      {data?.debug && data.debug.length > 0 && (
+        <div className="rounded-xl border border-orange-100 bg-orange-50 p-2">
+          <button
+            onClick={() => setShowDebug((v) => !v)}
+            className="w-full text-left text-xs font-bold text-orange-600"
+          >
+            🔍 Debug: {showDebug ? "הסתר" : "הצג"} נתוני לייקים ({data.debug.length} פעילויות)
+          </button>
+          {showDebug && (
+            <div className="mt-2 max-h-60 overflow-y-auto rounded-lg bg-white p-2">
+              <table className="w-full text-[10px]">
+                <thead>
+                  <tr className="border-b border-gray-100 text-gray-400">
+                    <th className="py-0.5 text-start font-semibold">Activity ID</th>
+                    <th className="py-0.5 text-center font-semibold">Kudos</th>
+                    <th className="py-0.5 text-center font-semibold">Returned</th>
+                    <th className="py-0.5 text-start font-semibold">Error</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.debug.map((entry) => (
+                    <tr key={entry.id} className={`border-b border-gray-50 ${entry.returned === 0 ? "text-red-500" : "text-green-700"}`}>
+                      <td className="py-0.5 font-mono">{entry.id}</td>
+                      <td className="py-0.5 text-center">{entry.kudos_count}</td>
+                      <td className="py-0.5 text-center font-bold">{entry.returned}</td>
+                      <td className="py-0.5 text-orange-500">{entry.error ?? ""}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+      {allFriends.map((friend) => (
+        <div key={String(friend.stravaId)} className="flex items-center gap-3 rounded-xl bg-[#FFF8E1]/80 p-3">
+          <Avatar src={friend.image} name={friend.name} size={40} />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold text-gray-900">{friend.triForceName ?? friend.name}</p>
-            <p className="text-xs font-bold text-[#B7892B]">{t("friends.likedYourActivity")}</p>
+            <p className="text-sm font-bold text-gray-900">{friend.name}</p>
+            {friend.isOnTriForce ? (
+              <p className="text-xs font-bold text-[#1D9E75]">{t("friends.onTriForce")}</p>
+            ) : (
+              <p className="text-xs text-[#B7892B]">{t("friends.likedYourActivity")}</p>
+            )}
           </div>
-          {friend.triForceUserId && (
+          {friend.triForceUserId ? (
             <FollowButton memberId={friend.triForceUserId} isFollowing={friend.isFollowing} onToggle={onFollowToggle} />
+          ) : (
+            <span className="shrink-0 rounded-full bg-orange-50 px-3 py-1.5 text-xs font-bold text-orange-400">
+              Strava
+            </span>
           )}
         </div>
       ))}

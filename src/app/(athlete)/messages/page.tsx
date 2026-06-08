@@ -1,0 +1,108 @@
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import ErrorMessage from "@/components/ui/ErrorMessage";
+import { useTranslation } from "@/hooks/useTranslation";
+
+interface Message {
+  id: string;
+  content: string;
+  type: string;
+  createdAt: string;
+  user: { id: string; name: string | null; image: string | null; role: string };
+  group: { id: string; name: string };
+}
+
+function MessageCard({ msg }: { msg: Message }) {
+  const { t } = useTranslation();
+  const isAnnouncement = msg.type === "ANNOUNCEMENT";
+  const date = new Date(msg.createdAt).toLocaleString("he-IL", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return (
+    <div className={`rounded-xl p-4 shadow-sm ${isAnnouncement ? "border border-[#FAC775]/40 bg-[#FFFBF0]" : "border border-gray-100 bg-white"}`}>
+      <div className="mb-2 flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1D9E75]/10 text-xs font-bold text-[#1D9E75]">
+            {msg.user.name?.[0]?.toUpperCase() ?? "?"}
+          </div>
+          <div>
+            <p className="text-sm font-bold text-gray-900">{msg.user.name ?? t("members.unknown")}</p>
+            <p className="text-[10px] text-gray-400">{msg.group.name}</p>
+          </div>
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          {isAnnouncement && (
+            <span className="rounded-full bg-[#FAC775]/40 px-2 py-0.5 text-[10px] font-bold text-[#a34820]">
+              {t("messages.type.announcement")}
+            </span>
+          )}
+          <span className="text-[10px] text-gray-400">{date}</span>
+        </div>
+      </div>
+      <p className="text-sm leading-relaxed text-gray-700">{msg.content}</p>
+    </div>
+  );
+}
+
+export default function MessagesPage() {
+  const { t } = useTranslation();
+
+  const { data, isLoading, error, refetch } = useQuery<{ messages: Message[] }>({
+    queryKey: ["athlete-messages"],
+    queryFn: async () => {
+      const res = await fetch("/api/athlete/messages");
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+  });
+
+  return (
+    <div className="space-y-4 pb-24">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-extrabold tracking-tight text-gray-900">{t("messages.title")}</h1>
+          <p className="mt-0.5 text-xs text-gray-400">{t("messages.subtitle")}</p>
+        </div>
+        <Link
+          href="/"
+          className="rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200"
+        >
+          {t("nav.back")}
+        </Link>
+      </div>
+
+      {isLoading && (
+        <div className="flex justify-center py-12">
+          <LoadingSpinner />
+        </div>
+      )}
+
+      {error && (
+        <ErrorMessage message={t("messages.loadError")} onRetry={() => refetch()} />
+      )}
+
+      {data && data.messages.length === 0 && (
+        <div className="rounded-[20px] border border-gray-100 bg-white p-8 text-center shadow-sm">
+          <div className="text-5xl">💬</div>
+          <p className="mt-3 text-sm font-semibold text-gray-700">{t("messages.empty")}</p>
+          <p className="mt-1 text-xs text-gray-400">{t("messages.emptyDesc")}</p>
+        </div>
+      )}
+
+      {data && data.messages.length > 0 && (
+        <div className="space-y-3">
+          {data.messages.map((msg) => (
+            <MessageCard key={msg.id} msg={msg} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

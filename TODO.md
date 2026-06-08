@@ -105,15 +105,15 @@
 ---
 
 ## Phase 1F: Messages + Events + Polish
-- [ ] Create Message model routes
-- [ ] Coach broadcast compose + send
-- [ ] Athlete message inbox
-- [ ] Personal conversation thread (athlete <-> coach)
-- [ ] Unread message badges
-- [ ] Create Event model routes
-- [ ] Events list page (athlete)
-- [ ] Events manager page (coach)
-- [ ] Link challenge to event
+- [x] Create Message model routes (GET + POST /api/coach/groups/[groupId]/messages, GET /api/athlete/messages)
+- [x] Coach broadcast compose + send (CoachMessageCompose.tsx — ANNOUNCEMENT or CHAT type)
+- [x] Athlete message inbox (/messages page — shows all group messages)
+- [ ] Personal conversation thread (athlete <-> coach) — schema needs toUserId field; deferred
+- [ ] Unread message badges — needs read-tracking; deferred
+- [x] Create Event model routes (GET/POST/DELETE /api/coach/…/events, GET /api/athlete/events)
+- [x] Events list page (athlete) — /events with upcoming/past sections
+- [x] Events manager page (coach) — /coach/groups/[groupId]/events with create form + list
+- [ ] Link challenge to event — deferred to Phase 2
 - [ ] PWA manifest.json
 - [ ] Service worker basics
 - [ ] Error handling audit (all pages)
@@ -232,5 +232,20 @@
 - [x] Content panel stays below — no more giant visual cubes
 - [x] Build passes clean, committed + pushed
 
+## Session 2026-06-08 (continued) — Phase 1F Messages + Events
+- [x] Created `src/services/message.service.ts` — sendMessage, getGroupMessages, getMessagesForUser
+- [x] Created `src/services/event.service.ts` — createEvent, getGroupEvents, getUpcomingEventsForUser, deleteEvent
+- [x] Created `/api/athlete/messages` — list messages from all user's groups
+- [x] Created `/api/athlete/events` — list all events from user's groups
+- [x] Created `/api/coach/groups/[groupId]/messages` — GET list + POST send
+- [x] Created `/api/coach/groups/[groupId]/events` — GET list + POST create + DELETE
+- [x] Created `/messages` athlete page — inbox with announcement + chat cards
+- [x] Created `/events` athlete page — upcoming/past sections with countdown badges
+- [x] Created `/coach/groups/[groupId]/messages` page — compose form + sent history
+- [x] Created `/coach/groups/[groupId]/events` page — create form + all events list
+- [x] Added Messages + Events quick links to coach group detail page
+- [x] Bottom nav: replaced non-existent /profile with /messages (bell icon)
+- [x] Added `messages` + `events` namespaces to he.json and en.json
+
 ## Current Focus
-**Phase 1E: RTL / Hebrew — COMPLETE.** Members page now uses compact tabs. Next: Phase 1F Messages/Events polish.
+**Phase 1F: Messages + Events — COMPLETE (core).** Remaining: personal threads, unread badges, PWA, audits.
