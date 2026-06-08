@@ -473,8 +473,8 @@ function TabBar({
               onClick={() => onChange(tab.key)}
               className={`flex-1 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold transition-all ${
                 isActive
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "bg-white text-[#1D9E75] shadow-sm"
+                  : "text-gray-500 hover:bg-white/50 hover:text-[#1D9E75]"
               }`}
             >
               {tab.label}
