@@ -224,5 +224,13 @@
 - [x] Build passes clean
 - [~] Members page visual design — user feedback: needs further refinement (cubes still feel too large/unpleasant)
 
+## Session 2026-06-08 (continued) — Compact Horizontal Tabs
+- [x] Replaced big 2×2 cube grid with compact iOS-style segmented tab bar
+- [x] 4 tabs: חברים, מועדונים, לייקים, חברי קבוצה
+- [x] Active tab: white bg + shadow, inactive: muted gray text
+- [x] Tab bar uses `rounded-xl bg-gray-100 p-1` container
+- [x] Content panel stays below — no more giant visual cubes
+- [x] Build passes clean, committed + pushed
+
 ## Current Focus
-**Phase 1E: RTL / Hebrew — COMPLETE.** Members page cube layout in place but needs visual polish. Next: Phase 1F Messages/Events polish.
+**Phase 1E: RTL / Hebrew — COMPLETE.** Members page now uses compact tabs. Next: Phase 1F Messages/Events polish.
