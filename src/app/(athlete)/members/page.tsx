@@ -6,6 +6,8 @@ import ErrorMessage from "@/components/ui/ErrorMessage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useState } from "react";
 
+/* ─── Types ─── */
+
 interface Member {
   id: string;
   name: string | null;
@@ -68,20 +70,28 @@ interface KudosFriend {
   isFollowing: boolean;
 }
 
-function Avatar({ src, name, size = 48 }: { src: string | null; name: string; size?: number }) {
+/* ─── Shared Components ─── */
+
+function Avatar({
+  src,
+  name,
+  size = 40,
+}: {
+  src: string | null;
+  name: string;
+  size?: number;
+}) {
   return (
     <div
-      className="flex shrink-0 items-center justify-center rounded-full bg-[#E1F5EE] text-lg font-bold text-[#1D9E75]"
+      className="shrink-0 overflow-hidden rounded-full bg-gray-200 text-xs font-bold text-gray-500"
       style={{ width: size, height: size }}
     >
       {src ? (
-        <img
-          src={src}
-          alt={name}
-          className="h-full w-full rounded-full object-cover"
-        />
+        <img src={src} alt={name} className="h-full w-full object-cover" />
       ) : (
-        name[0] || "?"
+        <div className="flex h-full w-full items-center justify-center">
+          {name[0] || "?"}
+        </div>
       )}
     </div>
   );
@@ -116,10 +126,10 @@ function FollowButton({
     <button
       onClick={() => mutation.mutate()}
       disabled={pending}
-      className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+      className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all active:scale-95 ${
         isFollowing
-          ? "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-          : "bg-[#1D9E75] text-white hover:bg-[#178c68]"
+          ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          : "bg-[#1D9E75] text-white shadow-md hover:bg-[#178c68]"
       } ${pending ? "opacity-60" : ""}`}
     >
       {pending
@@ -131,11 +141,15 @@ function FollowButton({
   );
 }
 
+/* ─── Invite Section ─── */
+
 function InviteSection() {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
-  const { data } = useQuery<{ groups: { id: string; name: string; inviteCode: string }[] }>({
+  const { data } = useQuery<{
+    groups: { id: string; name: string; inviteCode: string }[];
+  }>({
     queryKey: ["my-groups"],
     queryFn: async () => {
       const res = await fetch("/api/athlete/groups");
@@ -158,12 +172,12 @@ function InviteSection() {
 
   return (
     <div className="text-center">
-      <p className="text-xs font-medium text-gray-700">{t("friends.inviteTitle")}</p>
-      <p className="text-xs text-gray-500">{t("friends.inviteDesc")}</p>
+      <p className="text-xs font-bold text-gray-700">{t("friends.inviteTitle")}</p>
+      <p className="mt-1 text-xs text-gray-500">{t("friends.inviteDesc")}</p>
       {group ? (
         <button
           onClick={handleCopy}
-          className="mt-2 inline-flex items-center gap-1 rounded-lg border border-[#1D9E75] bg-[#E1F5EE] px-3 py-1.5 text-xs font-medium text-[#1D9E75] hover:bg-[#d4f0e3]"
+          className="mt-3 inline-flex items-center gap-1 rounded-xl bg-[#1D9E75] px-4 py-2 text-xs font-bold text-white shadow-md transition-all hover:bg-[#178c68] active:scale-95"
         >
           {copied ? t("common.copied") : t("common.copy")}
         </button>
@@ -174,7 +188,9 @@ function InviteSection() {
   );
 }
 
-function StravaClubsSection({ onFollowToggle }: { onFollowToggle: () => void }) {
+/* ─── Strava Clubs Content ─── */
+
+function StravaClubsContent({ onFollowToggle }: { onFollowToggle: () => void }) {
   const { t } = useTranslation();
   const [selectedClub, setSelectedClub] = useState<number | null>(null);
 
@@ -206,7 +222,7 @@ function StravaClubsSection({ onFollowToggle }: { onFollowToggle: () => void }) 
 
   if (clubsLoading) {
     return (
-      <div className="flex justify-center py-6">
+      <div className="flex justify-center py-8">
         <LoadingSpinner />
       </div>
     );
@@ -222,13 +238,13 @@ function StravaClubsSection({ onFollowToggle }: { onFollowToggle: () => void }) 
 
   if (!clubsData || clubsData.clubs.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-gray-300 bg-white p-4 text-center">
-        <p className="text-sm text-gray-500">{t("friends.noClubs")}</p>
+      <div className="py-8 text-center">
+        <div className="text-4xl">🚴</div>
+        <p className="mt-2 text-sm text-gray-500">{t("friends.noClubs")}</p>
       </div>
     );
   }
 
-  // Club selection view
   if (selectedClub === null) {
     return (
       <div className="space-y-2">
@@ -236,29 +252,26 @@ function StravaClubsSection({ onFollowToggle }: { onFollowToggle: () => void }) 
           <button
             key={club.id}
             onClick={() => setSelectedClub(club.id)}
-            className="flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 text-start hover:bg-gray-50"
+            className="flex w-full items-center gap-3 rounded-xl bg-[#FFF3E0] p-3 text-start transition-all hover:bg-[#FFE0B2] active:scale-[0.98]"
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E65100]/10">
               {club.profile ? (
                 <img src={club.profile} alt={club.name} className="h-full w-full rounded-full object-cover" />
               ) : (
-                <span className="text-xs font-bold text-gray-500">{club.name[0]}</span>
+                <span className="text-xs font-bold text-[#E65100]">{club.name[0]}</span>
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-gray-900">{club.name}</p>
-              <p className="text-xs text-gray-500">
-                {club.member_count} {t("friends.clubMembers")}
-              </p>
+              <p className="text-sm font-bold text-gray-900">{club.name}</p>
+              <p className="text-xs text-[#E65100]">{club.member_count} {t("friends.clubMembers")}</p>
             </div>
-            <span className="text-lg text-gray-400">←</span>
+            <span className="text-sm text-[#E65100]">←</span>
           </button>
         ))}
       </div>
     );
   }
 
-  // Members view
   const selectedClubName = clubsData.clubs.find((c) => c.id === selectedClub)?.name || "";
   const onTriForceMembers = clubMembersData?.members.filter((m) => m.isOnTriForce) ?? [];
 
@@ -266,50 +279,36 @@ function StravaClubsSection({ onFollowToggle }: { onFollowToggle: () => void }) 
     <div>
       <button
         onClick={() => setSelectedClub(null)}
-        className="mb-3 text-sm font-medium text-[#1D9E75] hover:underline"
+        className="mb-2 inline-flex items-center gap-1 rounded-lg bg-[#E65100]/10 px-3 py-1 text-xs font-bold text-[#E65100] transition-colors hover:bg-[#E65100]/20"
       >
-        ← {t("friends.backToClubs")}
+        → {t("friends.backToClubs")}
       </button>
-      <p className="mb-2 text-sm font-semibold text-gray-900">
-        {selectedClubName} — {t("friends.onTriForceTitle")}
+      <p className="mb-2 text-xs font-bold text-gray-500">
+        {selectedClubName} · {t("friends.onTriForceTitle")}
       </p>
 
       {membersLoading && (
-        <div className="flex justify-center py-6">
-          <LoadingSpinner />
-        </div>
+        <div className="flex justify-center py-4"><LoadingSpinner /></div>
       )}
 
       {!membersLoading && onTriForceMembers.length === 0 && (
-        <p className="py-4 text-center text-sm text-gray-500">
-          {t("friends.noClubFriendsOnTriForce")}
-        </p>
+        <div className="py-4 text-center">
+          <div className="text-2xl">🔍</div>
+          <p className="mt-1 text-xs text-gray-400">{t("friends.noClubFriendsOnTriForce")}</p>
+        </div>
       )}
 
       {onTriForceMembers.length > 0 && (
         <div className="space-y-2">
           {onTriForceMembers.map((member) => (
-            <div
-              key={member.stravaId}
-              className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3"
-            >
-              <Avatar
-                src={member.triForceImage ?? member.image}
-                name={member.triForceName ?? member.name}
-                size={40}
-              />
+            <div key={member.stravaId} className="flex items-center gap-3 rounded-xl bg-[#E1F5EE]/60 p-3">
+              <Avatar src={member.triForceImage ?? member.image} name={member.triForceName ?? member.name} size={40} />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-900">
-                  {member.triForceName ?? member.name}
-                </p>
-                <p className="text-xs text-[#1D9E75]">{t("friends.onTriForce")}</p>
+                <p className="text-sm font-bold text-gray-900">{member.triForceName ?? member.name}</p>
+                <p className="text-xs font-bold text-[#1D9E75]">{t("friends.onTriForce")}</p>
               </div>
               {member.triForceUserId && (
-                <FollowButton
-                  memberId={member.triForceUserId}
-                  isFollowing={member.isFollowing}
-                  onToggle={onFollowToggle}
-                />
+                <FollowButton memberId={member.triForceUserId} isFollowing={member.isFollowing} onToggle={onFollowToggle} />
               )}
             </div>
           ))}
@@ -319,15 +318,12 @@ function StravaClubsSection({ onFollowToggle }: { onFollowToggle: () => void }) 
   );
 }
 
-function KudosFriendsSection({ onFollowToggle }: { onFollowToggle: () => void }) {
+/* ─── Kudos Friends Content ─── */
+
+function KudosFriendsContent({ onFollowToggle }: { onFollowToggle: () => void }) {
   const { t } = useTranslation();
 
-  const {
-    data,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery<{ kudosFriends: KudosFriend[] }>({
+  const { data, isLoading, error, refetch } = useQuery<{ kudosFriends: KudosFriend[] }>({
     queryKey: ["strava-kudos"],
     queryFn: async () => {
       const res = await fetch("/api/athlete/strava-kudos");
@@ -339,26 +335,18 @@ function KudosFriendsSection({ onFollowToggle }: { onFollowToggle: () => void })
   const onTriForceFriends = data?.kudosFriends.filter((f) => f.isOnTriForce) ?? [];
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center py-6">
-        <LoadingSpinner />
-      </div>
-    );
+    return <div className="flex justify-center py-8"><LoadingSpinner /></div>;
   }
 
   if (error) {
-    return (
-      <ErrorMessage
-        message={t("friends.kudosError")}
-        onRetry={() => refetch()}
-      />
-    );
+    return <ErrorMessage message={t("friends.kudosError")} onRetry={() => refetch()} />;
   }
 
   if (onTriForceFriends.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-gray-300 bg-white p-4 text-center">
-        <p className="text-sm text-gray-500">{t("friends.noKudosFriends")}</p>
+      <div className="py-8 text-center">
+        <div className="text-4xl">👍</div>
+        <p className="mt-2 text-sm text-gray-500">{t("friends.noKudosFriends")}</p>
       </div>
     );
   }
@@ -366,33 +354,22 @@ function KudosFriendsSection({ onFollowToggle }: { onFollowToggle: () => void })
   return (
     <div className="space-y-2">
       {onTriForceFriends.map((friend) => (
-        <div
-          key={friend.stravaId}
-          className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3"
-        >
-          <Avatar
-            src={friend.triForceImage ?? friend.image}
-            name={friend.triForceName ?? friend.name}
-            size={40}
-          />
+        <div key={friend.stravaId} className="flex items-center gap-3 rounded-xl bg-[#FFF8E1]/80 p-3">
+          <Avatar src={friend.triForceImage ?? friend.image} name={friend.triForceName ?? friend.name} size={40} />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-gray-900">
-              {friend.triForceName ?? friend.name}
-            </p>
-            <p className="text-xs text-[#1D9E75]">{t("friends.likedYourActivity")}</p>
+            <p className="text-sm font-bold text-gray-900">{friend.triForceName ?? friend.name}</p>
+            <p className="text-xs font-bold text-[#B7892B]">{t("friends.likedYourActivity")}</p>
           </div>
           {friend.triForceUserId && (
-            <FollowButton
-              memberId={friend.triForceUserId}
-              isFollowing={friend.isFollowing}
-              onToggle={onFollowToggle}
-            />
+            <FollowButton memberId={friend.triForceUserId} isFollowing={friend.isFollowing} onToggle={onFollowToggle} />
           )}
         </div>
       ))}
     </div>
   );
 }
+
+/* ─── Add Friend Modal ─── */
 
 function AddFriendModal({
   open,
@@ -420,40 +397,30 @@ function AddFriendModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center">
-      <div className="w-full max-w-md rounded-t-2xl bg-white p-4 shadow-xl sm:rounded-2xl">
+      <div className="w-full max-w-md rounded-t-2xl bg-white p-4 shadow-2xl sm:rounded-2xl">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-bold text-gray-900">{t("friends.addTitle")}</h3>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-2 text-gray-500 hover:bg-gray-100"
-          >
-            ✕
-          </button>
+          <button onClick={onClose} className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100">✕</button>
         </div>
 
-        <p className="mb-3 text-xs text-gray-500">
-          {t("friends.searchHint")}
-        </p>
+        <p className="mb-3 text-xs text-gray-500">{t("friends.searchHint")}</p>
 
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("friends.searchPlaceholder")}
-          className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:border-[#1D9E75] focus:outline-none focus:ring-1 focus:ring-[#1D9E75]"
+          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm transition-all focus:border-[#1D9E75] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1D9E75]/20"
           autoFocus
         />
 
         <div className="mt-4 max-h-72 overflow-y-auto">
-          {isLoading && (
-            <div className="flex justify-center py-6">
-              <LoadingSpinner />
-            </div>
-          )}
+          {isLoading && <div className="flex justify-center py-6"><LoadingSpinner /></div>}
 
           {query.length >= 2 && !isLoading && data && data.users.length === 0 && (
             <div className="py-4 text-center">
-              <p className="text-sm text-gray-500">{t("friends.noSearchResults")}</p>
+              <div className="text-2xl">🔍</div>
+              <p className="mt-1 text-sm text-gray-500">{t("friends.noSearchResults")}</p>
               <p className="mt-1 text-xs text-gray-400">{t("friends.inviteHint")}</p>
             </div>
           )}
@@ -461,33 +428,21 @@ function AddFriendModal({
           {data && data.users.length > 0 && (
             <div className="space-y-2">
               {data.users.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-3"
-                >
+                <div key={user.id} className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-3 shadow-sm">
                   <Avatar src={user.image} name={user.name || t("members.unknown")} />
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium text-gray-900 text-sm">
-                      {user.name || t("members.unknown")}
-                    </p>
+                    <p className="text-sm font-bold text-gray-900">{user.name || t("members.unknown")}</p>
                     {user.role === "COACH" && (
-                      <span className="text-[10px] font-medium text-[#a34820]">
-                        {t("members.coach")}
-                      </span>
+                      <span className="text-[10px] font-bold text-[#a34820]">{t("members.coach")}</span>
                     )}
                   </div>
-                  <FollowButton
-                    memberId={user.id}
-                    isFollowing={user.isFollowing}
-                    onToggle={onFollowToggle}
-                  />
+                  <FollowButton memberId={user.id} isFollowing={user.isFollowing} onToggle={onFollowToggle} />
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Invite link */}
         <div className="mt-4 border-t border-gray-100 pt-4">
           <InviteSection />
         </div>
@@ -496,10 +451,13 @@ function AddFriendModal({
   );
 }
 
+/* ─── Main Page ─── */
+
 export default function MembersPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("friends");
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["members"] });
@@ -536,143 +494,156 @@ export default function MembersPage() {
     },
   });
 
+  const tabs = [
+    {
+      key: "friends",
+      label: t("friends.title"),
+      sub: t("friends.followingYouBack"),
+      count: friendsData?.friends.length ?? 0,
+      gradient: "from-[#1D9E75] via-[#158a63] to-[#0d6b4d]",
+      shadow: "shadow-[0_12px_28px_rgba(29,158,117,0.3),0_4px_8px_rgba(29,158,117,0.15)]",
+      hoverShadow: "hover:shadow-[0_20px_40px_rgba(29,158,117,0.4),0_6px_12px_rgba(29,158,117,0.2)]",
+      icon: "🤝",
+    },
+    {
+      key: "clubs",
+      label: t("friends.clubsTitle"),
+      sub: t("friends.clubsSubtitle"),
+      gradient: "from-[#e07b3a] via-[#c45e2b] to-[#a34820]",
+      shadow: "shadow-[0_12px_28px_rgba(192,94,43,0.25),0_4px_8px_rgba(192,94,43,0.12)]",
+      hoverShadow: "hover:shadow-[0_20px_40px_rgba(192,94,43,0.35),0_6px_12px_rgba(192,94,43,0.18)]",
+      icon: "🚴",
+    },
+    {
+      key: "kudos",
+      label: t("friends.kudosTitle"),
+      sub: t("friends.kudosSubtitle"),
+      gradient: "from-[#d4a017] via-[#b7892b] to-[#8c6a1c]",
+      shadow: "shadow-[0_12px_28px_rgba(183,137,43,0.25),0_4px_8px_rgba(183,137,43,0.12)]",
+      hoverShadow: "hover:shadow-[0_20px_40px_rgba(183,137,43,0.35),0_6px_12px_rgba(183,137,43,0.18)]",
+      icon: "👍",
+    },
+    {
+      key: "members",
+      label: t("members.title"),
+      sub: t("members.discoverSubtitle"),
+      count: membersData?.members.length ?? 0,
+      gradient: "from-[#9b59b6] via-[#8e44ad] to-[#6c3483]",
+      shadow: "shadow-[0_12px_28px_rgba(155,89,182,0.25),0_4px_8px_rgba(155,89,182,0.12)]",
+      hoverShadow: "hover:shadow-[0_20px_40px_rgba(155,89,182,0.35),0_6px_12px_rgba(155,89,182,0.18)]",
+      icon: "👥",
+    },
+  ];
+
   return (
-    <div className="space-y-6">
-      {/* ── Friends You Follow ── */}
-      <section>
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-[#f8faf9] px-4 py-6 pb-24">
+      <div className="mx-auto w-full max-w-[420px]">
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{t("friends.title")}</h1>
-            <p className="text-sm text-gray-500">{t("friends.subtitle")}</p>
+            <h1 className="text-xl font-extrabold tracking-tight text-[#085041]">{t("friends.title")}</h1>
+            <p className="mt-0.5 text-xs text-slate-400">{t("friends.subtitle")}</p>
           </div>
           <button
             onClick={() => setModalOpen(true)}
-            className="shrink-0 rounded-full bg-[#1D9E75] px-4 py-2 text-sm font-medium text-white hover:bg-[#178c68] active:scale-95 transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#1D9E75] text-lg text-white shadow-md shadow-[#1D9E75]/20 transition-all hover:scale-105 hover:bg-[#178c68] active:scale-95"
           >
-            {t("friends.addButton")}
+            +
           </button>
         </div>
 
-        {friendsLoading && (
-          <div className="flex justify-center py-8">
-            <LoadingSpinner />
-          </div>
-        )}
-
-        {friendsError && (
-          <ErrorMessage
-            message={t("friends.loadError")}
-            onRetry={() => refetchFriends()}
-          />
-        )}
-
-        {friendsData && friendsData.friends.length === 0 && (
-          <div className="mt-3 rounded-xl border border-dashed border-gray-300 bg-white p-6 text-center">
-            <p className="text-sm text-gray-500">{t("friends.empty")}</p>
-          </div>
-        )}
-
-        {friendsData && friendsData.friends.length > 0 && (
-          <div className="mt-3 space-y-3">
-            {friendsData.friends.map((friend) => (
-              <div
-                key={friend.id}
-                className="flex items-center gap-3 rounded-xl border border-[#1D9E75]/20 bg-[#E1F5EE]/30 p-4"
-              >
-                <Avatar src={friend.image} name={friend.name || t("members.unknown")} />
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-gray-900">
-                    {friend.name || t("members.unknown")}
-                  </p>
-                  <p className="text-xs text-[#1D9E75] font-medium">
-                    {t("friends.followingYouBack")}
-                  </p>
-                </div>
+        {/* 2×2 Cube Grid — exactly like landing page */}
+        <div className="grid grid-cols-2 gap-4">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`group flex aspect-square flex-col items-center justify-center gap-2 rounded-[20px] border border-white/15 bg-gradient-to-br ${tab.gradient} ${tab.shadow} transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1.5 hover:scale-[1.04] ${tab.hoverShadow} active:translate-y-0.5 active:scale-[0.98] ${
+                activeTab === tab.key ? "ring-2 ring-white/40 scale-[1.02]" : ""
+              }`}
+            >
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-2xl backdrop-blur-sm">
+                {tab.icon}
               </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* ── Strava Clubs Discovery ── */}
-      <section>
-        <h2 className="text-lg font-bold text-gray-900">{t("friends.clubsTitle")}</h2>
-        <p className="text-sm text-gray-500">{t("friends.clubsSubtitle")}</p>
-        <div className="mt-3">
-          <StravaClubsSection onFollowToggle={invalidate} />
+              <span className="text-base font-bold text-white">{tab.label}</span>
+              <span className="px-2 text-center text-xs text-white/60 leading-tight">
+                {tab.sub}
+              </span>
+              {tab.count !== undefined && tab.count > 0 && (
+                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white">
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
-      </section>
 
-      {/* ── Kudos Friends Discovery ── */}
-      <section>
-        <h2 className="text-lg font-bold text-gray-900">{t("friends.kudosTitle")}</h2>
-        <p className="text-sm text-gray-500">{t("friends.kudosSubtitle")}</p>
-        <div className="mt-3">
-          <KudosFriendsSection onFollowToggle={invalidate} />
-        </div>
-      </section>
-
-      {/* ── Group Members (discover + follow) ── */}
-      <section>
-        <h2 className="text-lg font-bold text-gray-900">{t("members.title")}</h2>
-        <p className="text-sm text-gray-500">{t("members.discoverSubtitle")}</p>
-
-        {membersLoading && (
-          <div className="flex justify-center py-8">
-            <LoadingSpinner />
-          </div>
-        )}
-
-        {membersError && (
-          <ErrorMessage
-            message={t("members.loadError")}
-            onRetry={() => refetchMembers()}
-          />
-        )}
-
-        {membersData && membersData.members.length === 0 && (
-          <div className="mt-3 rounded-xl border border-dashed border-gray-300 bg-white p-6 text-center">
-            <p className="text-sm text-gray-500">{t("members.empty")}</p>
-          </div>
-        )}
-
-        {membersData && membersData.members.length > 0 && (
-          <div className="mt-3 space-y-3">
-            {membersData.members.map((member) => (
-              <div
-                key={member.id}
-                className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4"
-              >
-                <Avatar src={member.image} name={member.name || t("members.unknown")} />
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-gray-900">
-                    {member.name || t("members.unknown")}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {member.groupName}
-                    {member.role === "COACH" && (
-                      <span className="me-1 rounded-full bg-[#FAC775]/30 px-2 py-0.5 text-[10px] font-medium text-[#a34820]">
-                        {t("members.coach")}
-                      </span>
-                    )}
-                  </p>
+        {/* Active Section Content */}
+        <div className="mt-6 rounded-[20px] border border-gray-100 bg-white p-4 shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
+          {activeTab === "friends" && (
+            <>
+              {friendsLoading && <div className="flex justify-center py-8"><LoadingSpinner /></div>}
+              {friendsError && <ErrorMessage message={t("friends.loadError")} onRetry={() => refetchFriends()} />}
+              {friendsData && friendsData.friends.length === 0 && (
+                <div className="py-8 text-center">
+                  <div className="text-4xl">🤝</div>
+                  <p className="mt-2 text-sm text-gray-500">{t("friends.empty")}</p>
                 </div>
-                <FollowButton
-                  memberId={member.id}
-                  isFollowing={member.isFollowing}
-                  onToggle={invalidate}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+              )}
+              {friendsData && friendsData.friends.length > 0 && (
+                <div className="space-y-2">
+                  {friendsData.friends.map((friend) => (
+                    <div key={friend.id} className="flex items-center gap-3 rounded-xl bg-[#E1F5EE]/60 p-3">
+                      <Avatar src={friend.image} name={friend.name || t("members.unknown")} size={44} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-gray-900">{friend.name || t("members.unknown")}</p>
+                        <p className="text-xs font-bold text-[#1D9E75]">{t("friends.followingYouBack")}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
 
-      <AddFriendModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onFollowToggle={invalidate}
-      />
+          {activeTab === "clubs" && <StravaClubsContent onFollowToggle={invalidate} />}
+          {activeTab === "kudos" && <KudosFriendsContent onFollowToggle={invalidate} />}
+
+          {activeTab === "members" && (
+            <>
+              {membersLoading && <div className="flex justify-center py-8"><LoadingSpinner /></div>}
+              {membersError && <ErrorMessage message={t("members.loadError")} onRetry={() => refetchMembers()} />}
+              {membersData && membersData.members.length === 0 && (
+                <div className="py-8 text-center">
+                  <div className="text-4xl">👥</div>
+                  <p className="mt-2 text-sm text-gray-500">{t("members.empty")}</p>
+                </div>
+              )}
+              {membersData && membersData.members.length > 0 && (
+                <div className="space-y-2">
+                  {membersData.members.map((member) => (
+                    <div key={member.id} className="flex items-center gap-3 rounded-xl bg-[#F3E5F5]/50 p-3">
+                      <Avatar src={member.image} name={member.name || t("members.unknown")} size={44} />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-gray-900">{member.name || t("members.unknown")}</p>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-gray-500">{member.groupName}</span>
+                          {member.role === "COACH" && (
+                            <span className="rounded-full bg-[#FAC775]/40 px-2 py-0.5 text-[10px] font-bold text-[#a34820]">{t("members.coach")}</span>
+                          )}
+                        </div>
+                      </div>
+                      <FollowButton memberId={member.id} isFollowing={member.isFollowing} onToggle={invalidate} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      <AddFriendModal open={modalOpen} onClose={() => setModalOpen(false)} onFollowToggle={invalidate} />
     </div>
   );
 }

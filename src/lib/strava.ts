@@ -111,19 +111,11 @@ export async function getActivityById(
 }
 
 /**
- * Fetch the athletes the user follows on Strava.
- * Requires the "read" scope (which we already request).
+ * NOTE: Strava removed the /athlete/follows and /athlete/friends endpoints
+ * from their public API. Friend discovery is only possible through:
+ * - Clubs (getAthleteClubs + getClubMembers)
+ * - Activity kudos (getActivityKudos)
  */
-export async function getStravaFriends(
-  accessToken: string,
-  page: number = 1,
-  perPage: number = 30
-): Promise<StravaFriend[]> {
-  return stravaFetch<StravaFriend[]>("/athlete/friends", accessToken, {
-    page: String(page),
-    per_page: String(perPage),
-  });
-}
 
 /**
  * Fetch clubs the authenticated athlete belongs to.

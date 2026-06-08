@@ -88,18 +88,19 @@
 ---
 
 ## Phase 1E: RTL / Hebrew
-- [ ] Add Heebo font (Google Fonts, Hebrew + Latin subsets)
-- [ ] Create LocaleProvider with RTL context
-- [ ] Update root layout: dynamic lang + dir attributes
-- [ ] Create i18n/he.json with all UI strings
-- [ ] Create i18n/en.json (English fallback)
-- [ ] Create useTranslation() hook
-- [ ] Audit all components: replace pl/pr/ml/mr with ps/pe/ms/me
-- [ ] Flip directional icons (arrows, chevrons) in RTL
-- [ ] Update formatDate for he-IL locale
-- [ ] Update formatDistance: km -> "ק"מ"
-- [ ] Update formatPace for Hebrew
-- [ ] Test all pages in RTL
+- [x] Add Heebo font (Google Fonts, Hebrew + Latin subsets) — already done
+- [x] Create LocaleProvider with RTL context — already done
+- [x] Update root layout: dynamic lang + dir attributes — already done
+- [x] Create i18n/he.json with all UI strings — already done
+- [x] Create i18n/en.json (English fallback) — added missing `members` + `friends` namespaces
+- [x] Create useTranslation() hook — already done
+- [x] Audit all components: replace pl/pr/ml/mr with ps/pe/ms/me — fixed remaining 4 issues
+- [x] Flip directional icons (arrows, chevrons) in RTL — fixed back-arrow in members page
+- [x] Update formatDate for he-IL locale — already done
+- [x] Update formatDistance: km -> "ק"מ" — already done
+- [x] Update formatPace for Hebrew — already done
+- [x] Extract hardcoded Hebrew strings — dashboard, landing, BottomNav, ErrorMessage now use `t()`
+- [x] Build passes clean
 
 ---
 
@@ -207,5 +208,21 @@
 - [x] Full Hebrew translations for all new features
 - [x] Commit + push to GitHub
 
+## Session 2026-06-08 — Members Page Cube Redesign + RTL Polish
+- [x] Strava friends endpoint research — confirmed Strava removed `/athlete/friends`, `/athlete/follows`, `/athlete/followers` from API v3
+- [x] Cleaned up broken Strava friends code (removed non-existent endpoints)
+- [x] Members page redesigned with cube grid matching landing page aesthetic
+- [x] 2×2 cube grid: Friends (green), Clubs (orange), Kudos (gold), Group Members (purple)
+- [x] Active cube highlight with white ring
+- [x] Content panel below shows selected section
+- [x] Removed big green header banner — page now uses light `#f8faf9` background like landing page
+- [x] Centered `max-w-[420px]` container — cubes stay compact on all screen sizes
+- [x] Emoji icons in cubes (🤝 🚴 👍 👥) matching landing page style
+- [x] Fixed remaining CSS directional issues (`border-r` → `border-e` in CoachShell, `text-left` → `text-start` in StatCard)
+- [x] Added `members` and `friends` namespaces to `en.json` (English translations complete)
+- [x] Extracted hardcoded Hebrew from dashboard, landing, BottomNav, ErrorMessage
+- [x] Build passes clean
+- [~] Members page visual design — user feedback: needs further refinement (cubes still feel too large/unpleasant)
+
 ## Current Focus
-**Phase 1E: RTL / Hebrew + Phase 1F Messages/Events polish.** Friends system complete. Next: full RTL audit, messaging, events.
+**Phase 1E: RTL / Hebrew — COMPLETE.** Members page cube layout in place but needs visual polish. Next: Phase 1F Messages/Events polish.

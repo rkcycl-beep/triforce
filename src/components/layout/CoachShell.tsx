@@ -43,7 +43,7 @@ export default function CoachShell({ children }: CoachShellProps) {
       </header>
 
       {/* Desktop sidebar */}
-      <aside className="sticky top-0 hidden h-screen w-56 flex-shrink-0 border-r border-gray-200 bg-white md:flex md:flex-col">
+      <aside className="sticky top-0 hidden h-screen w-56 flex-shrink-0 border-e border-gray-200 bg-white md:flex md:flex-col">
         <div className="px-4 py-5">
           <Link href="/coach" className="text-xl font-bold tracking-tight text-gray-900">
             TriForce
@@ -71,7 +71,7 @@ export default function CoachShell({ children }: CoachShellProps) {
         <div className="px-2 pb-4">
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="block w-full rounded-md px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+            className="block w-full rounded-md px-3 py-2 text-start text-sm text-gray-700 hover:bg-gray-100"
           >
             Sign out
           </button>

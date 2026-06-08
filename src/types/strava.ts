@@ -114,7 +114,7 @@ export interface StravaLap {
   lap_index: number;
 }
 
-/** A Strava athlete the user follows (from /athlete/friends) */
+/** A Strava athlete the user follows (from /athlete/follows) */
 export interface StravaFriend {
   id: number;
   firstname: string;

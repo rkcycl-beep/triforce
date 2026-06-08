@@ -39,7 +39,7 @@ export default function StatCard({
       <div className="mt-1 flex items-baseline gap-1">
         <span className="text-2xl font-bold text-gray-900">{value}</span>
         {unit && <span className="text-sm text-gray-500">{unit}</span>}
-        <span className={`ml-auto text-sm font-medium ${trendColors[trend]}`}>
+        <span className={`me-auto text-sm font-medium ${trendColors[trend]}`}>
           {trendArrows[trend]}
         </span>
       </div>

@@ -2,32 +2,63 @@
   "appName": "TriForce",
   "appTagline": "Track your training and challenges — all in one place",
   "appDescription": "Track your activities, heart rate, and routes in one place.",
-
   "landing": {
     "connectStrava": "Connect with Strava",
     "coachPrompt": "Coaching a group?",
     "coachSignIn": "Coach sign-in",
-    "garminNote": "Garmin can be connected after sign-in via Settings."
+    "garminNote": "Garmin can be connected after sign-in via Settings.",
+    "tagline": "Group training and challenge tracking",
+    "greeting": "Hello, {name}",
+    "userFallback": "User",
+    "athlete": "Athlete",
+    "toDashboard": "Dashboard",
+    "coach": "Coach",
+    "coachDashboard": "Dashboard",
+    "challenges": "Challenges",
+    "yourChallenges": "Your Challenges",
+    "members": "Members",
+    "myFriends": "My Friends",
+    "settings": "Settings",
+    "deviceSetup": "Device Setup",
+    "signOut": "Sign Out"
   },
-
   "nav": {
     "dashboard": "Dashboard",
     "activities": "Activities",
     "challenges": "Challenges",
     "settings": "Settings",
+    "members": "Members",
+    "history": "History",
+    "profile": "Profile",
     "signOut": "Sign out",
     "back": "Back"
   },
-
   "dashboard": {
     "greeting": "Hey, {name}!",
     "overview": "Here's your training overview.",
     "yearToDate": "Year to Date",
     "weeklyDistance": "Weekly Distance",
     "recentActivities": "Recent Activities",
-    "viewAll": "View all"
+    "viewAll": "View all",
+    "athleteFallback": "Athlete",
+    "groupTagline": "TriForce · Training Group",
+    "syncFailed": "Sync failed. Please try again.",
+    "stravaConnected": "Strava connected",
+    "stravaUpdated": "Updated on Strava:",
+    "synced": "Synced:",
+    "noSyncData": "No sync data",
+    "syncing": "Syncing...",
+    "sync": "Sync",
+    "activeChallenge": "Active Challenge",
+    "daysLeft": "{days} days left",
+    "noActiveChallenge": "No active challenge",
+    "viewChallenges": "View challenges",
+    "yourProgress": "Your progress",
+    "lastActivity": "Last activity",
+    "noActivities": "No activities yet",
+    "messages": "Messages",
+    "events": "Events"
   },
-
   "stats": {
     "runs": "Runs",
     "rides": "Rides",
@@ -38,7 +69,6 @@
     "runTime": "Run Time",
     "count": "count"
   },
-
   "activities": {
     "title": "Activities",
     "loadError": "Could not load activities. Please try again.",
@@ -60,7 +90,6 @@
     "time": "Time",
     "hr": "HR"
   },
-
   "sportTypes": {
     "run": "Run",
     "ride": "Ride",
@@ -69,7 +98,6 @@
     "hike": "Hike",
     "other": "Activity"
   },
-
   "challenges": {
     "title": "Challenges",
     "emptyTitle": "No challenges yet",
@@ -89,7 +117,6 @@
     "ageGrade": "Age Grade",
     "categoryScoring": "Category"
   },
-
   "settings": {
     "title": "Settings",
     "language": "Language",
@@ -109,7 +136,6 @@
     "garmin": "Garmin",
     "garminNote": "Garmin connection will be available in the next phase."
   },
-
   "coach": {
     "title": "Dashboard",
     "newGroup": "New group",
@@ -145,7 +171,48 @@
       "cancelled": "Cancelled"
     }
   },
-
+  "members": {
+    "title": "Group Members",
+    "loadError": "Could not load members. Please try again.",
+    "empty": "No group members yet.",
+    "unknown": "User",
+    "coach": "Coach",
+    "discoverSubtitle": "Follow friends in your group"
+  },
+  "friends": {
+    "title": "My Friends",
+    "subtitle": "People you follow on TriForce",
+    "loadError": "Could not load friends. Please try again.",
+    "empty": "You are not following anyone yet. Find friends in your group list below!",
+    "following": "Following",
+    "follow": "Follow",
+    "followingYouBack": "Friend on TriForce",
+    "addButton": "Add Friend",
+    "addTitle": "Find a Friend",
+    "searchPlaceholder": "Type a name...",
+    "searchHint": "Search only finds registered TriForce users. You cannot search Strava directly.",
+    "noSearchResults": "No results found.",
+    "inviteHint": "Friend not on TriForce yet? Send an invite below.",
+    "inviteTitle": "Invite Friends from Strava",
+    "inviteDesc": "Share your invite code with Strava friends so they can join.",
+    "noGroup": "You are not in a group. Join one first via Settings.",
+    "clubsTitle": "Strava Clubs",
+    "clubsSubtitle": "Choose a club to find friends already on TriForce",
+    "clubMembers": "members",
+    "backToClubs": "Back to Clubs",
+    "onTriForceTitle": "On TriForce",
+    "onTriForce": "TriForce User",
+    "noClubs": "You are not a member of any Strava clubs.",
+    "clubsError": "Could not load Strava clubs.",
+    "noClubFriendsOnTriForce": "No club members are registered on TriForce yet.",
+    "kudosTitle": "Friends Who Liked Your Activities",
+    "kudosSubtitle": "People who liked your recent Strava activities",
+    "kudosError": "Could not load data from Strava.",
+    "noKudosFriends": "None of your Strava followers are registered on TriForce yet.",
+    "likedYourActivity": "liked your activity",
+    "showClubs": "Strava Clubs",
+    "hideClubs": "Close"
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",

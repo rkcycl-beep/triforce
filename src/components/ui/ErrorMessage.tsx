@@ -7,12 +7,16 @@
  * Usage: <ErrorMessage message="Could not load activities" onRetry={() => refetch()} />
  */
 
+import { useTranslation } from "@/hooks/useTranslation";
+
 interface ErrorMessageProps {
   message: string;
   onRetry?: () => void;
 }
 
 export default function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-red-100 bg-red-50 px-6 py-8 text-center">
       {/* Warning icon */}
@@ -40,7 +44,7 @@ export default function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
           onClick={onRetry}
           className="mt-4 min-h-[44px] rounded-lg bg-red-600 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 active:scale-95"
         >
-          נסה/י שוב
+          {t("common.retry")}
         </button>
       )}
     </div>

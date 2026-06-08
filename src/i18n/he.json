@@ -2,32 +2,63 @@
   "appName": "TriForce",
   "appTagline": "מעקב אימונים ואתגרים — מאוחד במקום אחד",
   "appDescription": "עקוב אחרי האימונים, הדופק והמסלולים שלך במקום אחד.",
-
   "landing": {
     "connectStrava": "התחבר עם Strava",
     "coachPrompt": "מאמנ/ת קבוצה?",
     "coachSignIn": "כניסת מאמנ/ת",
-    "garminNote": "ניתן לחבר Garmin אחרי הכניסה בהגדרות."
+    "garminNote": "ניתן לחבר Garmin אחרי הכניסה בהגדרות.",
+    "tagline": "מעקב אימונים ואתגרים לקבוצה",
+    "greeting": "שלום, {name}",
+    "userFallback": "משתמש",
+    "athlete": "מתאמן",
+    "toDashboard": "לדשבורד",
+    "coach": "מאמן",
+    "coachDashboard": "לדשבורד",
+    "challenges": "אתגרים",
+    "yourChallenges": "האתגרים שלך",
+    "members": "חברים",
+    "myFriends": "חברים שלי",
+    "settings": "הגדרות",
+    "deviceSetup": "חיבור מכשירים",
+    "signOut": "התנתק"
   },
-
   "nav": {
     "dashboard": "בית",
     "activities": "פעילויות",
     "challenges": "אתגרים",
     "settings": "הגדרות",
+    "members": "חברים",
+    "history": "היסטוריה",
+    "profile": "פרופיל",
     "signOut": "התנתק/י",
     "back": "חזרה"
   },
-
   "dashboard": {
     "greeting": "היי, {name}!",
     "overview": "סקירת האימונים שלך.",
     "yearToDate": "השנה נכון לעכשיו",
     "weeklyDistance": "מרחק שבועי",
     "recentActivities": "פעילויות אחרונות",
-    "viewAll": "הצג הכל"
+    "viewAll": "הצג הכל",
+    "athleteFallback": "ספורטאי",
+    "groupTagline": "TriForce · קבוצת האימונים",
+    "syncFailed": "סנכרון נכשל. נסה/י שוב.",
+    "stravaConnected": "Strava מחובר",
+    "stravaUpdated": "עודכן ב-Strava:",
+    "synced": "סונכרן:",
+    "noSyncData": "אין נתוני סנכרון",
+    "syncing": "מסנכרן...",
+    "sync": "סנכרן",
+    "activeChallenge": "אתגר פעיל",
+    "daysLeft": "{days} ימים נותרו",
+    "noActiveChallenge": "אין אתגר פעיל כרגע",
+    "viewChallenges": "צפה באתגרים",
+    "yourProgress": "ההתקדמות שלך",
+    "lastActivity": "פעילות אחרונה",
+    "noActivities": "אין פעילויות עדיין",
+    "messages": "הודעות",
+    "events": "אירועים"
   },
-
   "stats": {
     "runs": "ריצות",
     "rides": "טיולי אופניים",
@@ -38,7 +69,6 @@
     "runTime": "זמן ריצה",
     "count": "כמות"
   },
-
   "activities": {
     "title": "פעילויות",
     "loadError": "לא ניתן לטעון פעילויות. נסה/י שוב.",
@@ -60,7 +90,6 @@
     "time": "זמן",
     "hr": "דופק"
   },
-
   "sportTypes": {
     "run": "ריצה",
     "ride": "אופניים",
@@ -69,7 +98,6 @@
     "hike": "טיול",
     "other": "פעילות"
   },
-
   "challenges": {
     "title": "אתגרים",
     "emptyTitle": "אין אתגרים עדיין",
@@ -89,7 +117,6 @@
     "ageGrade": "ציון גיל",
     "categoryScoring": "קטגוריה"
   },
-
   "settings": {
     "title": "הגדרות",
     "language": "שפה",
@@ -109,7 +136,6 @@
     "garmin": "Garmin",
     "garminNote": "חיבור ל-Garmin יהיה זמין בשלב הבא."
   },
-
   "members": {
     "title": "חברי הקבוצה",
     "loadError": "לא ניתן לטעון חברים. נסה/י שוב.",
@@ -148,7 +174,9 @@
     "kudosSubtitle": "אנשים שעשו לייק לפעילויות האחרונות שלך ב-Strava",
     "kudosError": "לא ניתן לטעון נתונים מ-Strava.",
     "noKudosFriends": "אף אחד מהעוקבים אחריך ב-Strava לא רשום ל-TriForce עדיין.",
-    "likedYourActivity": "עשה/ה לייק לפעילות שלך"
+    "likedYourActivity": "עשה/ה לייק לפעילות שלך",
+    "showClubs": "מועדוני Strava",
+    "hideClubs": "סגור"
   },
   "coach": {
     "title": "לוח בקרה",
@@ -185,7 +213,6 @@
       "cancelled": "בוטל"
     }
   },
-
   "common": {
     "loading": "טוען...",
     "error": "שגיאה",

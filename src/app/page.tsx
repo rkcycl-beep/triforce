@@ -2,10 +2,12 @@
 
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function LandingPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { t } = useTranslation();
   const isAuth = status === "authenticated";
   const role = session?.user?.role;
 
@@ -52,13 +54,13 @@ export default function LandingPage() {
           TriForce
         </h1>
         <p className="mt-1 text-sm text-slate-400">
-          מעקב אימונים ואתגרים לקבוצה
+          {t("landing.tagline")}
         </p>
 
         {/* User greeting when logged in */}
         {isAuth && (
           <p className="mt-2 text-sm font-medium text-[#1D9E75]">
-            שלום, {session?.user?.name || "משתמש"}
+            {t("landing.greeting", { name: session?.user?.name || t("landing.userFallback") })}
           </p>
         )}
 
@@ -78,9 +80,9 @@ export default function LandingPage() {
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-xl backdrop-blur-sm">
               🏃
             </div>
-            <span className="text-base font-bold text-white">מתאמן</span>
+            <span className="text-base font-bold text-white">{t("landing.athlete")}</span>
             <span className="text-xs text-white/60">
-              {isAuth && role === "ATHLETE" ? "לדשבורד" : "Strava"}
+              {isAuth && role === "ATHLETE" ? t("landing.toDashboard") : "Strava"}
             </span>
           </button>
 
@@ -98,9 +100,9 @@ export default function LandingPage() {
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-xl backdrop-blur-sm">
               👤
             </div>
-            <span className="text-base font-bold text-white">מאמן</span>
+            <span className="text-base font-bold text-white">{t("landing.coach")}</span>
             <span className="text-xs text-white/60">
-              {isAuth && role === "COACH" ? "לדשבורד" : "כניסת מאמנים"}
+              {isAuth && role === "COACH" ? t("landing.coachDashboard") : t("landing.coachSignIn")}
             </span>
           </button>
 
@@ -112,8 +114,8 @@ export default function LandingPage() {
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-xl backdrop-blur-sm">
               🏆
             </div>
-            <span className="text-base font-bold text-white">אתגרים</span>
-            <span className="text-xs text-white/60">האתגרים שלך</span>
+            <span className="text-base font-bold text-white">{t("landing.challenges")}</span>
+            <span className="text-xs text-white/60">{t("landing.yourChallenges")}</span>
           </button>
 
           {/* Cube 4: Members */}
@@ -124,8 +126,8 @@ export default function LandingPage() {
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-xl backdrop-blur-sm">
               👥
             </div>
-            <span className="text-base font-bold text-white">חברים</span>
-            <span className="text-xs text-white/60">חברים שלי</span>
+            <span className="text-base font-bold text-white">{t("landing.members")}</span>
+            <span className="text-xs text-white/60">{t("landing.myFriends")}</span>
           </button>
 
           {/* Cube 5: Settings */}
@@ -136,8 +138,8 @@ export default function LandingPage() {
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-xl backdrop-blur-sm">
               ⚙️
             </div>
-            <span className="text-base font-bold text-white">הגדרות</span>
-            <span className="text-xs text-white/60">חיבור מכשירים</span>
+            <span className="text-base font-bold text-white">{t("landing.settings")}</span>
+            <span className="text-xs text-white/60">{t("landing.deviceSetup")}</span>
           </button>
         </div>
 
@@ -147,13 +149,13 @@ export default function LandingPage() {
             onClick={() => signOut({ callbackUrl: "/" })}
             className="mt-6 text-sm text-slate-400 underline underline-offset-2 transition-colors hover:text-slate-600"
           >
-            התנתק
+            {t("landing.signOut")}
           </button>
         )}
 
         {/* Footer hint */}
         <p className="mt-6 text-xs text-slate-300">
-          ניתן לחבר Garmin בשלב מאוחר יותר
+          {t("landing.garminNote")}
         </p>
       </div>
     </div>
