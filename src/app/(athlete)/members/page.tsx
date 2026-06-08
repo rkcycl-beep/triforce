@@ -451,6 +451,41 @@ function AddFriendModal({
   );
 }
 
+/* ─── Compact Tab Bar ─── */
+
+function TabBar({
+  tabs,
+  activeTab,
+  onChange,
+}: {
+  tabs: { key: string; label: string }[];
+  activeTab: string;
+  onChange: (key: string) => void;
+}) {
+  return (
+    <div className="rounded-xl bg-gray-100 p-1">
+      <div className="flex gap-1 overflow-x-auto">
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => onChange(tab.key)}
+              className={`flex-1 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-bold transition-all ${
+                isActive
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main Page ─── */
 
 export default function MembersPage() {
@@ -495,152 +530,93 @@ export default function MembersPage() {
   });
 
   const tabs = [
-    {
-      key: "friends",
-      label: t("friends.title"),
-      sub: t("friends.followingYouBack"),
-      count: friendsData?.friends.length ?? 0,
-      gradient: "from-[#1D9E75] via-[#158a63] to-[#0d6b4d]",
-      shadow: "shadow-[0_12px_28px_rgba(29,158,117,0.3),0_4px_8px_rgba(29,158,117,0.15)]",
-      hoverShadow: "hover:shadow-[0_20px_40px_rgba(29,158,117,0.4),0_6px_12px_rgba(29,158,117,0.2)]",
-      icon: "🤝",
-    },
-    {
-      key: "clubs",
-      label: t("friends.clubsTitle"),
-      sub: t("friends.clubsSubtitle"),
-      gradient: "from-[#e07b3a] via-[#c45e2b] to-[#a34820]",
-      shadow: "shadow-[0_12px_28px_rgba(192,94,43,0.25),0_4px_8px_rgba(192,94,43,0.12)]",
-      hoverShadow: "hover:shadow-[0_20px_40px_rgba(192,94,43,0.35),0_6px_12px_rgba(192,94,43,0.18)]",
-      icon: "🚴",
-    },
-    {
-      key: "kudos",
-      label: t("friends.kudosTitle"),
-      sub: t("friends.kudosSubtitle"),
-      gradient: "from-[#d4a017] via-[#b7892b] to-[#8c6a1c]",
-      shadow: "shadow-[0_12px_28px_rgba(183,137,43,0.25),0_4px_8px_rgba(183,137,43,0.12)]",
-      hoverShadow: "hover:shadow-[0_20px_40px_rgba(183,137,43,0.35),0_6px_12px_rgba(183,137,43,0.18)]",
-      icon: "👍",
-    },
-    {
-      key: "members",
-      label: t("members.title"),
-      sub: t("members.discoverSubtitle"),
-      count: membersData?.members.length ?? 0,
-      gradient: "from-[#9b59b6] via-[#8e44ad] to-[#6c3483]",
-      shadow: "shadow-[0_12px_28px_rgba(155,89,182,0.25),0_4px_8px_rgba(155,89,182,0.12)]",
-      hoverShadow: "hover:shadow-[0_20px_40px_rgba(155,89,182,0.35),0_6px_12px_rgba(155,89,182,0.18)]",
-      icon: "👥",
-    },
+    { key: "friends", label: t("friends.title") },
+    { key: "clubs", label: t("friends.clubsTitle") },
+    { key: "kudos", label: t("friends.kudosTitle") },
+    { key: "members", label: t("members.title") },
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8faf9] px-4 py-6 pb-24">
-      <div className="mx-auto w-full max-w-[420px]">
-        {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-extrabold tracking-tight text-[#085041]">{t("friends.title")}</h1>
-            <p className="mt-0.5 text-xs text-slate-400">{t("friends.subtitle")}</p>
-          </div>
-          <button
-            onClick={() => setModalOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#1D9E75] text-lg text-white shadow-md shadow-[#1D9E75]/20 transition-all hover:scale-105 hover:bg-[#178c68] active:scale-95"
-          >
-            +
-          </button>
+    <div className="space-y-4 pb-24">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-extrabold tracking-tight text-gray-900">{t("friends.title")}</h1>
+          <p className="mt-0.5 text-xs text-gray-400">{t("friends.subtitle")}</p>
         </div>
+        <button
+          onClick={() => setModalOpen(true)}
+          className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#1D9E75] text-lg text-white shadow-md transition-all hover:scale-105 hover:bg-[#178c68] active:scale-95"
+        >
+          +
+        </button>
+      </div>
 
-        {/* 2×2 Cube Grid — exactly like landing page */}
-        <div className="grid grid-cols-2 gap-4">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`group flex aspect-square flex-col items-center justify-center gap-2 rounded-[20px] border border-white/15 bg-gradient-to-br ${tab.gradient} ${tab.shadow} transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1.5 hover:scale-[1.04] ${tab.hoverShadow} active:translate-y-0.5 active:scale-[0.98] ${
-                activeTab === tab.key ? "ring-2 ring-white/40 scale-[1.02]" : ""
-              }`}
-            >
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-2xl backdrop-blur-sm">
-                {tab.icon}
+      {/* Compact Tab Bar */}
+      <TabBar tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
+
+      {/* Active Section Content */}
+      <div className="rounded-[20px] border border-gray-100 bg-white p-4 shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
+        {activeTab === "friends" && (
+          <>
+            {friendsLoading && <div className="flex justify-center py-8"><LoadingSpinner /></div>}
+            {friendsError && <ErrorMessage message={t("friends.loadError")} onRetry={() => refetchFriends()} />}
+            {friendsData && friendsData.friends.length === 0 && (
+              <div className="py-8 text-center">
+                <div className="text-4xl">🤝</div>
+                <p className="mt-2 text-sm text-gray-500">{t("friends.empty")}</p>
               </div>
-              <span className="text-base font-bold text-white">{tab.label}</span>
-              <span className="px-2 text-center text-xs text-white/60 leading-tight">
-                {tab.sub}
-              </span>
-              {tab.count !== undefined && tab.count > 0 && (
-                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white">
-                  {tab.count}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
+            )}
+            {friendsData && friendsData.friends.length > 0 && (
+              <div className="space-y-2">
+                {friendsData.friends.map((friend) => (
+                  <div key={friend.id} className="flex items-center gap-3 rounded-xl bg-[#E1F5EE]/60 p-3">
+                    <Avatar src={friend.image} name={friend.name || t("members.unknown")} size={44} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-gray-900">{friend.name || t("members.unknown")}</p>
+                      <p className="text-xs font-bold text-[#1D9E75]">{t("friends.followingYouBack")}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
 
-        {/* Active Section Content */}
-        <div className="mt-6 rounded-[20px] border border-gray-100 bg-white p-4 shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
-          {activeTab === "friends" && (
-            <>
-              {friendsLoading && <div className="flex justify-center py-8"><LoadingSpinner /></div>}
-              {friendsError && <ErrorMessage message={t("friends.loadError")} onRetry={() => refetchFriends()} />}
-              {friendsData && friendsData.friends.length === 0 && (
-                <div className="py-8 text-center">
-                  <div className="text-4xl">🤝</div>
-                  <p className="mt-2 text-sm text-gray-500">{t("friends.empty")}</p>
-                </div>
-              )}
-              {friendsData && friendsData.friends.length > 0 && (
-                <div className="space-y-2">
-                  {friendsData.friends.map((friend) => (
-                    <div key={friend.id} className="flex items-center gap-3 rounded-xl bg-[#E1F5EE]/60 p-3">
-                      <Avatar src={friend.image} name={friend.name || t("members.unknown")} size={44} />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-bold text-gray-900">{friend.name || t("members.unknown")}</p>
-                        <p className="text-xs font-bold text-[#1D9E75]">{t("friends.followingYouBack")}</p>
+        {activeTab === "clubs" && <StravaClubsContent onFollowToggle={invalidate} />}
+        {activeTab === "kudos" && <KudosFriendsContent onFollowToggle={invalidate} />}
+
+        {activeTab === "members" && (
+          <>
+            {membersLoading && <div className="flex justify-center py-8"><LoadingSpinner /></div>}
+            {membersError && <ErrorMessage message={t("members.loadError")} onRetry={() => refetchMembers()} />}
+            {membersData && membersData.members.length === 0 && (
+              <div className="py-8 text-center">
+                <div className="text-4xl">👥</div>
+                <p className="mt-2 text-sm text-gray-500">{t("members.empty")}</p>
+              </div>
+            )}
+            {membersData && membersData.members.length > 0 && (
+              <div className="space-y-2">
+                {membersData.members.map((member) => (
+                  <div key={member.id} className="flex items-center gap-3 rounded-xl bg-[#F3E5F5]/50 p-3">
+                    <Avatar src={member.image} name={member.name || t("members.unknown")} size={44} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-gray-900">{member.name || t("members.unknown")}</p>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-gray-500">{member.groupName}</span>
+                        {member.role === "COACH" && (
+                          <span className="rounded-full bg-[#FAC775]/40 px-2 py-0.5 text-[10px] font-bold text-[#a34820]">{t("members.coach")}</span>
+                        )}
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-
-          {activeTab === "clubs" && <StravaClubsContent onFollowToggle={invalidate} />}
-          {activeTab === "kudos" && <KudosFriendsContent onFollowToggle={invalidate} />}
-
-          {activeTab === "members" && (
-            <>
-              {membersLoading && <div className="flex justify-center py-8"><LoadingSpinner /></div>}
-              {membersError && <ErrorMessage message={t("members.loadError")} onRetry={() => refetchMembers()} />}
-              {membersData && membersData.members.length === 0 && (
-                <div className="py-8 text-center">
-                  <div className="text-4xl">👥</div>
-                  <p className="mt-2 text-sm text-gray-500">{t("members.empty")}</p>
-                </div>
-              )}
-              {membersData && membersData.members.length > 0 && (
-                <div className="space-y-2">
-                  {membersData.members.map((member) => (
-                    <div key={member.id} className="flex items-center gap-3 rounded-xl bg-[#F3E5F5]/50 p-3">
-                      <Avatar src={member.image} name={member.name || t("members.unknown")} size={44} />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-bold text-gray-900">{member.name || t("members.unknown")}</p>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs text-gray-500">{member.groupName}</span>
-                          {member.role === "COACH" && (
-                            <span className="rounded-full bg-[#FAC775]/40 px-2 py-0.5 text-[10px] font-bold text-[#a34820]">{t("members.coach")}</span>
-                          )}
-                        </div>
-                      </div>
-                      <FollowButton memberId={member.id} isFollowing={member.isFollowing} onToggle={invalidate} />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
+                    <FollowButton memberId={member.id} isFollowing={member.isFollowing} onToggle={invalidate} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       <AddFriendModal open={modalOpen} onClose={() => setModalOpen(false)} onFollowToggle={invalidate} />
