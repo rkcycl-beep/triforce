@@ -503,8 +503,7 @@ function KudosFriendsContent() {
   const { t } = useTranslation();
   const [range, setRange] = useState("3m");
 
-  // Single fetch for 3 months — no re-fetch when range changes, filtering is client-side.
-  // staleTime 15 min respects Strava's 100 req/15 min rate limit.
+  // Single fetch covers 3 months. Range selector filters client-side — no extra Strava calls.
   const { data, isLoading, error, refetch } = useQuery<KudosResponse>({
     queryKey: ["strava-kudos"],
     queryFn: async () => {
@@ -512,7 +511,6 @@ function KudosFriendsContent() {
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },
-    staleTime: 15 * 60 * 1000,
   });
 
   const cutoff = Date.now() - (RANGE_MS[range] ?? RANGE_MS["3m"]);
@@ -541,7 +539,18 @@ function KudosFriendsContent() {
 
       {isLoading && <div className="flex justify-center py-8"><LoadingSpinner /></div>}
 
-      {error && <ErrorMessage message={t("friends.kudosError")} onRetry={() => refetch()} />}
+      {error && (
+        <div className="rounded-xl bg-orange-50 p-4 text-center">
+          <p className="text-sm font-bold text-orange-700">לא ניתן לטעון כרגע</p>
+          <p className="mt-1 text-xs text-orange-500">Strava מגביל בקשות — המתן כמה דקות ולחץ נסה שוב</p>
+          <button
+            onClick={() => refetch()}
+            className="mt-2 rounded-lg bg-orange-100 px-4 py-1.5 text-xs font-bold text-orange-700 hover:bg-orange-200"
+          >
+            נסה שוב
+          </button>
+        </div>
+      )}
 
       {!isLoading && !error && allFriends.length === 0 && (
         <div className="py-8 text-center">
