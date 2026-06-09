@@ -503,8 +503,8 @@ const RANGE_MS: Record<string, number> = {
 
 function KudosFriendsContent() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const [range, setRange] = useState("3m");
-
   const [refreshing, setRefreshing] = useState(false);
 
   // Reads from DB by default — fast, no Strava API calls.
@@ -519,9 +519,15 @@ function KudosFriendsContent() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await fetch("/api/athlete/strava-kudos?refresh=1");
-    await refetch();
-    setRefreshing(false);
+    try {
+      const res = await fetch("/api/athlete/strava-kudos?refresh=1");
+      if (res.ok) {
+        const fresh = await res.json() as KudosResponse;
+        queryClient.setQueryData(["strava-kudos"], fresh);
+      }
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const cutoff = Date.now() - (RANGE_MS[range] ?? RANGE_MS["3m"]);
