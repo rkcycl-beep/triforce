@@ -49,6 +49,9 @@ export async function GET(request: Request) {
       orderBy: { kudosCount: "desc" },
     });
     if (contacts.length > 0) {
+      const lastSync = contacts.reduce((latest, c) =>
+        c.scannedAt > latest ? c.scannedAt : latest, contacts[0].scannedAt
+      );
       return NextResponse.json({
         kudosFriends: contacts.map((c) => ({
           name: c.name,
@@ -60,6 +63,7 @@ export async function GET(request: Request) {
         uniquePeople: contacts.length,
         errors: 0,
         fromCache: true,
+        lastSync: lastSync.toISOString(),
       });
     }
   }
@@ -132,6 +136,7 @@ export async function GET(request: Request) {
       uniquePeople: kudosMap.size,
       errors: kudosErrors,
       fromCache: false,
+      lastSync: new Date().toISOString(),
     });
   } catch (error) {
     console.error("strava-kudos error:", error);

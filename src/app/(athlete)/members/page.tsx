@@ -73,6 +73,7 @@ interface KudosResponse {
   uniquePeople: number;
   errors: number;
   fromCache: boolean;
+  lastSync: string | null;
 }
 
 const RANGE_OPTIONS = [
@@ -577,12 +578,21 @@ function KudosFriendsContent() {
       {!isLoading && allFriends.length > 0 && (
         <>
           <div className="flex items-center justify-between">
-            <p className="text-xs text-gray-400">
-              {data!.fromCache
-                ? `${data!.uniquePeople} חברים (שמורים)`
-                : `סרקנו ${data!.scanned} פעילויות · ${data!.uniquePeople} חברים`}
-              {data!.errors > 0 && <span className="text-red-400"> · {data!.errors} שגיאות</span>}
-            </p>
+            <div>
+              <p className="text-xs text-gray-400">
+                {data!.fromCache
+                  ? `${data!.uniquePeople} חברים`
+                  : `סרקנו ${data!.scanned} פעילויות · ${data!.uniquePeople} חברים`}
+                {data!.errors > 0 && <span className="text-red-400"> · {data!.errors} שגיאות</span>}
+              </p>
+              {data!.lastSync && (
+                <p className="text-[10px] text-gray-300">
+                  עודכן {new Date(data!.lastSync).toLocaleString("he-IL", {
+                    day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+                  })}
+                </p>
+              )}
+            </div>
             <button
               onClick={handleRefresh}
               disabled={refreshing}
