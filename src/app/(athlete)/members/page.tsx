@@ -577,29 +577,30 @@ function KudosFriendsContent() {
 
       {!isLoading && allFriends.length > 0 && (
         <>
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="space-y-1">
+            <p className="text-xs text-gray-400">
+              {data!.fromCache
+                ? `${data!.uniquePeople} חברים שמורים`
+                : `סרקנו ${data!.scanned} פעילויות · ${data!.uniquePeople} חברים`}
+              {data!.errors > 0 && <span className="text-red-400"> · {data!.errors} שגיאות</span>}
+            </p>
+            <div className="flex items-center justify-between">
               <p className="text-xs text-gray-400">
-                {data!.fromCache
-                  ? `${data!.uniquePeople} חברים`
-                  : `סרקנו ${data!.scanned} פעילויות · ${data!.uniquePeople} חברים`}
-                {data!.errors > 0 && <span className="text-red-400"> · {data!.errors} שגיאות</span>}
+                🕐 עודכן:{" "}
+                {data!.lastSync
+                  ? new Date(data!.lastSync).toLocaleString("he-IL", {
+                      day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+                    })
+                  : "לא ידוע"}
               </p>
-              {data!.lastSync && (
-                <p className="text-[10px] text-gray-300">
-                  עודכן {new Date(data!.lastSync).toLocaleString("he-IL", {
-                    day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
-                  })}
-                </p>
-              )}
+              <button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-bold text-gray-500 transition-all hover:bg-gray-200 disabled:opacity-50"
+              >
+                {refreshing ? "סורק..." : "🔄 רענן"}
+              </button>
             </div>
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-bold text-gray-500 transition-all hover:bg-gray-200 disabled:opacity-50"
-            >
-              {refreshing ? "סורק..." : "🔄"}
-            </button>
           </div>
           <div className="space-y-2">
             {allFriends.map((friend) => (
