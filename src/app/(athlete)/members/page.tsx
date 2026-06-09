@@ -63,6 +63,7 @@ interface StravaClubMember {
 interface KudosFriend {
   name: string;
   count: number;
+  latestDate: string; // ISO — used for client-side range filtering
 }
 
 interface KudosResponse {
@@ -71,7 +72,6 @@ interface KudosResponse {
   withKudos: number;
   uniquePeople: number;
   errors: number;
-  range: string;
 }
 
 const RANGE_OPTIONS = [
@@ -434,10 +434,21 @@ function FeedContent() {
       {!isLoading && !error && data?.activities.length === 0 && (
         <div className="py-8 text-center">
           <div className="text-4xl">🏃</div>
-          <p className="mt-2 text-sm text-gray-500">אין פעילויות של חברים</p>
-          <p className="mt-1 text-xs text-gray-400">
-            עקוב אחרי חברים שרשומים ל-TriForce ולחץ סנכרן
+          <p className="mt-2 text-sm font-bold text-gray-700">הפיד ריק</p>
+          <p className="mt-1 text-xs text-gray-500">
+            כדי לראות פעילויות של חברים — שני הצעדים:
           </p>
+          <div className="mx-auto mt-3 max-w-xs space-y-1 text-start">
+            <p className="text-xs text-gray-500">1. לחץ <strong>סנכרן</strong> כדי לשמור את הפעילויות שלך</p>
+            <p className="text-xs text-gray-500">2. עקוב אחרי חברים מטאב <strong>חברים</strong> — ברגע שגם הם יסנכרנו, תראה אותם כאן</p>
+          </div>
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="mt-4 rounded-xl bg-[#1D9E75] px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#178c68] disabled:opacity-50"
+          >
+            {syncing ? "מסנכרן..." : "🔄 סנכרן עכשיו"}
+          </button>
         </div>
       )}
 
@@ -481,20 +492,33 @@ function FeedContent() {
 
 /* ─── Kudos Friends Content ─── */
 
+const RANGE_MS: Record<string, number> = {
+  "1m": 30 * 24 * 60 * 60 * 1000,
+  "2m": 60 * 24 * 60 * 60 * 1000,
+  "3m": 90 * 24 * 60 * 60 * 1000,
+  "1y": 365 * 24 * 60 * 60 * 1000,
+};
+
 function KudosFriendsContent() {
   const { t } = useTranslation();
   const [range, setRange] = useState("3m");
 
+  // Single fetch for 3 months — no re-fetch when range changes, filtering is client-side.
+  // staleTime 15 min respects Strava's 100 req/15 min rate limit.
   const { data, isLoading, error, refetch } = useQuery<KudosResponse>({
-    queryKey: ["strava-kudos", range],
+    queryKey: ["strava-kudos"],
     queryFn: async () => {
-      const res = await fetch(`/api/athlete/strava-kudos?range=${range}`);
+      const res = await fetch("/api/athlete/strava-kudos");
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },
+    staleTime: 15 * 60 * 1000,
   });
 
-  const allFriends = data?.kudosFriends ?? [];
+  const cutoff = Date.now() - (RANGE_MS[range] ?? RANGE_MS["3m"]);
+  const allFriends = (data?.kudosFriends ?? []).filter(
+    (f) => new Date(f.latestDate).getTime() >= cutoff
+  );
 
   return (
     <div className="space-y-3">
@@ -682,7 +706,7 @@ export default function MembersPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>("feed");
+  const [activeTab, setActiveTab] = useState<string>("kudos");
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["members"] });

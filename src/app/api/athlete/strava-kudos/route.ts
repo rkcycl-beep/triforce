@@ -37,26 +37,15 @@ async function refreshStravaAccessToken(account: {
   return data.access_token as string;
 }
 
-async function safeGetActivitiesAfter(token: string, page: number, after: number) {
-  try {
-    return await getActivities(token, page, 100, after);
-  } catch {
-    return [];
-  }
-}
+// Always scan the last 3 months — enough to cover all range options except 1y.
+// Filtering by range happens client-side to avoid multiple Strava API calls.
+const SCAN_MONTHS = 3;
 
-const RANGE_MONTHS: Record<string, number> = { "1m": 1, "2m": 2, "3m": 3, "1y": 12 };
-
-export async function GET(request: Request) {
+export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
-
-  const { searchParams } = new URL(request.url);
-  const rangeKey = searchParams.get("range") ?? "3m";
-  const months = RANGE_MONTHS[rangeKey] ?? 3;
-  const after = Math.floor((Date.now() - months * 30 * 24 * 60 * 60 * 1000) / 1000);
 
   try {
     const account = await prisma.account.findFirst({
@@ -78,22 +67,26 @@ export async function GET(request: Request) {
       accessToken = await refreshStravaAccessToken(account);
     }
 
-    // Fetch activities for the selected time range
-    const allActivities = [];
-    for (let page = 1; page <= 20; page++) {
-      const batch = await safeGetActivitiesAfter(accessToken, page, after);
-      allActivities.push(...batch);
-      if (batch.length < 100) break;
+    const after = Math.floor((Date.now() - SCAN_MONTHS * 30 * 24 * 60 * 60 * 1000) / 1000);
+
+    // Fetch activities — stop when a batch is short (no more pages) or page > 10
+    const allActivities: Array<{ id: number; kudos_count: number; start_date: string }> = [];
+    for (let page = 1; page <= 10; page++) {
+      try {
+        const batch = await getActivities(accessToken, page, 100, after);
+        allActivities.push(...batch);
+        if (batch.length < 100) break;
+      } catch {
+        break;
+      }
     }
 
-    // Only look at activities that actually received kudos
     const withKudos = allActivities.filter((a) => a.kudos_count > 0);
-
     console.log(`[kudos] scanned=${allActivities.length} withKudos=${withKudos.length}`);
 
-    // Strava's kudos endpoint returns { firstname, lastname } only — no id field.
-    // Use full name as the deduplication key.
-    const kudosMap = new Map<string, { name: string; count: number }>();
+    // name → { name, count, latestDate }
+    // latestDate = the most recent activity date where this person gave a kudos
+    const kudosMap = new Map<string, { name: string; count: number; latestDate: string }>();
     let kudosErrors = 0;
 
     for (const activity of withKudos) {
@@ -104,25 +97,23 @@ export async function GET(request: Request) {
           const existing = kudosMap.get(name);
           if (existing) {
             existing.count += 1;
+            if (activity.start_date > existing.latestDate) {
+              existing.latestDate = activity.start_date;
+            }
           } else {
-            kudosMap.set(name, { name, count: 1 });
+            kudosMap.set(name, { name, count: 1, latestDate: activity.start_date });
           }
         }
       } catch (err) {
         kudosErrors++;
-        const msg = err instanceof Error ? err.message : String(err);
-        console.error(`[kudos] activity=${activity.id} error:`, msg);
+        console.error(`[kudos] activity=${activity.id}:`, err instanceof Error ? err.message : err);
       }
     }
 
-    console.log(`[kudos] scanned=${allActivities.length} withKudos=${withKudos.length} uniquePeople=${kudosMap.size} errors=${kudosErrors}`);
+    console.log(`[kudos] uniquePeople=${kudosMap.size} errors=${kudosErrors}`);
 
     const kudosFriends = Array.from(kudosMap.values())
-      .sort((a, b) => b.count - a.count)
-      .map((info) => ({
-        name: info.name,
-        count: info.count,
-      }));
+      .sort((a, b) => b.count - a.count);
 
     return NextResponse.json({
       kudosFriends,
@@ -130,7 +121,6 @@ export async function GET(request: Request) {
       withKudos: withKudos.length,
       uniquePeople: kudosMap.size,
       errors: kudosErrors,
-      range: rangeKey,
     });
   } catch (error) {
     console.error("strava-kudos error:", error);
