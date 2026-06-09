@@ -42,12 +42,18 @@ function stravaActivityToDbInput(
 export async function syncStravaActivitiesForUser(
   userId: string,
   accessToken: string,
-  perPage = 30
+  months = 3
 ): Promise<{ synced: number }> {
-  const stravaActivities = await getActivities(accessToken, 1, perPage);
+  const after = Math.floor((Date.now() - months * 30 * 24 * 60 * 60 * 1000) / 1000);
+  const allActivities: StravaActivity[] = [];
+  for (let page = 1; page <= 20; page++) {
+    const batch = await getActivities(accessToken, page, 100, after);
+    allActivities.push(...batch);
+    if (batch.length < 100) break;
+  }
 
   const results = await Promise.allSettled(
-    stravaActivities.map((raw) =>
+    allActivities.map((raw) =>
       upsertActivity(stravaActivityToDbInput(userId, raw))
     )
   );

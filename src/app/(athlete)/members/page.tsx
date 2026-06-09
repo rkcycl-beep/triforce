@@ -5,6 +5,7 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 /* ─── Types ─── */
 
@@ -60,21 +61,8 @@ interface StravaClubMember {
 }
 
 interface KudosFriend {
-  stravaId: number;
   name: string;
-  image: string;
-  isOnTriForce: boolean;
-  triForceUserId: string | null;
-  triForceName: string | null;
-  triForceImage: string | null;
-  isFollowing: boolean;
-}
-
-interface KudosDebugEntry {
-  id: number;
-  kudos_count: number;
-  returned: number;
-  error?: string;
+  count: number;
 }
 
 interface KudosResponse {
@@ -83,7 +71,48 @@ interface KudosResponse {
   withKudos: number;
   uniquePeople: number;
   errors: number;
-  debug: KudosDebugEntry[];
+  range: string;
+}
+
+const RANGE_OPTIONS = [
+  { key: "1m", label: "חודש" },
+  { key: "2m", label: "2 חודשים" },
+  { key: "3m", label: "3 חודשים" },
+  { key: "1y", label: "שנה" },
+];
+
+interface FeedActivity {
+  id: string;
+  name: string;
+  sportType: string;
+  startDate: string;
+  distance: number;
+  movingTime: number;
+  elevationGain: number;
+  averageHeartrate: number | null;
+  user: { id: string; name: string | null; image: string | null };
+}
+
+interface FeedResponse {
+  activities: FeedActivity[];
+  hasMore: boolean;
+  total: number;
+}
+
+const SPORT_EMOJI: Record<string, string> = {
+  run: "🏃", ride: "🚴", swim: "🏊", walk: "🚶", hike: "🥾", other: "🏅",
+};
+
+function fmtDist(m: number) {
+  return m >= 1000 ? `${(m / 1000).toFixed(1)} ק"מ` : `${m.toFixed(0)} מ'`;
+}
+function fmtTime(sec: number) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  return h > 0 ? `${h}:${String(m).padStart(2, "0")} שע'` : `${m} דק'`;
+}
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString("he-IL", { day: "numeric", month: "short" });
 }
 
 /* ─── Shared Components ─── */
@@ -334,15 +363,132 @@ function StravaClubsContent({ onFollowToggle }: { onFollowToggle: () => void }) 
   );
 }
 
+/* ─── Feed Content ─── */
+
+function FeedContent() {
+  const router = useRouter();
+  const [range, setRange] = useState("1m");
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState("");
+
+  const { data, isLoading, error, refetch } = useQuery<FeedResponse>({
+    queryKey: ["feed", range],
+    queryFn: async () => {
+      const res = await fetch(`/api/athlete/feed?range=${range}`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+  });
+
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncMsg("");
+    try {
+      const res = await fetch("/api/athlete/sync", { method: "POST" });
+      const d = await res.json() as { synced?: number };
+      setSyncMsg(`סונכרנו ${d.synced ?? 0} פעילויות`);
+      await refetch();
+    } catch {
+      setSyncMsg("שגיאה בסנכרון");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Range selector */}
+      <div className="flex gap-1.5 rounded-xl bg-gray-100 p-1">
+        {RANGE_OPTIONS.map((opt) => (
+          <button
+            key={opt.key}
+            onClick={() => setRange(opt.key)}
+            className={`flex-1 rounded-lg py-1.5 text-xs font-bold transition-all ${
+              range === opt.key
+                ? "bg-white text-[#1D9E75] shadow-sm"
+                : "text-gray-500 hover:bg-white/50 hover:text-[#1D9E75]"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Sync button */}
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-gray-400">
+          {syncMsg || (data ? `${data.total} פעילויות` : "")}
+        </p>
+        <button
+          onClick={handleSync}
+          disabled={syncing}
+          className="rounded-lg bg-[#1D9E75]/10 px-3 py-1.5 text-xs font-bold text-[#1D9E75] transition-all hover:bg-[#1D9E75]/20 disabled:opacity-50"
+        >
+          {syncing ? "מסנכרן..." : "🔄 סנכרן"}
+        </button>
+      </div>
+
+      {isLoading && <div className="flex justify-center py-8"><LoadingSpinner /></div>}
+      {error && <ErrorMessage message="שגיאה בטעינת הפיד" onRetry={() => refetch()} />}
+
+      {!isLoading && !error && data?.activities.length === 0 && (
+        <div className="py-8 text-center">
+          <div className="text-4xl">🏃</div>
+          <p className="mt-2 text-sm text-gray-500">אין פעילויות של חברים</p>
+          <p className="mt-1 text-xs text-gray-400">
+            עקוב אחרי חברים שרשומים ל-TriForce ולחץ סנכרן
+          </p>
+        </div>
+      )}
+
+      {data && data.activities.length > 0 && (
+        <div className="space-y-2">
+          {data.activities.map((act) => (
+            <button
+              key={act.id}
+              onClick={() => router.push(`/members/${act.user.id}`)}
+              className="flex w-full items-start gap-3 rounded-[16px] border border-gray-100 bg-white p-3 text-start shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all hover:border-[#1D9E75]/20 hover:shadow-md active:scale-[0.98]"
+            >
+              {act.user.image ? (
+                <img src={act.user.image} className="h-9 w-9 shrink-0 rounded-full object-cover" alt="" />
+              ) : (
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1D9E75]/10 text-sm font-bold text-[#1D9E75]">
+                  {act.user.name?.[0] ?? "?"}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-bold text-[#1D9E75]">{act.user.name}</p>
+                  <p className="shrink-0 text-[10px] text-gray-400">{fmtDate(act.startDate)}</p>
+                </div>
+                <p className="truncate text-sm font-semibold text-gray-900">
+                  {SPORT_EMOJI[act.sportType] ?? "🏅"} {act.name}
+                </p>
+                <div className="mt-0.5 flex gap-3 text-xs text-gray-500">
+                  {act.distance > 0 && <span>{fmtDist(act.distance)}</span>}
+                  <span>{fmtTime(act.movingTime)}</span>
+                  {act.elevationGain > 0 && <span>↑{act.elevationGain.toFixed(0)}מ'</span>}
+                  {act.averageHeartrate && <span>❤️{act.averageHeartrate.toFixed(0)}</span>}
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Kudos Friends Content ─── */
 
-function KudosFriendsContent({ onFollowToggle }: { onFollowToggle: () => void }) {
+function KudosFriendsContent() {
   const { t } = useTranslation();
+  const [range, setRange] = useState("3m");
 
   const { data, isLoading, error, refetch } = useQuery<KudosResponse>({
-    queryKey: ["strava-kudos"],
+    queryKey: ["strava-kudos", range],
     queryFn: async () => {
-      const res = await fetch("/api/athlete/strava-kudos");
+      const res = await fetch(`/api/athlete/strava-kudos?range=${range}`);
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },
@@ -350,93 +496,65 @@ function KudosFriendsContent({ onFollowToggle }: { onFollowToggle: () => void })
 
   const allFriends = data?.kudosFriends ?? [];
 
-  if (isLoading) {
-    return <div className="flex justify-center py-8"><LoadingSpinner /></div>;
-  }
-
-  if (error) {
-    return <ErrorMessage message={t("friends.kudosError")} onRetry={() => refetch()} />;
-  }
-
-  if (allFriends.length === 0) {
-    return (
-      <div className="py-8 text-center">
-        <div className="text-4xl">👍</div>
-        <p className="mt-2 text-sm text-gray-500">{t("friends.noKudosFriends")}</p>
-        {data && (
-          <p className="mt-1 text-xs text-gray-400">
-            סרקנו {data.scanned} פעילויות · {data.withKudos} עם לייקים · {data.errors} שגיאות
-          </p>
-        )}
-        <p className="mt-2 text-xs text-gray-300">{t("friends.kudosNote")}</p>
-      </div>
-    );
-  }
-
-  const [showDebug, setShowDebug] = useState(false);
-
   return (
-    <div className="space-y-2">
-      {data && (
-        <p className="pb-1 text-center text-xs text-gray-400">
-          סרקנו {data.scanned} פעילויות · {data.withKudos} עם לייקים · {data.uniquePeople} אנשים נמצאו
-          {data.errors > 0 && <span className="text-red-400"> · {data.errors} שגיאות</span>}
-        </p>
-      )}
-      {data?.debug && data.debug.length > 0 && (
-        <div className="rounded-xl border border-orange-100 bg-orange-50 p-2">
+    <div className="space-y-3">
+      {/* Range selector */}
+      <div className="flex gap-1.5 rounded-xl bg-gray-100 p-1">
+        {RANGE_OPTIONS.map((opt) => (
           <button
-            onClick={() => setShowDebug((v) => !v)}
-            className="w-full text-left text-xs font-bold text-orange-600"
+            key={opt.key}
+            onClick={() => setRange(opt.key)}
+            className={`flex-1 rounded-lg py-1.5 text-xs font-bold transition-all ${
+              range === opt.key
+                ? "bg-white text-[#1D9E75] shadow-sm"
+                : "text-gray-500 hover:bg-white/50 hover:text-[#1D9E75]"
+            }`}
           >
-            🔍 Debug: {showDebug ? "הסתר" : "הצג"} נתוני לייקים ({data.debug.length} פעילויות)
+            {opt.label}
           </button>
-          {showDebug && (
-            <div className="mt-2 max-h-60 overflow-y-auto rounded-lg bg-white p-2">
-              <table className="w-full text-[10px]">
-                <thead>
-                  <tr className="border-b border-gray-100 text-gray-400">
-                    <th className="py-0.5 text-start font-semibold">Activity ID</th>
-                    <th className="py-0.5 text-center font-semibold">Kudos</th>
-                    <th className="py-0.5 text-center font-semibold">Returned</th>
-                    <th className="py-0.5 text-start font-semibold">Error</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.debug.map((entry) => (
-                    <tr key={entry.id} className={`border-b border-gray-50 ${entry.returned === 0 ? "text-red-500" : "text-green-700"}`}>
-                      <td className="py-0.5 font-mono">{entry.id}</td>
-                      <td className="py-0.5 text-center">{entry.kudos_count}</td>
-                      <td className="py-0.5 text-center font-bold">{entry.returned}</td>
-                      <td className="py-0.5 text-orange-500">{entry.error ?? ""}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+        ))}
+      </div>
+
+      {isLoading && <div className="flex justify-center py-8"><LoadingSpinner /></div>}
+
+      {error && <ErrorMessage message={t("friends.kudosError")} onRetry={() => refetch()} />}
+
+      {!isLoading && !error && allFriends.length === 0 && (
+        <div className="py-8 text-center">
+          <div className="text-4xl">👍</div>
+          <p className="mt-2 text-sm text-gray-500">{t("friends.noKudosFriends")}</p>
+          {data && (
+            <p className="mt-1 text-xs text-gray-400">
+              סרקנו {data.scanned} פעילויות · {data.withKudos} עם לייקים
+            </p>
           )}
         </div>
       )}
-      {allFriends.map((friend) => (
-        <div key={String(friend.stravaId)} className="flex items-center gap-3 rounded-xl bg-[#FFF8E1]/80 p-3">
-          <Avatar src={friend.image} name={friend.name} size={40} />
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold text-gray-900">{friend.name}</p>
-            {friend.isOnTriForce ? (
-              <p className="text-xs font-bold text-[#1D9E75]">{t("friends.onTriForce")}</p>
-            ) : (
-              <p className="text-xs text-[#B7892B]">{t("friends.likedYourActivity")}</p>
-            )}
+
+      {!isLoading && allFriends.length > 0 && (
+        <>
+          <p className="text-center text-xs text-gray-400">
+            סרקנו {data!.scanned} פעילויות · {data!.withKudos} עם לייקים · {data!.uniquePeople} חברים
+            {data!.errors > 0 && <span className="text-red-400"> · {data!.errors} שגיאות</span>}
+          </p>
+          <div className="space-y-2">
+            {allFriends.map((friend) => (
+              <div key={friend.name} className="flex items-center gap-3 rounded-xl bg-[#FFF8E1]/80 p-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100 text-sm font-bold text-orange-600">
+                  {friend.name[0] || "?"}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-gray-900">{friend.name}</p>
+                  <p className="text-xs text-[#B7892B]">{t("friends.likedYourActivity")}</p>
+                </div>
+                <span className="shrink-0 rounded-full bg-orange-50 px-2.5 py-1 text-xs font-bold text-orange-500">
+                  {friend.count}x
+                </span>
+              </div>
+            ))}
           </div>
-          {friend.triForceUserId ? (
-            <FollowButton memberId={friend.triForceUserId} isFollowing={friend.isFollowing} onToggle={onFollowToggle} />
-          ) : (
-            <span className="shrink-0 rounded-full bg-orange-50 px-3 py-1.5 text-xs font-bold text-orange-400">
-              Strava
-            </span>
-          )}
-        </div>
-      ))}
+        </>
+      )}
     </div>
   );
 }
@@ -564,7 +682,7 @@ export default function MembersPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>("friends");
+  const [activeTab, setActiveTab] = useState<string>("feed");
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["members"] });
@@ -602,9 +720,10 @@ export default function MembersPage() {
   });
 
   const tabs = [
+    { key: "feed", label: "פיד" },
     { key: "friends", label: t("friends.title") },
-    { key: "clubs", label: t("friends.clubsTitle") },
     { key: "kudos", label: t("friends.kudosTitle") },
+    { key: "clubs", label: t("friends.clubsTitle") },
     { key: "members", label: t("members.title") },
   ];
 
@@ -655,8 +774,9 @@ export default function MembersPage() {
           </>
         )}
 
+        {activeTab === "feed" && <FeedContent />}
         {activeTab === "clubs" && <StravaClubsContent onFollowToggle={invalidate} />}
-        {activeTab === "kudos" && <KudosFriendsContent onFollowToggle={invalidate} />}
+        {activeTab === "kudos" && <KudosFriendsContent />}
 
         {activeTab === "members" && (
           <>

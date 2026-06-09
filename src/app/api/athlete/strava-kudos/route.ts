@@ -37,19 +37,26 @@ async function refreshStravaAccessToken(account: {
   return data.access_token as string;
 }
 
-async function safeGetActivities(token: string, page: number) {
+async function safeGetActivitiesAfter(token: string, page: number, after: number) {
   try {
-    return await getActivities(token, page, 25);
+    return await getActivities(token, page, 100, after);
   } catch {
     return [];
   }
 }
 
-export async function GET() {
+const RANGE_MONTHS: Record<string, number> = { "1m": 1, "2m": 2, "3m": 3, "1y": 12 };
+
+export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
+
+  const { searchParams } = new URL(request.url);
+  const rangeKey = searchParams.get("range") ?? "3m";
+  const months = RANGE_MONTHS[rangeKey] ?? 3;
+  const after = Math.floor((Date.now() - months * 30 * 24 * 60 * 60 * 1000) / 1000);
 
   try {
     const account = await prisma.account.findFirst({
@@ -71,12 +78,12 @@ export async function GET() {
       accessToken = await refreshStravaAccessToken(account);
     }
 
-    // Fetch up to 8 pages (200 activities) — stop early if a page comes back short
+    // Fetch activities for the selected time range
     const allActivities = [];
-    for (let page = 1; page <= 8; page++) {
-      const batch = await safeGetActivities(accessToken, page);
+    for (let page = 1; page <= 20; page++) {
+      const batch = await safeGetActivitiesAfter(accessToken, page, after);
       allActivities.push(...batch);
-      if (batch.length < 25) break;
+      if (batch.length < 100) break;
     }
 
     // Only look at activities that actually received kudos
@@ -84,75 +91,38 @@ export async function GET() {
 
     console.log(`[kudos] scanned=${allActivities.length} withKudos=${withKudos.length}`);
 
-    // Fetch kudos one activity at a time — fully sequential, no rate limit risk
-    const kudosMap = new Map<number, { name: string; image: string }>();
+    // Strava's kudos endpoint returns { firstname, lastname } only — no id field.
+    // Use full name as the deduplication key.
+    const kudosMap = new Map<string, { name: string; count: number }>();
     let kudosErrors = 0;
-    const perActivityLog: { id: number; kudos_count: number; returned: number; error?: string }[] = [];
 
     for (const activity of withKudos) {
       try {
         const kudos = await getActivityKudos(accessToken, activity.id, 1, 30);
-        perActivityLog.push({ id: activity.id, kudos_count: activity.kudos_count, returned: kudos.length });
         for (const k of kudos) {
-          if (!kudosMap.has(k.id)) {
-            kudosMap.set(k.id, {
-              name: `${k.firstname} ${k.lastname}`.trim(),
-              image: k.profile,
-            });
+          const name = `${k.firstname} ${k.lastname}`.trim();
+          const existing = kudosMap.get(name);
+          if (existing) {
+            existing.count += 1;
+          } else {
+            kudosMap.set(name, { name, count: 1 });
           }
         }
       } catch (err) {
         kudosErrors++;
         const msg = err instanceof Error ? err.message : String(err);
-        perActivityLog.push({ id: activity.id, kudos_count: activity.kudos_count, returned: 0, error: msg });
         console.error(`[kudos] activity=${activity.id} error:`, msg);
       }
     }
 
     console.log(`[kudos] scanned=${allActivities.length} withKudos=${withKudos.length} uniquePeople=${kudosMap.size} errors=${kudosErrors}`);
-    console.log("[kudos] per-activity:", JSON.stringify(perActivityLog));
 
-    if (kudosMap.size === 0) {
-      return NextResponse.json({
-        kudosFriends: [],
-        scanned: allActivities.length,
-        withKudos: withKudos.length,
-        uniquePeople: 0,
-        errors: kudosErrors,
-        debug: perActivityLog,
-      });
-    }
-
-    // Cross-reference with TriForce users
-    const stravaIds = Array.from(kudosMap.keys()).map(String);
-    const triForceUsers = await prisma.account.findMany({
-      where: { provider: "strava", providerAccountId: { in: stravaIds } },
-      include: { user: { select: { id: true, name: true, image: true } } },
-    });
-    const triForceMap = new Map(triForceUsers.map((u) => [u.providerAccountId, u.user]));
-
-    const triForceUserIds = triForceUsers.map((u) => u.user.id);
-    const follows = await prisma.follow.findMany({
-      where: { followerId: session.user.id, followingId: { in: triForceUserIds } },
-      select: { followingId: true },
-    });
-    const followingSet = new Set(follows.map((f) => f.followingId));
-
-    const kudosFriends = Array.from(kudosMap.entries())
-      .map(([stravaId, info]) => {
-        const tf = triForceMap.get(String(stravaId));
-        return {
-          stravaId,
-          name: info.name,
-          image: info.image,
-          isOnTriForce: !!tf,
-          triForceUserId: tf?.id ?? null,
-          triForceName: tf?.name ?? null,
-          triForceImage: tf?.image ?? null,
-          isFollowing: tf ? followingSet.has(tf.id) : false,
-        };
-      })
-      .sort((a, b) => (b.isOnTriForce ? 1 : 0) - (a.isOnTriForce ? 1 : 0));
+    const kudosFriends = Array.from(kudosMap.values())
+      .sort((a, b) => b.count - a.count)
+      .map((info) => ({
+        name: info.name,
+        count: info.count,
+      }));
 
     return NextResponse.json({
       kudosFriends,
@@ -160,7 +130,7 @@ export async function GET() {
       withKudos: withKudos.length,
       uniquePeople: kudosMap.size,
       errors: kudosErrors,
-      debug: perActivityLog,
+      range: rangeKey,
     });
   } catch (error) {
     console.error("strava-kudos error:", error);
