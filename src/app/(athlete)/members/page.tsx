@@ -68,10 +68,11 @@ interface KudosFriend {
 
 interface KudosResponse {
   kudosFriends: KudosFriend[];
-  scanned: number;
-  withKudos: number;
+  scanned: number | null;
+  withKudos: number | null;
   uniquePeople: number;
   errors: number;
+  fromCache: boolean;
 }
 
 const RANGE_OPTIONS = [
@@ -503,7 +504,9 @@ function KudosFriendsContent() {
   const { t } = useTranslation();
   const [range, setRange] = useState("3m");
 
-  // Single fetch covers 3 months. Range selector filters client-side — no extra Strava calls.
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Reads from DB by default — fast, no Strava API calls.
   const { data, isLoading, error, refetch } = useQuery<KudosResponse>({
     queryKey: ["strava-kudos"],
     queryFn: async () => {
@@ -512,6 +515,13 @@ function KudosFriendsContent() {
       return res.json();
     },
   });
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetch("/api/athlete/strava-kudos?refresh=1");
+    await refetch();
+    setRefreshing(false);
+  };
 
   const cutoff = Date.now() - (RANGE_MS[range] ?? RANGE_MS["3m"]);
   const allFriends = (data?.kudosFriends ?? []).filter(
@@ -566,10 +576,21 @@ function KudosFriendsContent() {
 
       {!isLoading && allFriends.length > 0 && (
         <>
-          <p className="text-center text-xs text-gray-400">
-            סרקנו {data!.scanned} פעילויות · {data!.withKudos} עם לייקים · {data!.uniquePeople} חברים
-            {data!.errors > 0 && <span className="text-red-400"> · {data!.errors} שגיאות</span>}
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-gray-400">
+              {data!.fromCache
+                ? `${data!.uniquePeople} חברים (שמורים)`
+                : `סרקנו ${data!.scanned} פעילויות · ${data!.uniquePeople} חברים`}
+              {data!.errors > 0 && <span className="text-red-400"> · {data!.errors} שגיאות</span>}
+            </p>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-bold text-gray-500 transition-all hover:bg-gray-200 disabled:opacity-50"
+            >
+              {refreshing ? "סורק..." : "🔄"}
+            </button>
+          </div>
           <div className="space-y-2">
             {allFriends.map((friend) => (
               <div key={friend.name} className="flex items-center gap-3 rounded-xl bg-[#FFF8E1]/80 p-3">

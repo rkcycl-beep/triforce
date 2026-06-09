@@ -101,8 +101,10 @@ model User {
   messages    Message[]
   events      Event[]           @relation("EventCreator")
   payments    Payment[]
-  following   Follow[] @relation("UserFollowing")
-  followers   Follow[] @relation("UserFollowers")
+  following        Follow[]        @relation("UserFollowing")
+  followers        Follow[]        @relation("UserFollowers")
+  stravaContacts   StravaContact[]
+  stravaContactOf  StravaContact[] @relation("StravaContactTriforce")
 }
 
 model Group {
@@ -276,4 +278,22 @@ model Follow {
   @@unique([followerId, followingId])
   @@index([followerId])
   @@index([followingId])
+}
+
+// Strava contacts discovered via kudos — stored locally so we don't re-scan every visit.
+// When a contact joins TriForce, their triforceUserId is filled in and a Follow is created.
+model StravaContact {
+  id             String   @id @default(cuid())
+  userId         String                      // the TriForce user who discovered this contact
+  name           String                      // firstname + lastname from Strava kudos
+  kudosCount     Int      @default(1)
+  latestKudosAt  DateTime
+  scannedAt      DateTime @default(now())
+  triforceUserId String?                     // filled when this contact joins TriForce
+
+  user         User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  triforceUser User? @relation("StravaContactTriforce", fields: [triforceUserId], references: [id])
+
+  @@unique([userId, name])
+  @@index([userId])
 }
