@@ -81,7 +81,9 @@ export async function GET() {
       }
     }
 
-    const withKudos = allActivities.filter((a) => a.kudos_count > 0);
+    // Cap at 80 to stay within Strava's 100 req/15min limit
+    // (activity list uses ~2 calls, leaving 98 for kudos)
+    const withKudos = allActivities.filter((a) => a.kudos_count > 0).slice(0, 80);
     console.log(`[kudos] scanned=${allActivities.length} withKudos=${withKudos.length}`);
 
     // name → { name, count, latestDate }
