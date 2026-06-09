@@ -507,24 +507,32 @@ function KudosFriendsContent() {
   const [range, setRange] = useState("3m");
   const [refreshing, setRefreshing] = useState(false);
 
-  // Reads from DB by default — fast, no Strava API calls.
-  const { data, isLoading, error, refetch } = useQuery<KudosResponse>({
+  // Reads from DB — no Strava API calls on initial load.
+  const { data, isLoading } = useQuery<KudosResponse>({
     queryKey: ["strava-kudos"],
     queryFn: async () => {
       const res = await fetch("/api/athlete/strava-kudos");
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },
+    retry: 1,
   });
+
+  const [refreshError, setRefreshError] = useState(false);
 
   const handleRefresh = async () => {
     setRefreshing(true);
+    setRefreshError(false);
     try {
       const res = await fetch("/api/athlete/strava-kudos?refresh=1");
       if (res.ok) {
         const fresh = await res.json() as KudosResponse;
         queryClient.setQueryData(["strava-kudos"], fresh);
+      } else {
+        setRefreshError(true);
       }
+    } catch {
+      setRefreshError(true);
     } finally {
       setRefreshing(false);
     }
@@ -556,20 +564,18 @@ function KudosFriendsContent() {
 
       {isLoading && <div className="flex justify-center py-8"><LoadingSpinner /></div>}
 
-      {error && (
-        <div className="rounded-xl bg-orange-50 p-4 text-center">
-          <p className="text-sm font-bold text-orange-700">לא ניתן לטעון כרגע</p>
-          <p className="mt-1 text-xs text-orange-500">Strava מגביל בקשות — המתן כמה דקות ולחץ נסה שוב</p>
+      {/* Refresh error — shown as small banner, does NOT hide the friends list */}
+      {refreshError && (
+        <div className="flex items-center justify-between rounded-xl bg-orange-50 px-3 py-2">
+          <p className="text-xs text-orange-600">Strava מגביל בקשות — המתן כמה דקות</p>
           <button
-            onClick={() => refetch()}
-            className="mt-2 rounded-lg bg-orange-100 px-4 py-1.5 text-xs font-bold text-orange-700 hover:bg-orange-200"
-          >
-            נסה שוב
-          </button>
+            onClick={() => setRefreshError(false)}
+            className="text-xs text-orange-400 hover:text-orange-600"
+          >✕</button>
         </div>
       )}
 
-      {!isLoading && !error && allFriends.length === 0 && (
+      {!isLoading && allFriends.length === 0 && (
         <div className="py-8 text-center">
           <div className="text-4xl">👍</div>
           <p className="mt-2 text-sm text-gray-500">{t("friends.noKudosFriends")}</p>
