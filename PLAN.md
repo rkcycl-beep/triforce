@@ -301,6 +301,8 @@ src/
         strava-clubs/route.ts
         strava-clubs/[id]/members/route.ts
         strava-kudos/route.ts
+        strava-contacts/[contactId]/route.ts
+        mutual-friends/route.ts
         sync/route.ts
         users/search/route.ts
       coach/...

@@ -61,9 +61,11 @@ interface StravaClubMember {
 }
 
 interface KudosFriend {
+  id: string;
   name: string;
   count: number;
   latestDate: string; // ISO — used for client-side range filtering
+  isChosen: boolean;
 }
 
 interface KudosResponse {
@@ -74,6 +76,21 @@ interface KudosResponse {
   errors: number;
   fromCache: boolean;
   lastSync: string | null;
+}
+
+interface MutualFriend {
+  id: string;
+  name: string;
+  kudosCount: number;
+  latestKudosAt: string;
+  isChosen: boolean;
+  clubs: string[];
+}
+
+interface MutualFriendsResponse {
+  mutual: MutualFriend[];
+  totalClubMembers: number;
+  totalClusters: number;
 }
 
 const RANGE_OPTIONS = [
@@ -492,6 +509,54 @@ function FeedContent() {
   );
 }
 
+/* ─── Kudos Friend Row ─── */
+
+function KudosFriendRow({
+  friend,
+  onToggle,
+}: {
+  friend: KudosFriend;
+  onToggle: (updated: { id: string; isChosen: boolean }) => void;
+}) {
+  const [pending, setPending] = useState(false);
+
+  const handleToggle = async () => {
+    setPending(true);
+    try {
+      const res = await fetch(`/api/athlete/strava-contacts/${friend.id}`, { method: "POST" });
+      if (res.ok) {
+        const data = await res.json() as { isChosen: boolean };
+        onToggle({ id: friend.id, isChosen: data.isChosen });
+      }
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return (
+    <div className={`flex items-center gap-3 rounded-xl p-3 transition-colors ${friend.isChosen ? "bg-[#E1F5EE]/80" : "bg-[#FFF8E1]/80"}`}>
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ${friend.isChosen ? "bg-[#1D9E75]/20 text-[#1D9E75]" : "bg-orange-100 text-orange-600"}`}>
+        {friend.name[0] || "?"}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold text-gray-900">{friend.name}</p>
+        <p className="text-xs text-gray-400">{friend.count}x לייקים</p>
+      </div>
+      <button
+        onClick={handleToggle}
+        disabled={pending}
+        className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition-all active:scale-95 disabled:opacity-50 ${
+          friend.isChosen
+            ? "bg-[#1D9E75] text-white shadow-sm"
+            : "bg-gray-100 text-gray-500 hover:bg-[#1D9E75]/10 hover:text-[#1D9E75]"
+        }`}
+      >
+        {pending ? "..." : friend.isChosen ? "✓ חבר שלי" : "+ בחר"}
+      </button>
+    </div>
+  );
+}
+
 /* ─── Kudos Friends Content ─── */
 
 const RANGE_MS: Record<string, number> = {
@@ -507,15 +572,15 @@ function KudosFriendsContent() {
   const [range, setRange] = useState("3m");
   const [refreshing, setRefreshing] = useState(false);
 
-  // Reads from DB — no Strava API calls on initial load.
-  const { data, isLoading } = useQuery<KudosResponse>({
+  // Reads from DB on initial load; auto-scans Strava if DB is empty.
+  const { data, isLoading, error } = useQuery<KudosResponse>({
     queryKey: ["strava-kudos"],
     queryFn: async () => {
       const res = await fetch("/api/athlete/strava-kudos");
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },
-    retry: 1,
+    retry: 0,
   });
 
   const [refreshError, setRefreshError] = useState(false);
@@ -543,6 +608,18 @@ function KudosFriendsContent() {
     (f) => new Date(f.latestDate).getTime() >= cutoff
   );
 
+  const rangeLabel = RANGE_OPTIONS.find((o) => o.key === range)?.label ?? range;
+
+  const ScanButton = ({ label }: { label: string }) => (
+    <button
+      onClick={handleRefresh}
+      disabled={refreshing}
+      className="mt-4 rounded-xl bg-[#1D9E75] px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#178c68] active:scale-95 disabled:opacity-50"
+    >
+      {refreshing ? "סורק..." : label}
+    </button>
+  );
+
   return (
     <div className="space-y-3">
       {/* Range selector */}
@@ -564,10 +641,10 @@ function KudosFriendsContent() {
 
       {isLoading && <div className="flex justify-center py-8"><LoadingSpinner /></div>}
 
-      {/* Refresh error — shown as small banner, does NOT hide the friends list */}
+      {/* Refresh error banner — shown above friends list so it doesn't replace it */}
       {refreshError && (
         <div className="flex items-center justify-between rounded-xl bg-orange-50 px-3 py-2">
-          <p className="text-xs text-orange-600">Strava מגביל בקשות — המתן כמה דקות</p>
+          <p className="text-xs text-orange-600">Strava מגביל בקשות — המתן כמה דקות ונסה שוב</p>
           <button
             onClick={() => setRefreshError(false)}
             className="text-xs text-orange-400 hover:text-orange-600"
@@ -575,18 +652,42 @@ function KudosFriendsContent() {
         </div>
       )}
 
-      {!isLoading && allFriends.length === 0 && (
+      {/* Initial load failed — DB was empty and Strava scan failed (rate limit) */}
+      {!isLoading && error && !data && (
+        <div className="py-8 text-center">
+          <div className="text-4xl">⚠️</div>
+          <p className="mt-2 text-sm font-bold text-gray-700">לא ניתן לטעון חברים</p>
+          <p className="mt-1 text-xs text-gray-500">
+            Strava מגביל בקשות — המתן כמה דקות ונסה שוב
+          </p>
+          <ScanButton label="🔄 סרוק Strava" />
+        </div>
+      )}
+
+      {/* Loaded but no friends in selected range */}
+      {!isLoading && !error && data && allFriends.length === 0 && (
         <div className="py-8 text-center">
           <div className="text-4xl">👍</div>
-          <p className="mt-2 text-sm text-gray-500">{t("friends.noKudosFriends")}</p>
-          {data && (
-            <p className="mt-1 text-xs text-gray-400">
-              סרקנו {data.scanned} פעילויות · {data.withKudos} עם לייקים
-            </p>
+          {data.uniquePeople === 0 ? (
+            <>
+              <p className="mt-2 text-sm font-bold text-gray-700">עדיין אין חברים שמורים</p>
+              <p className="mt-1 text-xs text-gray-500">לחץ לסרוק את Strava ולמצוא מי נתן לך לייק</p>
+              <ScanButton label="🔄 סרוק Strava" />
+            </>
+          ) : (
+            <>
+              <p className="mt-2 text-sm text-gray-500">
+                אין לייקים ב{rangeLabel} האחרון
+              </p>
+              <p className="mt-1 text-xs text-gray-400">
+                יש {data.uniquePeople} חברים בסה״כ — נסה טווח ארוך יותר
+              </p>
+            </>
           )}
         </div>
       )}
 
+      {/* Friends list */}
       {!isLoading && allFriends.length > 0 && (
         <>
           <div className="space-y-1">
@@ -616,18 +717,21 @@ function KudosFriendsContent() {
           </div>
           <div className="space-y-2">
             {allFriends.map((friend) => (
-              <div key={friend.name} className="flex items-center gap-3 rounded-xl bg-[#FFF8E1]/80 p-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100 text-sm font-bold text-orange-600">
-                  {friend.name[0] || "?"}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-gray-900">{friend.name}</p>
-                  <p className="text-xs text-[#B7892B]">{t("friends.likedYourActivity")}</p>
-                </div>
-                <span className="shrink-0 rounded-full bg-orange-50 px-2.5 py-1 text-xs font-bold text-orange-500">
-                  {friend.count}x
-                </span>
-              </div>
+              <KudosFriendRow
+                key={friend.id}
+                friend={friend}
+                onToggle={(updated) => {
+                  queryClient.setQueryData(["strava-kudos"], (old: KudosResponse | undefined) => {
+                    if (!old) return old;
+                    return {
+                      ...old,
+                      kudosFriends: old.kudosFriends.map((f) =>
+                        f.id === updated.id ? { ...f, isChosen: updated.isChosen } : f
+                      ),
+                    };
+                  });
+                }}
+              />
             ))}
           </div>
         </>
@@ -718,6 +822,296 @@ function AddFriendModal({
   );
 }
 
+/* ─── Mutual Friends Section ─── */
+
+function MutualFriendsSection({
+  onToggle,
+}: {
+  onToggle: (updated: { id: string; isChosen: boolean }) => void;
+}) {
+  const [scanning, setScanning] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data, isLoading, error } = useQuery<MutualFriendsResponse>({
+    queryKey: ["mutual-friends"],
+    queryFn: async () => {
+      const res = await fetch("/api/athlete/mutual-friends");
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    staleTime: 5 * 60 * 1000, // cache 5 min — each scan is ~26 API calls
+    retry: 0,
+  });
+
+  const handleRescan = async () => {
+    setScanning(true);
+    try {
+      const res = await fetch("/api/athlete/mutual-friends");
+      if (res.ok) {
+        const fresh = await res.json() as MutualFriendsResponse;
+        queryClient.setQueryData(["mutual-friends"], fresh);
+      }
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  if (isLoading || scanning) {
+    return (
+      <div className="rounded-xl border border-[#1D9E75]/20 bg-[#E1F5EE]/40 p-4 text-center">
+        <LoadingSpinner />
+        <p className="mt-2 text-xs text-[#1D9E75]">סורק מועדונים משותפים...</p>
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="rounded-xl border border-orange-200 bg-orange-50/60 p-3 text-center">
+        <p className="text-xs text-orange-600">לא ניתן לטעון חברים הדדיים</p>
+        <button
+          onClick={handleRescan}
+          className="mt-2 rounded-lg bg-orange-100 px-3 py-1 text-xs font-bold text-orange-700 hover:bg-orange-200"
+        >
+          נסה שוב
+        </button>
+      </div>
+    );
+  }
+
+  if (data.mutual.length === 0) {
+    return (
+      <div className="rounded-xl border border-gray-100 bg-gray-50/60 p-4 text-center">
+        <p className="text-sm font-bold text-gray-600">לא נמצאו חברים הדדיים</p>
+        <p className="mt-1 text-xs text-gray-400">
+          {data.totalClusters} מועדונים · {data.totalClubMembers} חברים נבדקו
+        </p>
+        <button
+          onClick={handleRescan}
+          disabled={scanning}
+          className="mt-2 rounded-lg bg-gray-100 px-3 py-1 text-xs font-bold text-gray-500 hover:bg-gray-200 disabled:opacity-50"
+        >
+          {scanning ? "סורק..." : "🔄 סרוק מחדש"}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-bold text-[#1D9E75]">
+          ⭐ חברים הדדיים ({data.mutual.length})
+        </p>
+        <button
+          onClick={handleRescan}
+          disabled={scanning}
+          className="rounded-lg bg-[#1D9E75]/10 px-2 py-0.5 text-[10px] font-bold text-[#1D9E75] hover:bg-[#1D9E75]/20 disabled:opacity-50"
+        >
+          {scanning ? "סורק..." : "🔄"}
+        </button>
+      </div>
+      <p className="text-[10px] text-gray-400">
+        {data.totalClusters} מועדונים · {data.totalClubMembers.toLocaleString()} חברים
+      </p>
+      <div className="space-y-1.5">
+        {data.mutual.map((f) => (
+          <MutualFriendRow key={f.id} friend={f} onToggle={onToggle} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MutualFriendRow({
+  friend,
+  onToggle,
+}: {
+  friend: MutualFriend;
+  onToggle: (updated: { id: string; isChosen: boolean }) => void;
+}) {
+  const [pending, setPending] = useState(false);
+
+  const handleToggle = async () => {
+    setPending(true);
+    try {
+      const res = await fetch(`/api/athlete/strava-contacts/${friend.id}`, { method: "POST" });
+      if (res.ok) {
+        const data = await res.json() as { isChosen: boolean };
+        onToggle({ id: friend.id, isChosen: data.isChosen });
+      }
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return (
+    <div className={`flex items-center gap-3 rounded-xl p-3 transition-colors ${friend.isChosen ? "bg-[#E1F5EE]/90" : "bg-[#F9FBE7]/80"}`}>
+      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ${friend.isChosen ? "bg-[#1D9E75]/20 text-[#1D9E75]" : "bg-[#C8E6C9] text-[#2E7D32]"}`}>
+        {friend.name[0] || "?"}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold text-gray-900">{friend.name}</p>
+        <p className="truncate text-[10px] text-gray-400">
+          {friend.kudosCount}x לייקים · {friend.clubs.slice(0, 2).join(", ")}
+          {friend.clubs.length > 2 ? ` +${friend.clubs.length - 2}` : ""}
+        </p>
+      </div>
+      <button
+        onClick={handleToggle}
+        disabled={pending}
+        className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition-all active:scale-95 disabled:opacity-50 ${
+          friend.isChosen
+            ? "bg-[#1D9E75] text-white shadow-sm"
+            : "bg-gray-100 text-gray-500 hover:bg-[#1D9E75]/10 hover:text-[#1D9E75]"
+        }`}
+      >
+        {pending ? "..." : friend.isChosen ? "✓ חבר שלי" : "+ בחר"}
+      </button>
+    </div>
+  );
+}
+
+/* ─── My Friends Content ─── */
+
+function MyFriendsContent() {
+  const queryClient = useQueryClient();
+
+  // useQuery with same key — reactive, updates when KudosFriendRow toggles cache
+  const { data: kudosData, isLoading: kudosLoading } = useQuery<KudosResponse>({
+    queryKey: ["strava-kudos"],
+    queryFn: async () => {
+      const res = await fetch("/api/athlete/strava-kudos");
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+  });
+  const chosenFriends = kudosData?.kudosFriends.filter((f) => f.isChosen) ?? [];
+
+  const { data: triforceData, isLoading: triforceLoading } = useQuery<FriendsResponse>({
+    queryKey: ["friends"],
+    queryFn: async () => {
+      const res = await fetch("/api/athlete/friends");
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+  });
+  const triforceFriends = triforceData?.friends ?? [];
+
+  const handleRemove = async (friend: KudosFriend) => {
+    const res = await fetch(`/api/athlete/strava-contacts/${friend.id}`, { method: "POST" });
+    if (res.ok) {
+      queryClient.setQueryData(["strava-kudos"], (old: KudosResponse | undefined) => {
+        if (!old) return old;
+        return {
+          ...old,
+          kudosFriends: old.kudosFriends.map((f) =>
+            f.id === friend.id ? { ...f, isChosen: false } : f
+          ),
+        };
+      });
+    }
+  };
+
+  const handleMutualToggle = (updated: { id: string; isChosen: boolean }) => {
+    // sync the toggle into the kudos cache so "חברים שבחרתי" updates instantly
+    queryClient.setQueryData(["strava-kudos"], (old: KudosResponse | undefined) => {
+      if (!old) return old;
+      return {
+        ...old,
+        kudosFriends: old.kudosFriends.map((f) =>
+          f.id === updated.id ? { ...f, isChosen: updated.isChosen } : f
+        ),
+      };
+    });
+    // also sync isChosen in mutual-friends cache
+    queryClient.setQueryData(["mutual-friends"], (old: MutualFriendsResponse | undefined) => {
+      if (!old) return old;
+      return {
+        ...old,
+        mutual: old.mutual.map((f) =>
+          f.id === updated.id ? { ...f, isChosen: updated.isChosen } : f
+        ),
+      };
+    });
+  };
+
+  if ((kudosLoading || triforceLoading) && !kudosData && !triforceData) {
+    return <div className="flex justify-center py-8"><LoadingSpinner /></div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Mutual friends — always show at top */}
+      <MutualFriendsSection onToggle={handleMutualToggle} />
+
+      {chosenFriends.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-bold text-gray-400">חברים שבחרתי ({chosenFriends.length})</p>
+          <div className="space-y-1.5">
+            {chosenFriends.map((f) => (
+              <ChosenFriendRow key={f.id} friend={f} onRemove={handleRemove} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {triforceFriends.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-bold text-gray-400">חברים ב-TriForce ({triforceFriends.length})</p>
+          <div className="space-y-1.5">
+            {triforceFriends.map((f) => (
+              <div key={f.id} className="flex items-center gap-3 rounded-xl bg-[#E8F5E9]/60 p-3">
+                <Avatar src={f.image} name={f.name || "?"} size={40} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-gray-900">{f.name || "?"}</p>
+                  <p className="text-xs font-bold text-[#1D9E75]">TriForce</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {chosenFriends.length === 0 && triforceFriends.length === 0 && !kudosLoading && !triforceLoading && (
+        <div className="border-t border-gray-100 pt-3 text-center">
+          <p className="text-xs text-gray-400">
+            לחץ <strong>+ בחר</strong> ליד חבר הדדי כדי להוסיפו לרשימה
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ChosenFriendRow({
+  friend,
+  onRemove,
+}: {
+  friend: KudosFriend;
+  onRemove: (f: KudosFriend) => void;
+}) {
+  const [pending, setPending] = useState(false);
+  return (
+    <div className="flex items-center gap-3 rounded-xl bg-[#E1F5EE]/70 p-3">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1D9E75]/20 text-sm font-bold text-[#1D9E75]">
+        {friend.name[0] || "?"}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold text-gray-900">{friend.name}</p>
+        <p className="text-xs text-gray-400">{friend.count}x לייקים</p>
+      </div>
+      <button
+        disabled={pending}
+        onClick={async () => { setPending(true); await onRemove(friend); setPending(false); }}
+        className="shrink-0 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-bold text-gray-400 transition-all hover:bg-red-50 hover:text-red-500 active:scale-95 disabled:opacity-50"
+      >
+        {pending ? "..." : "הסר"}
+      </button>
+    </div>
+  );
+}
+
 /* ─── Compact Tab Bar ─── */
 
 function TabBar({
@@ -769,20 +1163,6 @@ export default function MembersPage() {
   };
 
   const {
-    data: friendsData,
-    isLoading: friendsLoading,
-    error: friendsError,
-    refetch: refetchFriends,
-  } = useQuery<FriendsResponse>({
-    queryKey: ["friends"],
-    queryFn: async () => {
-      const res = await fetch("/api/athlete/friends");
-      if (!res.ok) throw new Error("Failed to fetch friends");
-      return res.json();
-    },
-  });
-
-  const {
     data: membersData,
     isLoading: membersLoading,
     error: membersError,
@@ -797,9 +1177,9 @@ export default function MembersPage() {
   });
 
   const tabs = [
+    { key: "kudos", label: "נתנו לי לייק" },
+    { key: "friends", label: "חברים שלי" },
     { key: "feed", label: "פיד" },
-    { key: "friends", label: t("friends.title") },
-    { key: "kudos", label: t("friends.kudosTitle") },
     { key: "clubs", label: t("friends.clubsTitle") },
     { key: "members", label: t("members.title") },
   ];
@@ -826,29 +1206,7 @@ export default function MembersPage() {
       {/* Active Section Content */}
       <div className="rounded-[20px] border border-gray-100 bg-white p-4 shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
         {activeTab === "friends" && (
-          <>
-            {friendsLoading && <div className="flex justify-center py-8"><LoadingSpinner /></div>}
-            {friendsError && <ErrorMessage message={t("friends.loadError")} onRetry={() => refetchFriends()} />}
-            {friendsData && friendsData.friends.length === 0 && (
-              <div className="py-8 text-center">
-                <div className="text-4xl">🤝</div>
-                <p className="mt-2 text-sm text-gray-500">{t("friends.empty")}</p>
-              </div>
-            )}
-            {friendsData && friendsData.friends.length > 0 && (
-              <div className="space-y-2">
-                {friendsData.friends.map((friend) => (
-                  <div key={friend.id} className="flex items-center gap-3 rounded-xl bg-[#E1F5EE]/60 p-3">
-                    <Avatar src={friend.image} name={friend.name || t("members.unknown")} size={44} />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-gray-900">{friend.name || t("members.unknown")}</p>
-                      <p className="text-xs font-bold text-[#1D9E75]">{t("friends.followingYouBack")}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
+          <MyFriendsContent />
         )}
 
         {activeTab === "feed" && <FeedContent />}

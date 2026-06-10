@@ -247,5 +247,21 @@
 - [x] Bottom nav: replaced non-existent /profile with /messages (bell icon)
 - [x] Added `messages` + `events` namespaces to he.json and en.json
 
+## Session 2026-06-09–10 — Kudos Persistence + Friends Discovery Polish
+- [x] Fixed Strava rate-limit vicious cycle — removed auto-scan on empty DB; scan only on `?refresh=1`
+- [x] Added `isChosen` field to StravaContact model (`npx prisma db push`)
+- [x] `+ בחר` / `✓ חבר שלי` toggle button on each kudos contact row
+- [x] `הסר` remove button in "חברים שלי" tab
+- [x] "חברים שלי" tab shows chosen kudos contacts + TriForce follows
+- [x] Fixed `getQueryData` → `useQuery` (reactivity bug in MyFriendsContent)
+- [x] Created `/api/athlete/strava-contacts/[contactId]` — toggle isChosen via POST
+- [x] Researched Strava outgoing kudos/following — confirmed all social graph endpoints removed in 2017
+- [x] Built mutual friends feature: cross-reference club members with kudos contacts by name
+- [x] Created `/api/athlete/mutual-friends` — scans all clubs, builds member name set, cross-refs with StravaContacts
+- [x] Added "⭐ חברים הדדיים" section at top of "חברים שלי" tab with club name sub-labels
+- [x] MutualFriendRow with `+ בחר` / `✓ חבר שלי` toggle — syncs both caches (kudos + mutual)
+- [x] Build passes clean
+
 ## Current Focus
-**Phase 1F: Messages + Events — COMPLETE (core).** Remaining: personal threads, unread badges, PWA, audits.
+**Friends Discovery — COMPLETE.** Mutual friends via clubs×kudos cross-reference live in UI.
+Next: achievement comparison feature (head-to-head stats between friends) or Phase 1F Polish (PWA, unread badges).

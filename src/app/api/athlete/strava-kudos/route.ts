@@ -42,30 +42,31 @@ export async function GET(request: Request) {
 
   const refresh = new URL(request.url).searchParams.get("refresh") === "1";
 
-  // Return from DB unless refresh is requested
+  // Always read from DB first. Only scan Strava when ?refresh=1 is explicit.
+  // Auto-scanning on every empty-DB visit burns through Strava's 100 req/15min limit.
   if (!refresh) {
     const contacts = await prisma.stravaContact.findMany({
       where: { userId: session.user.id },
       orderBy: { kudosCount: "desc" },
     });
-    if (contacts.length > 0) {
-      const lastSync = contacts.reduce((latest, c) =>
-        c.scannedAt > latest ? c.scannedAt : latest, contacts[0].scannedAt
-      );
-      return NextResponse.json({
-        kudosFriends: contacts.map((c) => ({
-          name: c.name,
-          count: c.kudosCount,
-          latestDate: c.latestKudosAt.toISOString(),
-        })),
-        scanned: null,
-        withKudos: null,
-        uniquePeople: contacts.length,
-        errors: 0,
-        fromCache: true,
-        lastSync: lastSync.toISOString(),
-      });
-    }
+    const lastSync = contacts.length > 0
+      ? contacts.reduce((latest, c) => c.scannedAt > latest ? c.scannedAt : latest, contacts[0].scannedAt)
+      : null;
+    return NextResponse.json({
+      kudosFriends: contacts.map((c) => ({
+        id: c.id,
+        name: c.name,
+        count: c.kudosCount,
+        latestDate: c.latestKudosAt.toISOString(),
+        isChosen: c.isChosen,
+      })),
+      scanned: null,
+      withKudos: null,
+      uniquePeople: contacts.length,
+      errors: 0,
+      fromCache: true,
+      lastSync: lastSync?.toISOString() ?? null,
+    });
   }
 
   // Scan Strava and save to DB
@@ -82,8 +83,12 @@ export async function GET(request: Request) {
       } catch { break; }
     }
 
-    // Cap at 80 to stay under Strava's 100 req/15min limit
-    const withKudos = allActivities.filter((a) => a.kudos_count > 0).slice(0, 80);
+    // Sort by kudos count descending, take top 30 — most-liked activities have most unique friends.
+    // 30 kudos calls + ~2 activity pages = ~32 total, safely under Strava's 100 req/15min limit.
+    const withKudos = allActivities
+      .filter((a) => a.kudos_count > 0)
+      .sort((a, b) => b.kudos_count - a.kudos_count)
+      .slice(0, 30);
 
     const kudosMap = new Map<string, { name: string; count: number; latestDate: string }>();
     let kudosErrors = 0;

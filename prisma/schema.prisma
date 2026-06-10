@@ -289,6 +289,7 @@ model StravaContact {
   kudosCount     Int      @default(1)
   latestKudosAt  DateTime
   scannedAt      DateTime @default(now())
+  isChosen       Boolean  @default(false)   // user explicitly marked this as a friend
   triforceUserId String?                     // filled when this contact joins TriForce
 
   user         User  @relation(fields: [userId], references: [id], onDelete: Cascade)
