@@ -471,22 +471,140 @@ GARMIN_CONSUMER_SECRET=<pending>
 
 ---
 
+## Athlete Home Architecture (Current Design)
+
+The athlete operates in TWO parallel contexts simultaneously:
+
+### Context 1 — "עם המאמן שלי" (With My Coach)
+- Join a coach's group via 6-char invite code (Settings page)
+- See coach-defined challenges + group leaderboard
+- Receive broadcast messages from coach
+- Structured training with formal scoring
+
+### Context 2 — "עם החברים שלי" (With My Friends / Peers)
+- Choose friends from Strava kudos contacts (`StravaContact.isChosen = true`)
+- Mutual friends = in same Strava club AND gave kudos (cross-reference API)
+- Per-friend actions: compare stats / create peer challenge / send message
+- Informal, self-organized, sport-specific
+
+### Key Rule
+A Strava contact NOT on TriForce → show "הזמן ל-TriForce" instead of compare/challenge.
+A TriForce user → full comparison from DB activities.
+
+### Athlete Home Screen (`/dashboard`) — Planned Rebuild
+```
+[Header: greeting + Strava sync status]
+
+[Wing 1 — עם המאמן שלי]
+  If in group  → active challenge card + group name
+  If no group  → CTA "הצטרף לקבוצה" with invite code input
+
+[Wing 2 — עם החברים שלי]
+  Avatar row of chosen friends (isChosen=true)
+  Per friend: [📊 השווה] [🏆 אתגר] [💬 הודעה]
+  "+ הוסף חברים" → /members kudos tab
+
+[Quick links row]
+  🏃 היסטוריה | 📅 אירועים | ⚙️ הגדרות
+```
+
+### Peer Features — Build Order
+1. **Athlete home rebuild** — hub with two wings (next to build)
+2. **`/compare/[contactId]`** — side-by-side stats per sport type, no new DB needed
+3. **`FriendChallenge` model** — peer challenge: sport / metric / goal / duration / status
+4. **Peer challenge UI** — create, track, winner declaration
+5. **Friend invitation** — invite non-TriForce Strava contacts via share link
+
+### FriendChallenge DB Model (planned)
+```prisma
+model FriendChallenge {
+  id           String   @id @default(cuid())
+  challengerId String   // who created it
+  challengedId String   // who received it
+  sportType    String
+  metric       String   // DISTANCE | ELEVATION | TIME | ACTIVITIES
+  goalValue    Float
+  startDate    DateTime
+  endDate      DateTime
+  status       String   // PENDING | ACTIVE | COMPLETED | DECLINED
+  winnerId     String?
+  description  String?
+  createdAt    DateTime @default(now())
+}
+```
+
+---
+
+## Coach App Architecture (Current State — Built)
+
+### `/coach` — Navigation Hub
+6 cubes: מתאמנים, אתגרים, הודעות, אירועים, סטטיסטיקות, קבוצות
+
+### `/coach/stats` — Stats Dashboard
+4 stat cards (athletes / workouts / adherence / messages) + athlete status table
+(תקין / לעקוב / דורש תשומת לב) + attention panel + bar chart + challenge card
+
+### `/coach/groups` — Group Management
+List of groups with invite codes. Create new group → get 6-char code → share with athletes.
+
+### Auth Guards (temporarily removed — re-add before launch)
+- `(coach)/layout.tsx` — no role check
+- `(athlete)/layout.tsx` — no auth check
+- `POST /api/coach/groups` — only checks session exists, not role
+
+---
+
+## API Routes (current)
+
+### Athlete
+- `GET /api/athlete/activities` — from DB
+- `GET /api/athlete/activities/[id]` — single activity
+- `GET /api/athlete/challenges` — active challenges
+- `GET /api/athlete/friends` — TriForce follows
+- `GET /api/athlete/groups` — groups with invite codes
+- `POST /api/athlete/groups/join` — join via invite code
+- `GET /api/athlete/members` — group members
+- `POST /api/athlete/members/[id]/follow` — toggle follow
+- `GET /api/athlete/me` — fresh profile from DB
+- `GET /api/athlete/strava-clubs` — Strava clubs list
+- `GET /api/athlete/strava-clubs/[id]/members` — club members
+- `GET /api/athlete/strava-kudos` — kudos contacts from DB (scan on ?refresh=1)
+- `POST /api/athlete/strava-contacts/[id]` — toggle isChosen
+- `GET /api/athlete/mutual-friends` — cross-reference clubs × kudos contacts
+- `POST /api/athlete/sync` — manual Strava sync
+- `GET /api/athlete/users/search` — search TriForce users
+- `GET /api/athlete/feed` — activity feed from followed users
+- `GET /api/athlete/messages` — inbox
+- `GET /api/athlete/events` — upcoming events
+
+### Coach
+- `GET /api/coach/dashboard` — stats, athletes, weekly chart, groups
+- `GET/POST /api/coach/groups` — list/create groups
+- `GET /api/coach/groups/[groupId]/messages` — group messages
+- `POST /api/coach/groups/[groupId]/messages` — send message
+- `GET/POST/DELETE /api/coach/groups/[groupId]/events` — events
+
+---
+
 ## Screens Summary
 
-### Athlete App
-1. **Dashboard** — greeting, connection status, active challenge progress, notifications
-2. **Challenge Detail** — progress per metric, days remaining, prize info
-3. **Leaderboard** — overall + by category, own row highlighted, prize threshold
-4. **Activity Feed** — all synced activities, filter by sport, source badge
-5. **Messages** — broadcasts + personal thread with coach
-6. **Profile** — stats, categories, device connections, events
-7. **Events** — upcoming races, countdown, teammates registered
+### Athlete App (current + planned)
+1. **Home** (`/dashboard`) — TWO WINGS: coach context + friends context [PLANNED REBUILD]
+2. **Compare** (`/compare/[id]`) — head-to-head stats per sport [PLANNED]
+3. **Peer Challenge** — create/track friend vs friend challenge [PLANNED]
+4. **Members/Friends** (`/members`) — kudos friends, mutual friends, club members, TriForce follows
+5. **Challenges** (`/challenges`) — coach-set group challenges
+6. **Activities** (`/activities`) — full activity history
+7. **Messages** (`/messages`) — inbox from coach
+8. **Events** (`/events`) — upcoming group events
+9. **Settings** (`/settings`) — join group via code, Strava status, language
 
-### Coach App
-1. **Coach Home** — active challenges overview, group stats, pending messages
-2. **Create Challenge** — sport type, goals, scoring method, dates, prizes
-3. **Challenge Management** — all challenges, progress, qualification status
-4. **Athlete Manager** — all athletes, connection status, last sync
-5. **Broadcast Messages** — compose, audience filter, send, read receipts
-6. **Personal Messages** — individual conversations
-7. **Events Manager** — create/edit events, link to challenges
+### Coach App (current)
+1. **Coach Home** (`/coach`) — 6-cube navigation hub
+2. **Stats** (`/coach/stats`) — athlete status table, 4 cards, bar chart
+3. **Groups** (`/coach/groups`) — group list with invite codes
+4. **New Group** (`/coach/groups/new`) — create group
+5. **Group Detail** (`/coach/groups/[id]`) — members, challenges, invite code
+6. **Messages** (`/coach/groups/[id]/messages`) — broadcast compose + history
+7. **Events** (`/coach/groups/[id]/events`) — create + manage events
+8. **New Challenge** (`/coach/groups/[id]/challenges/new`) — challenge creation form

@@ -262,6 +262,47 @@
 - [x] MutualFriendRow with `+ בחר` / `✓ חבר שלי` toggle — syncs both caches (kudos + mutual)
 - [x] Build passes clean
 
+## Session 2026-06-13 — Coach Home + Auth Guards Removed
+
+### Coach UI rebuilt
+- [x] `/coach` — rebuilt as navigation hub with 6 cubes (מתאמנים, אתגרים, הודעות, אירועים, סטטיסטיקות, קבוצות)
+- [x] `/coach/stats` — stats dashboard (athlete table, 4 stat cards, bar chart, attention panel) moved here
+- [x] `/api/coach/dashboard` — new API: athletes status, workouts/week, adherence %, weekly bar data, active challenge
+- [x] `/coach/groups` — rebuilt in Hebrew with styled group cards showing invite code
+- [x] `/coach/groups/new` — rebuilt in Hebrew with "how it works" explainer
+- [x] `CoachShell` — updated to Hebrew nav + TriForce logo
+- [x] Coach home cube links directly to group sub-pages when coach has exactly 1 group
+- [x] `i18n/he.json` — added all coach dashboard translation keys
+
+### Auth guards removed (temporary — re-add before launch)
+- [x] `(coach)/layout.tsx` — role check removed; any authenticated user can access `/coach/*`
+- [x] `(athlete)/layout.tsx` — auth check removed; any user can access athlete pages
+- [x] `page.tsx` (landing) — coach cube goes directly to `/coach`, no longer routes to sign-in
+- [x] `POST /api/coach/groups` — COACH role check replaced with simple auth check
+
 ## Current Focus
-**Friends Discovery — COMPLETE.** Mutual friends via clubs×kudos cross-reference live in UI.
-Next: achievement comparison feature (head-to-head stats between friends) or Phase 1F Polish (PWA, unread badges).
+**Next session: Build athlete home screen (`/dashboard` rebuild)**
+
+### Athlete home — planned
+The athlete home needs a complete rebuild as a personal hub with two "wings":
+
+**Wing 1 — "עם המאמן שלי"**
+- If athlete is in a group → show active challenge card + group name
+- If not in a group → prominent CTA "הצטרף לקבוצה" with invite code input
+
+**Wing 2 — "עם החברים שלי"**  
+- Shows chosen friends (isChosen=true StravaContacts) as avatar row
+- Quick action buttons per friend: השווה / אתגר / הודעה
+- "הוסף חברים" button → links to /members kudos tab
+
+**Bottom quick links:** היסטוריה, אירועים, הגדרות
+
+### After athlete home — Peer features (in order)
+1. **השוואה** (`/compare/[contactId]`) — side-by-side stats, no new DB model needed
+2. **אתגר עצמאי** (`FriendChallenge` model) — peer challenge creation + tracking
+3. **הזמנת חבר** — if friend not on TriForce, show invite link
+
+### Architecture decision (agreed)
+- User has TWO parallel contexts: coach group (structured) + friends (peer/informal)
+- Strava contacts who are NOT on TriForce can't be compared directly — show invite flow
+- `StravaContact.isChosen = true` = "my chosen friend" — central to peer features
