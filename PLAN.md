@@ -73,6 +73,8 @@ Starting with ~40 athletes in one coaching group in Israel.
 
 **Group** — the tenant boundary
 - id, name, slug (unique), inviteCode (6-char), timezone, locale
+- `type: GroupType` — `COACH` (coach-led, formal) | `PEER` (athlete-led, informal)
+- `creatorId` — userId of who opened the group
 - Every group is completely isolated
 
 **User** — both coaches and athletes
@@ -587,6 +589,20 @@ List of groups with invite codes. Create new group → get 6-char code → share
 ---
 
 ## Screens Summary
+
+### Screenshot Reference Files
+Actual screenshots of the running app are stored in `/screenshots/`:
+- `01-landing.png` — landing page (4 cubes)
+- `02-athlete-dashboard.png` — athlete home (2 wings)
+- `03-activities-list.png` — activity history list
+- `04-activity-detail.png` — single activity + route map
+- `05-challenges-list.png` — active challenges
+- `06-challenge-detail.png` — challenge + leaderboard
+- `07-settings.png` — settings page
+- `08-coach-signin.png` — coach login
+- `09-coach-dashboard.png` — coach stats dashboard
+- `10-coach-groups.png` — coach group management
+- `11-members.png` — members/friends page
 
 ### Athlete App (current + planned)
 1. **Home** (`/dashboard`) — TWO WINGS: coach context + friends context [PLANNED REBUILD]

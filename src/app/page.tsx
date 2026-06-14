@@ -70,9 +70,9 @@ export default function LandingPage() {
           <button
             onClick={() => {
               if (isAuth && role === "ATHLETE") {
-                router.push("/dashboard");
+                router.push("/athlete");
               } else {
-                signIn("strava", { callbackUrl: "/dashboard" });
+                signIn("strava", { callbackUrl: "/athlete" });
               }
             }}
             className="group flex aspect-square flex-col items-center justify-center gap-2 rounded-[20px] border border-white/15 bg-gradient-to-br from-[#1D9E75] via-[#158a63] to-[#0d6b4d] shadow-[0_12px_28px_rgba(29,158,117,0.3),0_4px_8px_rgba(29,158,117,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1.5 hover:scale-[1.04] hover:shadow-[0_20px_40px_rgba(29,158,117,0.4),0_6px_12px_rgba(29,158,117,0.2)] active:translate-y-0.5 active:scale-[0.98]"
@@ -82,7 +82,7 @@ export default function LandingPage() {
             </div>
             <span className="text-base font-bold text-white">{t("landing.athlete")}</span>
             <span className="text-xs text-white/60">
-              {isAuth && role === "ATHLETE" ? t("landing.toDashboard") : "Strava"}
+              {isAuth && role === "ATHLETE" ? "הכניסה שלי" : "Strava"}
             </span>
           </button>
 

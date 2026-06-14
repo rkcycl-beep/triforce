@@ -262,6 +262,15 @@
 - [x] MutualFriendRow with `+ בחר` / `✓ חבר שלי` toggle — syncs both caches (kudos + mutual)
 - [x] Build passes clean
 
+## Session 2026-06-13 — Athlete Home Rebuild (Dashboard)
+- [x] New API `/api/athlete/chosen-friends` — returns StravaContacts where isChosen=true
+- [x] `CoachWing.tsx` — Wing 1: group + active challenge card, or join-group CTA with invite code input
+- [x] `FriendsWing.tsx` — Wing 2: chosen friends list with initials avatars + compare button
+- [x] `/dashboard` page rebuilt — 2 wings + quick links (היסטוריה / אירועים / הגדרות)
+- [x] `/athlete` hub page — 6 cubes (הבית שלי, חברים, אתגרים, היסטוריה, הודעות, אירועים)
+- [x] Landing page "מתאמן" cube now routes to `/athlete` hub
+- [x] Hebrew + English translations updated
+
 ## Session 2026-06-13 — Coach Home + Auth Guards Removed
 
 ### Coach UI rebuilt
@@ -281,28 +290,62 @@
 - [x] `POST /api/coach/groups` — COACH role check replaced with simple auth check
 
 ## Current Focus
-**Next session: Build athlete home screen (`/dashboard` rebuild)**
+**Next: Phase 2A — Peer Groups (קבוצות עמיתים)**
 
-### Athlete home — planned
-The athlete home needs a complete rebuild as a personal hub with two "wings":
+---
 
-**Wing 1 — "עם המאמן שלי"**
-- If athlete is in a group → show active challenge card + group name
-- If not in a group → prominent CTA "הצטרף לקבוצה" with invite code input
+## Phase 2A: Peer Groups — קבוצות עמיתים
 
-**Wing 2 — "עם החברים שלי"**  
-- Shows chosen friends (isChosen=true StravaContacts) as avatar row
-- Quick action buttons per friend: השווה / אתגר / הודעה
-- "הוסף חברים" button → links to /members kudos tab
+### Architecture decision (agreed, 2026-06-14)
+The `Group` model will support TWO types via a single `type` field:
+- `COACH` — existing: coach creates, athletes join via invite code, coach approves
+- `PEER` — new: any athlete can create, invites chosen friends, more informal
 
-**Bottom quick links:** היסטוריה, אירועים, הגדרות
+Same DB model, same services, same message/challenge/event tables — just different permissions and UI per type.
 
-### After athlete home — Peer features (in order)
-1. **השוואה** (`/compare/[contactId]`) — side-by-side stats, no new DB model needed
-2. **אתגר עצמאי** (`FriendChallenge` model) — peer challenge creation + tracking
-3. **הזמנת חבר** — if friend not on TriForce, show invite link
+### DB change
+- [ ] Add `type GroupType` enum (`COACH | PEER`) to `Group` model in `schema.prisma`
+- [ ] Add `creatorId String` to `Group` model (who opened it)
+- [ ] Run `npx prisma db push`
 
-### Architecture decision (agreed)
-- User has TWO parallel contexts: coach group (structured) + friends (peer/informal)
-- Strava contacts who are NOT on TriForce can't be compared directly — show invite flow
-- `StravaContact.isChosen = true` = "my chosen friend" — central to peer features
+### API changes
+- [ ] `POST /api/athlete/groups/create` — athlete creates a PEER group
+- [ ] `POST /api/athlete/groups/[groupId]/invite` — invite a chosen friend to peer group
+- [ ] `GET /api/athlete/groups/[groupId]` — group detail (works for both types)
+- [ ] Update `GET /api/athlete/groups` — return both COACH and PEER groups
+
+### Features inside a PEER group (same as COACH group, different roles)
+- [ ] Messaging (chat between members)
+- [ ] Encouragement / likes on messages
+- [ ] Activity comparison between members
+- [ ] Peer challenges (sport / metric / goal / duration)
+- [ ] Virtual trophy / achievement scoring
+- [ ] Group creator can approve/remove members
+
+### UI — Athlete side
+- [ ] "צור קבוצה" button in `/athlete` hub (opens create-peer-group form)
+- [ ] Group detail page (`/groups/[groupId]`) — shared UI for COACH + PEER groups
+- [ ] Group page tabs: הודעות | אתגרים | חברים | השוואה
+- [ ] Invite friends from chosen contacts list
+
+### UI — Coach side
+- [ ] No changes needed — coach groups stay as-is under `/coach/groups`
+
+### Build order
+1. Schema change + DB push
+2. API: create peer group + invite friends
+3. Shared group detail page (works for both types)
+4. Messaging in peer group
+5. Activity comparison tab
+6. Peer challenges
+7. Achievements / virtual trophies
+
+### After peer groups
+- `/compare/[contactId]` — standalone head-to-head stats (no group needed)
+- `FriendChallenge` model — 1v1 peer challenge
+- Friend invitation — if contact not on TriForce, show invite link
+
+### Architecture principle
+- User has TWO parallel contexts: coach group (structured) + peer group (informal)
+- Strava contacts NOT on TriForce → show "הזמן ל-TriForce" instead of features
+- `StravaContact.isChosen = true` = pool of friends to invite to peer groups
