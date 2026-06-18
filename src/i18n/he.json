@@ -262,6 +262,27 @@
     "past": "עברו",
     "today": "היום"
   },
+  "compare": {
+    "title": "השוואה",
+    "me": "אני",
+    "friend": "חבר/ה",
+    "period30d": "30 יום",
+    "period90d": "90 יום",
+    "periodAll": "הכל",
+    "sportRun": "ריצה",
+    "sportRide": "אופניים",
+    "sportSwim": "שחייה",
+    "sportAll": "הכל",
+    "statDistance": "מרחק",
+    "statActivities": "פעילויות",
+    "statTime": "זמן",
+    "statElevation": "עלייה",
+    "statLongest": "הכי רחוק",
+    "statAvgPace": "קצב ממוצע",
+    "statFastestPace": "קצב הכי מהיר",
+    "noActivities": "אין פעילויות בתקופה זו.",
+    "loadError": "לא ניתן לטעון נתוני השוואה."
+  },
   "common": {
     "loading": "טוען...",
     "error": "שגיאה",

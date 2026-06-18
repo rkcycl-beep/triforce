@@ -79,7 +79,7 @@ export default function FriendsWing() {
           <div className="flex gap-1.5">
             {f.triforceUserId ? (
               <Link
-                href={`/compare/${f.id}`}
+                href="/compare"
                 className="rounded-lg bg-[#1D9E75]/10 px-2.5 py-1.5 text-[10px] font-semibold text-[#085041]"
               >
                 📊 {t("dashboard.compare")}

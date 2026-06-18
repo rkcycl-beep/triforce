@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -66,6 +67,8 @@ interface KudosFriend {
   count: number;
   latestDate: string; // ISO — used for client-side range filtering
   isChosen: boolean;
+  triforceUserId: string | null;
+  stravaAthleteId: string | null;
 }
 
 interface KudosResponse {
@@ -85,6 +88,7 @@ interface MutualFriend {
   latestKudosAt: string;
   isChosen: boolean;
   clubs: string[];
+  triforceUserId: string | null;
 }
 
 interface MutualFriendsResponse {
@@ -1013,6 +1017,18 @@ function MyFriendsContent() {
     }
   };
 
+  const handleStravaIdSaved = (contactId: string, stravaAthleteId: string) => {
+    queryClient.setQueryData(["strava-kudos"], (old: KudosResponse | undefined) => {
+      if (!old) return old;
+      return {
+        ...old,
+        kudosFriends: old.kudosFriends.map(f =>
+          f.id === contactId ? { ...f, stravaAthleteId } : f
+        ),
+      };
+    });
+  };
+
   const handleMutualToggle = (updated: { id: string; isChosen: boolean }) => {
     // sync the toggle into the kudos cache so "חברים שבחרתי" updates instantly
     queryClient.setQueryData(["strava-kudos"], (old: KudosResponse | undefined) => {
@@ -1050,7 +1066,7 @@ function MyFriendsContent() {
           <p className="text-xs font-bold text-gray-400">חברים שבחרתי ({chosenFriends.length})</p>
           <div className="space-y-1.5">
             {chosenFriends.map((f) => (
-              <ChosenFriendRow key={f.id} friend={f} onRemove={handleRemove} />
+              <ChosenFriendRow key={f.id} friend={f} onRemove={handleRemove} onStravaIdSaved={handleStravaIdSaved} />
             ))}
           </div>
         </div>
@@ -1087,27 +1103,101 @@ function MyFriendsContent() {
 function ChosenFriendRow({
   friend,
   onRemove,
+  onStravaIdSaved,
 }: {
   friend: KudosFriend;
   onRemove: (f: KudosFriend) => void;
+  onStravaIdSaved: (id: string, stravaAthleteId: string) => void;
 }) {
   const [pending, setPending] = useState(false);
+  const [showInput, setShowInput] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [inputError, setInputError] = useState(false);
+
+  const canCompare = !!(friend.triforceUserId || friend.stravaAthleteId);
+
+  async function saveStravaId() {
+    if (!urlInput.trim()) return;
+    setSaving(true);
+    setInputError(false);
+    const res = await fetch(`/api/athlete/strava-contacts/${friend.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ stravaUrl: urlInput }),
+    });
+    if (res.ok) {
+      const data = await res.json() as { stravaAthleteId: string };
+      onStravaIdSaved(friend.id, data.stravaAthleteId);
+      setShowInput(false);
+      setUrlInput("");
+    } else {
+      setInputError(true);
+    }
+    setSaving(false);
+  }
+
   return (
-    <div className="flex items-center gap-3 rounded-xl bg-[#E1F5EE]/70 p-3">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1D9E75]/20 text-sm font-bold text-[#1D9E75]">
-        {friend.name[0] || "?"}
+    <div className="rounded-xl bg-[#E1F5EE]/70">
+      <div className="flex items-center gap-3 p-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1D9E75]/20 text-sm font-bold text-[#1D9E75]">
+          {friend.name[0] || "?"}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold text-gray-900">{friend.name}</p>
+          <p className="text-xs text-gray-400">{friend.count}x לייקים</p>
+        </div>
+        <div className="flex shrink-0 items-center gap-1.5">
+          {canCompare ? (
+            <Link
+              href={`/compare/${friend.id}`}
+              className="rounded-full bg-[#1D9E75] px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#178c68] active:scale-95"
+            >
+              📊 השווה
+            </Link>
+          ) : (
+            <button
+              onClick={() => setShowInput(v => !v)}
+              className="rounded-full bg-[#FC4C02]/10 px-2.5 py-1.5 text-[10px] font-bold text-[#FC4C02] transition-all hover:bg-[#FC4C02]/20 active:scale-95"
+            >
+              🔗 Strava
+            </button>
+          )}
+          <button
+            disabled={pending}
+            onClick={async () => { setPending(true); await onRemove(friend); setPending(false); }}
+            className="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-bold text-gray-400 transition-all hover:bg-red-50 hover:text-red-500 active:scale-95 disabled:opacity-50"
+          >
+            {pending ? "..." : "הסר"}
+          </button>
+        </div>
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold text-gray-900">{friend.name}</p>
-        <p className="text-xs text-gray-400">{friend.count}x לייקים</p>
-      </div>
-      <button
-        disabled={pending}
-        onClick={async () => { setPending(true); await onRemove(friend); setPending(false); }}
-        className="shrink-0 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-bold text-gray-400 transition-all hover:bg-red-50 hover:text-red-500 active:scale-95 disabled:opacity-50"
-      >
-        {pending ? "..." : "הסר"}
-      </button>
+
+      {showInput && (
+        <div className="border-t border-[#1D9E75]/10 px-3 pb-3 pt-2">
+          <p className="mb-1.5 text-[10px] text-gray-500">
+            הדבק קישור לפרופיל Strava של החבר/ה:
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={urlInput}
+              onChange={e => { setUrlInput(e.target.value); setInputError(false); }}
+              placeholder="https://www.strava.com/athletes/12345678"
+              className={`min-w-0 flex-1 rounded-lg border px-2.5 py-1.5 text-xs outline-none ${inputError ? "border-red-400 bg-red-50" : "border-gray-200 bg-white"}`}
+              onKeyDown={e => e.key === "Enter" && saveStravaId()}
+            />
+            <button
+              onClick={saveStravaId}
+              disabled={saving || !urlInput.trim()}
+              className="shrink-0 rounded-lg bg-[#1D9E75] px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
+            >
+              {saving ? "..." : "שמור"}
+            </button>
+          </div>
+          {inputError && <p className="mt-1 text-[10px] text-red-500">קישור לא תקין — נסה שוב</p>}
+        </div>
+      )}
     </div>
   );
 }

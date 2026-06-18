@@ -59,6 +59,8 @@ export async function GET(request: Request) {
         count: c.kudosCount,
         latestDate: c.latestKudosAt.toISOString(),
         isChosen: c.isChosen,
+        triforceUserId: c.triforceUserId,
+        stravaAthleteId: c.stravaAthleteId,
       })),
       scanned: null,
       withKudos: null,
@@ -130,12 +132,22 @@ export async function GET(request: Request) {
       });
     }
 
-    const kudosFriends = Array.from(kudosMap.values())
-      .sort((a, b) => b.count - a.count)
-      .map((c) => ({ name: c.name, count: c.count, latestDate: c.latestDate }));
+    // Re-read from DB so response includes id + isChosen (upsert returns no id for new rows)
+    const savedContacts = await prisma.stravaContact.findMany({
+      where: { userId: session.user.id },
+      orderBy: { kudosCount: "desc" },
+    });
 
     return NextResponse.json({
-      kudosFriends,
+      kudosFriends: savedContacts.map((c) => ({
+        id: c.id,
+        name: c.name,
+        count: c.kudosCount,
+        latestDate: c.latestKudosAt.toISOString(),
+        isChosen: c.isChosen,
+        triforceUserId: c.triforceUserId,
+        stravaAthleteId: c.stravaAthleteId,
+      })),
       scanned: allActivities.length,
       withKudos: withKudos.length,
       uniquePeople: kudosMap.size,

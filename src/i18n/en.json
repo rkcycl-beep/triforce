@@ -240,6 +240,27 @@
     "past": "Past",
     "today": "Today"
   },
+  "compare": {
+    "title": "Compare",
+    "me": "Me",
+    "friend": "Friend",
+    "period30d": "30 days",
+    "period90d": "90 days",
+    "periodAll": "All time",
+    "sportRun": "Run",
+    "sportRide": "Ride",
+    "sportSwim": "Swim",
+    "sportAll": "All",
+    "statDistance": "Distance",
+    "statActivities": "Activities",
+    "statTime": "Time",
+    "statElevation": "Elevation",
+    "statLongest": "Longest",
+    "statAvgPace": "Avg pace",
+    "statFastestPace": "Best pace",
+    "noActivities": "No activities in this period.",
+    "loadError": "Could not load comparison data."
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",

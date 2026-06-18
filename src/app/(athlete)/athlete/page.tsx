@@ -62,6 +62,14 @@ const cubes: Cube[] = [
     gradient: "from-[#0ea5e9] via-[#0284c7] to-[#0369a1]",
     shadow: "shadow-[0_12px_28px_rgba(14,165,233,0.25)]",
   },
+  {
+    emoji: "📊",
+    label: "השוואה",
+    sub: "אני מול חברים",
+    href: "/compare",
+    gradient: "from-[#f59e0b] via-[#d97706] to-[#b45309]",
+    shadow: "shadow-[0_12px_28px_rgba(245,158,11,0.25)]",
+  },
 ];
 
 export default function AthleteHomePage() {

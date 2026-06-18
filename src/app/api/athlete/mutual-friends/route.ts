@@ -87,6 +87,7 @@ export async function GET() {
         latestKudosAt: c.latestKudosAt.toISOString(),
         isChosen: c.isChosen,
         clubs: clubsByMember[c.name] ?? [],
+        triforceUserId: c.triforceUserId,
       }));
 
     return NextResponse.json({

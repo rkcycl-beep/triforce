@@ -15,6 +15,7 @@ import type {
   StravaAthleteStats,
   StravaDetailedActivity,
   StravaFriend,
+  StravaFollowingActivity,
   StravaClub,
   StravaClubMember,
 } from "@/types/strava";
@@ -114,8 +115,25 @@ export async function getActivityById(
 }
 
 /**
+ * Fetch the activity feed of athletes the user follows on Strava.
+ * Requires activity:read_all scope. Each activity includes the athlete's
+ * Strava ID, name, and photo — this is how we discover the following list.
+ */
+export async function getFollowingActivities(
+  accessToken: string,
+  page: number = 1,
+  perPage: number = 200
+): Promise<StravaFollowingActivity[]> {
+  return stravaFetch<StravaFollowingActivity[]>("/activities/following", accessToken, {
+    page: String(page),
+    per_page: String(perPage),
+  });
+}
+
+/**
  * NOTE: Strava removed the /athlete/follows and /athlete/friends endpoints
- * from their public API. Friend discovery is only possible through:
+ * from their public API. Friend discovery is now through:
+ * - /activities/following feed (getFollowingActivities) — best method
  * - Clubs (getAthleteClubs + getClubMembers)
  * - Activity kudos (getActivityKudos)
  */

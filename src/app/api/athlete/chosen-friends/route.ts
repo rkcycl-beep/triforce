@@ -12,7 +12,7 @@ export async function GET() {
   const contacts = await prisma.stravaContact.findMany({
     where: { userId: session.user.id, isChosen: true },
     orderBy: { latestKudosAt: "desc" },
-    select: { id: true, name: true, kudosCount: true, triforceUserId: true },
+    select: { id: true, name: true, kudosCount: true, triforceUserId: true, stravaAthleteId: true },
   });
 
   return NextResponse.json({ friends: contacts });

@@ -126,6 +126,24 @@ export interface StravaFriend {
   country?: string;
 }
 
+/** An activity from /activities/following — includes minimal athlete info */
+export interface StravaFollowingActivity {
+  id: number;
+  name: string;
+  sport_type: string;
+  start_date: string;
+  distance: number;
+  moving_time: number;
+  kudos_count: number;
+  athlete: {
+    id: number;
+    firstname: string;
+    lastname: string;
+    profile_medium: string;
+    profile: string;
+  };
+}
+
 /** A Strava club the athlete belongs to */
 export interface StravaClub {
   id: number;
