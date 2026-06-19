@@ -36,7 +36,7 @@ export default function InvitePage({
   const firstName = inviter?.name?.split(" ")[0] ?? "חבר/ה";
   const callbackUrl = `/invite/${inviterId}/linked`;
 
-  const waMessage = `🏃 TriForce – ספורט חברתי 🚴\n\nהצטרף/י אלי לאפליקציה!\n🏃 ריצה · 🚴 אופניים · 🏊 שחייה · 🏋️ כושר\n\n📊 השווה ביצועים עם חברים\n🏆 אתגרים קבוצתיים\n\n👇\n${inviteUrl}`;
+  const waMessage = `*TriForce – ספורט חברתי* ⚡\n\nהצטרף/י אלי לאפליקציה!\n✅ ריצה | אופניים | שחייה | כושר\n✅ השווה ביצועים עם חברים\n✅ אתגרים קבוצתיים\n\n${inviteUrl}`;
   const waUrl = `https://wa.me/?text=${encodeURIComponent(waMessage)}`;
 
   return (
