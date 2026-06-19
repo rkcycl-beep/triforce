@@ -91,27 +91,36 @@ export default function CompareHubPage() {
       </div>
 
       {/* Scan result banner */}
-      {/* Invite link banner */}
-      {session?.user?.id && (
-        <button
-          onClick={() => {
-            const url = `${window.location.origin}/invite/${session.user.id}`;
-            navigator.clipboard.writeText(url).then(() => {
-              setCopied(true);
-              setTimeout(() => setCopied(false), 2500);
-            });
-          }}
-          className="flex w-full items-center justify-between rounded-xl border border-[#1D9E75]/20 bg-[#E1F5EE]/60 px-4 py-3 text-start transition-all hover:bg-[#E1F5EE] active:scale-[0.99]"
-        >
-          <div>
-            <p className="text-sm font-bold text-[#085041]">🔗 הזמן חברים</p>
-            <p className="text-xs text-gray-500">שלח קישור → הם מתחברים → כפתור ההשוואה נדלק</p>
+      {/* Invite banner */}
+      {session?.user?.id && (() => {
+        const inviteUrl = `${typeof window !== "undefined" ? window.location.origin : "https://triforce-iota.vercel.app"}/invite/${session.user.id}`;
+        const waMsg = `היי! אני משתמש/ת ב-TriForce לעקוב אחר האימונים ולהשוות ביצועים עם חברים. הצטרף/י! 🏃 ${inviteUrl}`;
+        const waUrl = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
+        return (
+          <div className="overflow-hidden rounded-xl border border-[#1D9E75]/20 bg-[#E1F5EE]/60">
+            <div className="px-4 pt-3 pb-2">
+              <p className="text-sm font-bold text-[#085041]">🔗 הזמן חברים להשוואה</p>
+              <p className="text-xs text-gray-500">הם מתחברים → כפתור ההשוואה נדלק אוטומטית</p>
+            </div>
+            <div className="flex gap-2 px-3 pb-3">
+              <a
+                href={waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#25D366] py-2.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#1da851] active:scale-95"
+              >
+                📲 שלח בווטסאפ
+              </a>
+              <button
+                onClick={() => navigator.clipboard.writeText(inviteUrl).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); })}
+                className={`flex-1 rounded-lg py-2.5 text-xs font-bold transition-all active:scale-95 ${copied ? "bg-[#1D9E75] text-white" : "bg-white text-[#1D9E75]"}`}
+              >
+                {copied ? "✓ הועתק!" : "📋 העתק קישור"}
+              </button>
+            </div>
           </div>
-          <span className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${copied ? "bg-[#1D9E75] text-white" : "bg-white text-[#1D9E75]"}`}>
-            {copied ? "✓ הועתק!" : "העתק"}
-          </span>
-        </button>
-      )}
+        );
+      })()}
 
       {scanResult && (
         <div className="rounded-xl bg-[#E1F5EE] px-4 py-2.5 text-sm font-medium text-[#085041]">

@@ -1156,12 +1156,14 @@ function ChosenFriendRow({
               📊 השווה
             </Link>
           ) : (
-            <button
-              onClick={() => setShowInput(v => !v)}
-              className="rounded-full bg-[#FC4C02]/10 px-2.5 py-1.5 text-[10px] font-bold text-[#FC4C02] transition-all hover:bg-[#FC4C02]/20 active:scale-95"
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`היי ${friend.name.split(" ")[0]}! אני משתמש/ת ב-TriForce לעקוב אחר אימונים ולהשוות ביצועים. הצטרף/י! 🏃 https://triforce-iota.vercel.app/invite/`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full bg-[#25D366] px-2.5 py-1.5 text-[10px] font-bold text-white transition-all hover:bg-[#1da851] active:scale-95"
             >
-              🔗 Strava
-            </button>
+              📲 וואטסאפ
+            </a>
           )}
           <button
             disabled={pending}

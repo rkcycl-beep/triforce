@@ -1,22 +1,45 @@
-import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
+"use client";
 
-export default async function InvitePage({
+import { use, useEffect, useState } from "react";
+
+interface InviterInfo {
+  name: string | null;
+  image: string | null;
+}
+
+export default function InvitePage({
   params,
 }: {
   params: Promise<{ inviterId: string }>;
 }) {
-  const { inviterId } = await params;
+  const { inviterId } = use(params);
+  const [inviter, setInviter] = useState<InviterInfo | null>(null);
+  const [notFound, setNotFound] = useState(false);
 
-  const inviter = await prisma.user.findUnique({
-    where: { id: inviterId },
-    select: { name: true, image: true },
-  });
+  useEffect(() => {
+    fetch(`/api/invite/${inviterId}/info`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(setInviter)
+      .catch(() => setNotFound(true));
+  }, [inviterId]);
 
-  if (!inviter) notFound();
+  if (notFound) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#f8faf9]" dir="rtl">
+        <p className="text-gray-500">קישור לא תקין</p>
+      </div>
+    );
+  }
 
-  const firstName = inviter.name?.split(" ")[0] ?? "חבר/ה";
+  const firstName = inviter?.name?.split(" ")[0] ?? "חבר/ה";
   const callbackUrl = `/invite/${inviterId}/linked`;
+
+  const inviteUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/invite/${inviterId}`
+    : "";
+
+  const waMessage = `היי! אני משתמש/ת ב-TriForce לעקוב אחר האימונים שלי ולהשוות ביצועים עם חברים. הצטרף/י! 🏃 ${inviteUrl}`;
+  const waUrl = `https://wa.me/?text=${encodeURIComponent(waMessage)}`;
 
   return (
     <div
@@ -35,15 +58,18 @@ export default async function InvitePage({
 
         {/* Invite card */}
         <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-          {inviter.image && (
+          {inviter?.image && (
             <img
               src={inviter.image}
               alt={inviter.name ?? ""}
               className="mx-auto mb-3 h-16 w-16 rounded-full object-cover"
             />
           )}
+          {!inviter && (
+            <div className="mx-auto mb-3 h-16 w-16 animate-pulse rounded-full bg-gray-100" />
+          )}
           <p className="text-lg font-bold text-gray-900">
-            {firstName} מזמין/ת אותך!
+            {inviter ? `${firstName} מזמין/ת אותך!` : "טוען..."}
           </p>
           <p className="mt-1 text-sm text-gray-500">
             הצטרף/י ל-TriForce כדי להשוות ביצועים ולעקוב אחר האימונים
@@ -52,19 +78,31 @@ export default async function InvitePage({
 
         {/* What you get */}
         <div className="space-y-2 rounded-xl bg-white/60 p-4 text-start text-sm text-gray-600">
-          {["📊 השוואת ריצה, אופניים ושחייה מול חברים",
+          {[
+            "📊 השוואת ריצה, אופניים ושחייה מול חברים",
             "🏆 אתגרי קבוצה עם לוח תוצאות",
-            "📅 מעקב אחר פעילויות מ-Strava"].map(item => (
+            "📅 מעקב אחר פעילויות מ-Strava",
+          ].map(item => (
             <p key={item}>{item}</p>
           ))}
         </div>
 
-        {/* CTA */}
+        {/* Primary CTA — Strava */}
         <a
           href={`/api/auth/signin/strava?callbackUrl=${encodeURIComponent(callbackUrl)}`}
           className="block w-full rounded-2xl bg-[#FC4C02] py-4 text-center text-base font-bold text-white shadow-md transition-colors hover:bg-[#e03d00] active:scale-95"
         >
           🚴 התחבר עם Strava
+        </a>
+
+        {/* WhatsApp share (for forwarding to others) */}
+        <a
+          href={waUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full rounded-2xl border border-[#25D366]/30 bg-[#25D366]/10 py-3 text-center text-sm font-bold text-[#128C7E] transition-colors hover:bg-[#25D366]/20 active:scale-95"
+        >
+          📲 שתף בווטסאפ עם חבר נוסף
         </a>
 
         <p className="text-xs text-gray-400">
