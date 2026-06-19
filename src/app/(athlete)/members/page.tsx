@@ -1162,7 +1162,7 @@ function ChosenFriendRow({
             </Link>
           ) : (
             <a
-              href={myUserId ? `https://wa.me/?text=${encodeURIComponent(`היי ${friend.name.split(" ")[0]}! אני משתמש/ת ב-TriForce לעקוב אחר אימונים ולהשוות ביצועים. הצטרף/י! 🏃 https://triforce-iota.vercel.app/invite/${myUserId}`)}` : "#"}
+              href={myUserId ? `https://wa.me/?text=${encodeURIComponent(`הצטרף/י ל-TriForce! 🏃\nhttps://triforce-iota.vercel.app/invite/${myUserId}`)}` : "#"}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-full bg-[#25D366] px-2.5 py-1.5 text-[10px] font-bold text-white transition-all hover:bg-[#1da851] active:scale-95"

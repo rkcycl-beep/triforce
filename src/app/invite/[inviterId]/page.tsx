@@ -36,7 +36,7 @@ export default function InvitePage({
   const firstName = inviter?.name?.split(" ")[0] ?? "חבר/ה";
   const callbackUrl = `/invite/${inviterId}/linked`;
 
-  const waMessage = `היי! אני משתמש/ת ב-TriForce לעקוב אחר האימונים שלי ולהשוות ביצועים עם חברים. הצטרף/י! 🏃 ${inviteUrl}`;
+  const waMessage = `הצטרף/י ל-TriForce! 🏃\n${inviteUrl}`;
   const waUrl = `https://wa.me/?text=${encodeURIComponent(waMessage)}`;
 
   return (
