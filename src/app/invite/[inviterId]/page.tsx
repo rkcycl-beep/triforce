@@ -15,8 +15,10 @@ export default function InvitePage({
   const { inviterId } = use(params);
   const [inviter, setInviter] = useState<InviterInfo | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [inviteUrl, setInviteUrl] = useState(`https://triforce-iota.vercel.app/invite/${inviterId}`);
 
   useEffect(() => {
+    setInviteUrl(`${window.location.origin}/invite/${inviterId}`);
     fetch(`/api/invite/${inviterId}/info`)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(setInviter)
@@ -33,10 +35,6 @@ export default function InvitePage({
 
   const firstName = inviter?.name?.split(" ")[0] ?? "חבר/ה";
   const callbackUrl = `/invite/${inviterId}/linked`;
-
-  const inviteUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/invite/${inviterId}`
-    : "";
 
   const waMessage = `היי! אני משתמש/ת ב-TriForce לעקוב אחר האימונים שלי ולהשוות ביצועים עם חברים. הצטרף/י! 🏃 ${inviteUrl}`;
   const waUrl = `https://wa.me/?text=${encodeURIComponent(waMessage)}`;

@@ -93,7 +93,7 @@ export default function CompareHubPage() {
       {/* Scan result banner */}
       {/* Invite banner */}
       {session?.user?.id && (() => {
-        const inviteUrl = `${typeof window !== "undefined" ? window.location.origin : "https://triforce-iota.vercel.app"}/invite/${session.user.id}`;
+        const inviteUrl = `https://triforce-iota.vercel.app/invite/${session.user.id}`;
         const waMsg = `היי! אני משתמש/ת ב-TriForce לעקוב אחר האימונים ולהשוות ביצועים עם חברים. הצטרף/י! 🏃 ${inviteUrl}`;
         const waUrl = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
         return (
