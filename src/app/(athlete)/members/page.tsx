@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ErrorMessage from "@/components/ui/ErrorMessage";
@@ -980,6 +981,8 @@ function MutualFriendRow({
 
 function MyFriendsContent() {
   const queryClient = useQueryClient();
+  const { data: session } = useSession();
+  const myUserId = session?.user?.id ?? "";
 
   // useQuery with same key — reactive, updates when KudosFriendRow toggles cache
   const { data: kudosData, isLoading: kudosLoading } = useQuery<KudosResponse>({
@@ -1066,7 +1069,7 @@ function MyFriendsContent() {
           <p className="text-xs font-bold text-gray-400">חברים שבחרתי ({chosenFriends.length})</p>
           <div className="space-y-1.5">
             {chosenFriends.map((f) => (
-              <ChosenFriendRow key={f.id} friend={f} onRemove={handleRemove} onStravaIdSaved={handleStravaIdSaved} />
+              <ChosenFriendRow key={f.id} friend={f} onRemove={handleRemove} onStravaIdSaved={handleStravaIdSaved} myUserId={myUserId} />
             ))}
           </div>
         </div>
@@ -1104,10 +1107,12 @@ function ChosenFriendRow({
   friend,
   onRemove,
   onStravaIdSaved,
+  myUserId,
 }: {
   friend: KudosFriend;
   onRemove: (f: KudosFriend) => void;
   onStravaIdSaved: (id: string, stravaAthleteId: string) => void;
+  myUserId: string;
 }) {
   const [pending, setPending] = useState(false);
   const [showInput, setShowInput] = useState(false);
@@ -1157,7 +1162,7 @@ function ChosenFriendRow({
             </Link>
           ) : (
             <a
-              href={`https://wa.me/?text=${encodeURIComponent(`היי ${friend.name.split(" ")[0]}! אני משתמש/ת ב-TriForce לעקוב אחר אימונים ולהשוות ביצועים. הצטרף/י! 🏃 https://triforce-iota.vercel.app/invite/`)}`}
+              href={myUserId ? `https://wa.me/?text=${encodeURIComponent(`היי ${friend.name.split(" ")[0]}! אני משתמש/ת ב-TriForce לעקוב אחר אימונים ולהשוות ביצועים. הצטרף/י! 🏃 https://triforce-iota.vercel.app/invite/${myUserId}`)}` : "#"}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-full bg-[#25D366] px-2.5 py-1.5 text-[10px] font-bold text-white transition-all hover:bg-[#1da851] active:scale-95"
