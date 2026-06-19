@@ -94,7 +94,7 @@ export default function CompareHubPage() {
       {/* Invite banner */}
       {session?.user?.id && (() => {
         const inviteUrl = `https://triforce-iota.vercel.app/invite/${session.user.id}`;
-        const waMsg = `*TriForce – ספורט חברתי* ⚡\n\nהצטרף/י אלי לאפליקציה!\n✅ ריצה | אופניים | שחייה | כושר\n✅ השווה ביצועים עם חברים\n✅ אתגרים קבוצתיים\n\n${inviteUrl}`;
+        const waMsg = `*TriForce – ספורט חברתי*\n\nהצטרף/י אלי לאפליקציה!\nריצה | אופניים | שחייה | כושר\n\nהשווה ביצועים עם חברים\nאתגרים קבוצתיים\n\n${inviteUrl}`;
         const waUrl = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
         return (
           <div className="overflow-hidden rounded-xl border border-[#1D9E75]/20 bg-[#E1F5EE]/60">

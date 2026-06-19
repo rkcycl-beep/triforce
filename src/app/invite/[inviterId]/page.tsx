@@ -14,29 +14,21 @@ export default function InvitePage({
 }) {
   const { inviterId } = use(params);
   const [inviter, setInviter] = useState<InviterInfo | null>(null);
-  const [notFound, setNotFound] = useState(false);
   const [inviteUrl, setInviteUrl] = useState(`https://triforce-iota.vercel.app/invite/${inviterId}`);
 
   useEffect(() => {
     setInviteUrl(`${window.location.origin}/invite/${inviterId}`);
+    // Try to load inviter's name — if it fails, show generic page (never block the invite)
     fetch(`/api/invite/${inviterId}/info`)
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(setInviter)
-      .catch(() => setNotFound(true));
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setInviter(data); })
+      .catch(() => {});
   }, [inviterId]);
-
-  if (notFound) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#f8faf9]" dir="rtl">
-        <p className="text-gray-500">קישור לא תקין</p>
-      </div>
-    );
-  }
 
   const firstName = inviter?.name?.split(" ")[0] ?? "חבר/ה";
   const callbackUrl = `/invite/${inviterId}/linked`;
 
-  const waMessage = `*TriForce – ספורט חברתי* ⚡\n\nהצטרף/י אלי לאפליקציה!\n✅ ריצה | אופניים | שחייה | כושר\n✅ השווה ביצועים עם חברים\n✅ אתגרים קבוצתיים\n\n${inviteUrl}`;
+  const waMessage = `*TriForce – ספורט חברתי*\n\nהצטרף/י אלי לאפליקציה!\nריצה | אופניים | שחייה | כושר\n\nהשווה ביצועים עם חברים\nאתגרים קבוצתיים\n\n${inviteUrl}`;
   const waUrl = `https://wa.me/?text=${encodeURIComponent(waMessage)}`;
 
   return (
