@@ -69,7 +69,7 @@ export default function LandingPage() {
           {/* Cube 1: Athlete */}
           <button
             onClick={() => {
-              if (isAuth && role === "ATHLETE") {
+              if (isAuth) {
                 router.push("/athlete");
               } else {
                 signIn("strava", { callbackUrl: "/athlete" });
