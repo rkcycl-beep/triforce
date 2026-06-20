@@ -572,12 +572,20 @@ List of groups with invite codes. Create new group → get 6-char code → share
 - `GET /api/athlete/strava-clubs/[id]/members` — club members
 - `GET /api/athlete/strava-kudos` — kudos contacts from DB (scan on ?refresh=1)
 - `POST /api/athlete/strava-contacts/[id]` — toggle isChosen
+- `PATCH /api/athlete/strava-contacts/[id]` — save stravaAthleteId from URL
 - `GET /api/athlete/mutual-friends` — cross-reference clubs × kudos contacts
 - `POST /api/athlete/sync` — manual Strava sync
 - `GET /api/athlete/users/search` — search TriForce users
 - `GET /api/athlete/feed` — activity feed from followed users
 - `GET /api/athlete/messages` — inbox
 - `GET /api/athlete/events` — upcoming events
+- `GET /api/athlete/chosen-friends` — isChosen=true contacts (with stravaAthleteId)
+- `GET /api/athlete/compare/[contactId]` — side-by-side stats (TriForce DB or Strava API)
+- `GET /api/athlete/strava-following` — scan club members → save stravaAthleteId
+
+### Invite
+- `GET /api/invite/[inviterId]/info` — public: returns inviter name + photo
+- `POST /api/invite/accept/[inviterId]` — links new user to inviter's StravaContact
 
 ### Coach
 - `GET /api/coach/dashboard` — stats, athletes, weekly chart, groups
@@ -604,16 +612,25 @@ Actual screenshots of the running app are stored in `/screenshots/`:
 - `10-coach-groups.png` — coach group management
 - `11-members.png` — members/friends page
 
-### Athlete App (current + planned)
-1. **Home** (`/dashboard`) — TWO WINGS: coach context + friends context [PLANNED REBUILD]
-2. **Compare** (`/compare/[id]`) — head-to-head stats per sport [PLANNED]
-3. **Peer Challenge** — create/track friend vs friend challenge [PLANNED]
-4. **Members/Friends** (`/members`) — kudos friends, mutual friends, club members, TriForce follows
-5. **Challenges** (`/challenges`) — coach-set group challenges
-6. **Activities** (`/activities`) — full activity history
-7. **Messages** (`/messages`) — inbox from coach
-8. **Events** (`/events`) — upcoming group events
-9. **Settings** (`/settings`) — join group via code, Strava status, language
+### Athlete App (current)
+1. **Home** (`/dashboard`) — two wings: coach context + friends context
+2. **Athlete Hub** (`/athlete`) — 7 cubes: הבית שלי, חברים, אתגרים, היסטוריה, הודעות, אירועים, השוואה
+3. **Compare Hub** (`/compare`) — friend cards with 🏃🚴🏊 sport buttons + WhatsApp invite
+4. **Compare Detail** (`/compare/[contactId]`) — side-by-side stats, period/sport tabs
+5. **Invite** (`/invite/[userId]`) — public landing page for friend invites (Strava connect)
+6. **Members/Friends** (`/members`) — kudos friends, mutual friends, club members, TriForce follows
+7. **Challenges** (`/challenges`) — coach-set group challenges
+8. **Activities** (`/activities`) — full activity history
+9. **Messages** (`/messages`) — inbox from coach
+10. **Events** (`/events`) — upcoming group events
+11. **Settings** (`/settings`) — join group via code, Strava status, language
+
+### Production Deployment
+- **URL**: https://triforce-iota.vercel.app
+- **Repo**: github.com/rkcycl-beep/triforce
+- **DB**: Neon PostgreSQL (eu-central-1) — DATABASE_URL uses `-pooler` endpoint + `?pgbouncer=true`
+- **Auth**: NextAuth v4 JWT strategy — Strava OAuth callback = triforce-iota.vercel.app
+- **Strava app**: athlete limit = 10 (Standard Tier)
 
 ### Coach App (current)
 1. **Coach Home** (`/coach`) — 6-cube navigation hub

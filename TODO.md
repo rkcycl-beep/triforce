@@ -289,6 +289,46 @@
 - [x] `page.tsx` (landing) — coach cube goes directly to `/coach`, no longer routes to sign-in
 - [x] `POST /api/coach/groups` — COACH role check replaced with simple auth check
 
+## Session 2026-06-17→20 — Compare + Invite + Deploy
+
+### Compare feature
+- [x] `/compare` hub page — chosen friend cards with sport buttons (🏃 🚴 🏊)
+- [x] `/compare/[contactId]` detail — side-by-side stats, two modes:
+  - Mode A (TriForce DB): exact date filtering, 7 stats including pace
+  - Mode B (Strava API): aggregate stats via `/athletes/{id}/stats`
+- [x] `stravaAthleteId String?` field added to `StravaContact` schema
+- [x] Compare button on every chosen friend row in members page
+- [x] 📊 השוואה cube added to athlete hub `/athlete`
+- [x] Fixed: avgPace crown was on slower runner (whoWinsHigher vs whoWinsLower)
+- [x] Fixed: TanStack Query retry: false — error shows immediately on 404
+
+### Invite system
+- [x] `/invite/[userId]` — public landing page (client component, no SSR Prisma)
+- [x] `/invite/[userId]/linked` — post-connect page (links account, redirects to dashboard)
+- [x] `POST /api/invite/accept/[inviterId]` — links new user to inviter's contacts
+- [x] `GET /api/invite/[inviterId]/info` — returns inviter name/photo (public)
+- [x] Invite auto-matches by name OR creates new StravaContact with triforceUserId set
+- [x] Creates mutual Follow on both sides
+
+### WhatsApp share
+- [x] "📲 שלח בווטסאפ" button on compare hub — generates wa.me link
+- [x] WhatsApp button on each friend row that hasn't joined TriForce
+- [x] Message: plain Hebrew text (no emojis — older phones show ? for sport emojis)
+- [x] URL on its own line to prevent WhatsApp truncation
+
+### Deployment
+- [x] Deployed to Vercel: https://triforce-iota.vercel.app
+- [x] Strava callback domain updated to triforce-iota.vercel.app
+- [x] Strava athlete limit upgraded to 10 (Standard Tier)
+- [x] DATABASE_URL fixed — was stored with surrounding quotes, now correct
+- [x] מתאמן landing button fixed — now routes any authenticated user to /athlete
+
+### Strava API findings (confirmed by testing)
+- `/athlete/following`, `/activities/following` — removed/404, cannot get friends list
+- `/athletes/{id}/stats` — 403 for other athletes, only works for self
+- Club members DO have Strava IDs → best source for TriForce user matching
+- Rate limit: 100 req/15min (Standard Tier)
+
 ## Current Focus
 **Next: Phase 2A — Peer Groups (קבוצות עמיתים)**
 
