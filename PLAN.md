@@ -48,6 +48,25 @@ Starting with ~40 athletes in one coaching group in Israel.
 
 ---
 
+## Core Architecture Principle — Scan Once, Read from DB
+
+**Every piece of data that requires an external scan (Strava API, Garmin API, club members, kudos contacts, mutual friends, leaderboard scores, or any other source that costs API calls or computation) is fetched once, persisted to the database with a `scannedAt` / `updatedAt` timestamp, and served from the DB on every subsequent request.**
+
+### Rules:
+1. **Default GET = DB read.** No endpoint may call an external API or do heavy computation automatically on every page load.
+2. **Refresh is always explicit.** The user triggers a re-scan via a button, or the system triggers it via webhook/cron. Never on page load.
+3. **Always store a timestamp.** Every cached record must record when it was last scanned so the UI can show "נסרק לאחרונה: [date]".
+4. **Stale is better than slow.** If the DB has data from yesterday, show it. A spinner on every visit is worse than slightly stale data with a refresh button.
+5. **Applies to:** Strava activities, Garmin data, club members, kudos contacts, mutual friends, leaderboard scores, group members, achievements, challenge scores — anything that involves network I/O or expensive computation.
+
+### Pattern (already live for kudos + mutual friends):
+```
+GET /api/athlete/some-data          → reads from DB (fast, always)
+GET /api/athlete/some-data?refresh=1 → scans external source, upserts DB, returns fresh data
+```
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |

@@ -1,3 +1,8 @@
+/**
+ * GET  /api/athlete/mutual-friends          — reads persisted results from DB (fast, no Strava calls)
+ * GET  /api/athlete/mutual-friends?refresh=1 — scans Strava clubs, persists results, returns fresh data
+ */
+
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -32,16 +37,48 @@ async function getAccessToken(userId: string) {
   return account.access_token;
 }
 
-export async function GET() {
+function toRow(c: {
+  id: string; name: string; kudosCount: number; latestKudosAt: Date;
+  isChosen: boolean; mutualClubs: string[]; triforceUserId: string | null; scannedAt: Date;
+}) {
+  return {
+    id: c.id,
+    name: c.name,
+    kudosCount: c.kudosCount,
+    latestKudosAt: c.latestKudosAt.toISOString(),
+    isChosen: c.isChosen,
+    clubs: c.mutualClubs,
+    triforceUserId: c.triforceUserId,
+    lastScan: c.scannedAt.toISOString(),
+  };
+}
+
+export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
+  const refresh = new URL(request.url).searchParams.get("refresh") === "1";
+
+  // Fast path — just read from DB
+  if (!refresh) {
+    const contacts = await prisma.stravaContact.findMany({
+      where: { userId: session.user.id, isMutual: true },
+      orderBy: { kudosCount: "desc" },
+    });
+    return NextResponse.json({
+      mutual: contacts.map(toRow),
+      totalClubMembers: null,
+      totalClusters: null,
+      fromCache: true,
+    });
+  }
+
+  // Slow path — scan Strava clubs, persist results
   try {
     const accessToken = await getAccessToken(session.user.id);
 
-    // Step 1 — get all user's clubs
     const clubsRes = await fetch(
       "https://www.strava.com/api/v3/athlete/clubs?per_page=30",
       { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -49,10 +86,8 @@ export async function GET() {
     if (!clubsRes.ok) throw new Error("Failed to fetch clubs");
     const clubs = await clubsRes.json() as Array<{ id: number; name: string }>;
 
-    // Step 2 — collect all member names from all clubs
-    const clubMemberNames = new Set<string>();
+    // Collect all member names → which clubs they appear in
     const clubsByMember: Record<string, string[]> = {};
-
     for (const club of clubs) {
       for (let page = 1; page <= 3; page++) {
         const res = await fetch(
@@ -64,7 +99,6 @@ export async function GET() {
         for (const m of members) {
           const name = `${m.firstname ?? ""} ${m.lastname ?? ""}`.trim();
           if (!name) continue;
-          clubMemberNames.add(name);
           if (!clubsByMember[name]) clubsByMember[name] = [];
           clubsByMember[name].push(club.name);
         }
@@ -72,31 +106,39 @@ export async function GET() {
       }
     }
 
-    // Step 3 — cross-reference with StravaContacts (people who gave kudos)
-    const contacts = await prisma.stravaContact.findMany({
+    const clubMemberNames = new Set(Object.keys(clubsByMember));
+
+    // Update all existing StravaContacts: set isMutual + mutualClubs
+    const allContacts = await prisma.stravaContact.findMany({
       where: { userId: session.user.id },
+    });
+
+    await Promise.all(
+      allContacts.map((c) => {
+        const isMutual = clubMemberNames.has(c.name);
+        return prisma.stravaContact.update({
+          where: { id: c.id },
+          data: {
+            isMutual,
+            mutualClubs: isMutual ? clubsByMember[c.name] : [],
+          },
+        });
+      })
+    );
+
+    const mutualContacts = await prisma.stravaContact.findMany({
+      where: { userId: session.user.id, isMutual: true },
       orderBy: { kudosCount: "desc" },
     });
 
-    const mutual = contacts
-      .filter((c) => clubMemberNames.has(c.name))
-      .map((c) => ({
-        id: c.id,
-        name: c.name,
-        kudosCount: c.kudosCount,
-        latestKudosAt: c.latestKudosAt.toISOString(),
-        isChosen: c.isChosen,
-        clubs: clubsByMember[c.name] ?? [],
-        triforceUserId: c.triforceUserId,
-      }));
-
     return NextResponse.json({
-      mutual,
+      mutual: mutualContacts.map(toRow),
       totalClubMembers: clubMemberNames.size,
       totalClusters: clubs.length,
+      fromCache: false,
     });
   } catch (error) {
     console.error("mutual-friends error:", error);
-    return NextResponse.json({ error: "Failed" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to scan clubs." }, { status: 500 });
   }
 }

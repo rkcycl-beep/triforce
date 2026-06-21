@@ -41,6 +41,11 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum GroupType {
+  COACH
+  PEER
+}
+
 // ─── NextAuth Required Models ─────────────────────────────────
 
 model Account {
@@ -105,17 +110,21 @@ model User {
   followers        Follow[]        @relation("UserFollowers")
   stravaContacts   StravaContact[]
   stravaContactOf  StravaContact[] @relation("StravaContactTriforce")
+  createdGroups    Group[]         @relation("GroupCreator")
 }
 
 model Group {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   name       String
-  slug       String   @unique
-  inviteCode String   @unique // 6-char code athletes use to join
-  timezone   String   @default("Asia/Jerusalem")
-  locale     String   @default("he")
-  createdAt  DateTime @default(now())
+  slug       String    @unique
+  inviteCode String    @unique // 6-char code athletes use to join
+  type       GroupType @default(COACH)
+  creatorId  String?   // set for PEER groups; null for legacy COACH groups
+  timezone   String    @default("Asia/Jerusalem")
+  locale     String    @default("he")
+  createdAt  DateTime  @default(now())
 
+  creator     User?             @relation("GroupCreator", fields: [creatorId], references: [id])
   memberships GroupMembership[]
   activities  Activity[]
   challenges  Challenge[]
@@ -290,6 +299,8 @@ model StravaContact {
   latestKudosAt  DateTime
   scannedAt      DateTime @default(now())
   isChosen        Boolean  @default(false)   // user explicitly marked this as a friend
+  isMutual        Boolean  @default(false)   // appears in a shared Strava club — set by /api/athlete/mutual-friends?refresh=1
+  mutualClubs     String[]                   // club names where this contact was found
   triforceUserId  String?                     // filled when this contact joins TriForce
   stravaAthleteId String?                     // Strava numeric ID — set for club members, enables direct API comparison
 

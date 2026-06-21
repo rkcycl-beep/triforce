@@ -94,8 +94,9 @@ interface MutualFriend {
 
 interface MutualFriendsResponse {
   mutual: MutualFriend[];
-  totalClubMembers: number;
-  totalClusters: number;
+  totalClubMembers: number | null;
+  totalClusters: number | null;
+  fromCache: boolean;
 }
 
 const RANGE_OPTIONS = [
@@ -844,14 +845,14 @@ function MutualFriendsSection({
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },
-    staleTime: 5 * 60 * 1000, // cache 5 min — each scan is ~26 API calls
+    staleTime: Infinity, // DB read — never auto-refetch; user triggers rescan explicitly
     retry: 0,
   });
 
   const handleRescan = async () => {
     setScanning(true);
     try {
-      const res = await fetch("/api/athlete/mutual-friends");
+      const res = await fetch("/api/athlete/mutual-friends?refresh=1");
       if (res.ok) {
         const fresh = await res.json() as MutualFriendsResponse;
         queryClient.setQueryData(["mutual-friends"], fresh);
@@ -887,16 +888,20 @@ function MutualFriendsSection({
   if (data.mutual.length === 0) {
     return (
       <div className="rounded-xl border border-gray-100 bg-gray-50/60 p-4 text-center">
-        <p className="text-sm font-bold text-gray-600">לא נמצאו חברים הדדיים</p>
+        <p className="text-sm font-bold text-gray-600">
+          {data.fromCache ? "לא סרקת עדיין" : "לא נמצאו חברים הדדיים"}
+        </p>
         <p className="mt-1 text-xs text-gray-400">
-          {data.totalClusters} מועדונים · {data.totalClubMembers} חברים נבדקו
+          {data.fromCache
+            ? "לחץ כדי לסרוק את המועדונים שלך בסטראבה"
+            : `${data.totalClusters} מועדונים · ${data.totalClubMembers?.toLocaleString()} חברים נבדקו`}
         </p>
         <button
           onClick={handleRescan}
           disabled={scanning}
           className="mt-2 rounded-lg bg-gray-100 px-3 py-1 text-xs font-bold text-gray-500 hover:bg-gray-200 disabled:opacity-50"
         >
-          {scanning ? "סורק..." : "🔄 סרוק מחדש"}
+          {scanning ? "סורק..." : "🔄 סרוק מועדונים"}
         </button>
       </div>
     );
@@ -916,9 +921,11 @@ function MutualFriendsSection({
           {scanning ? "סורק..." : "🔄"}
         </button>
       </div>
-      <p className="text-[10px] text-gray-400">
-        {data.totalClusters} מועדונים · {data.totalClubMembers.toLocaleString()} חברים
-      </p>
+      {data.totalClusters != null && (
+        <p className="text-[10px] text-gray-400">
+          {data.totalClusters} מועדונים · {data.totalClubMembers?.toLocaleString()} חברים
+        </p>
+      )}
       <div className="space-y-1.5">
         {data.mutual.map((f) => (
           <MutualFriendRow key={f.id} friend={f} onToggle={onToggle} />

@@ -22,6 +22,7 @@ export async function GET() {
             id: true,
             name: true,
             inviteCode: true,
+            type: true,
           },
         },
       },
@@ -31,6 +32,7 @@ export async function GET() {
       id: m.group.id,
       name: m.group.name,
       inviteCode: m.group.inviteCode,
+      type: m.group.type,
     }));
 
     return NextResponse.json({ groups });

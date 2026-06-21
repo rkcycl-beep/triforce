@@ -7,6 +7,19 @@
 
 ---
 
+## Architectural Rule — Scan Once, Read from DB
+
+> **Any data that requires an external scan is fetched once, saved to the DB with a timestamp, and read from the DB on every subsequent request. Re-scanning only happens on explicit user action or a system trigger (webhook / cron). This applies to: Strava activities, club members, kudos contacts, mutual friends, leaderboard scores, challenge scores, group members, achievements — everything.**
+>
+> Pattern:
+> - `GET /api/...`           → DB read (fast, no external calls)
+> - `GET /api/...?refresh=1` → external scan → upsert DB → return fresh data
+>
+> Already live: strava-kudos, mutual-friends, activity sync.
+> Must be respected in every new feature going forward.
+
+---
+
 ## POC (Complete)
 - [x] Next.js 16 project setup
 - [x] Tailwind CSS + TypeScript
@@ -42,13 +55,15 @@
 
 ---
 
-## Phase 1B: Groups + Roles
+## Phase 1B: Groups + Roles ✅ CLOSED
 - [x] Coach registration: add Credentials provider (email/password)
 - [x] Create services/group.service.ts
-- [x] Create /api/coach/groups route (create group)
+- [x] Create /api/coach/groups route (create group) — COACH role check restored
 - [x] Create /api/athlete/groups/join route (join via invite code)
 - [x] Add role to NextAuth session
-- [x] Update proxy.ts: coach routes require COACH role
+- [x] proxy.ts: protects /coach, /athlete, /groups, /members, /compare, /settings, /friends
+- [x] (coach)/layout.tsx: redirects non-COACH users to /
+- [x] (athlete)/layout.tsx: redirects unauthenticated users to /
 - [x] Create coach layout with sidebar navigation
 - [x] Coach dashboard page (basic)
 - [x] Group creation form UI
@@ -344,15 +359,16 @@ The `Group` model will support TWO types via a single `type` field:
 Same DB model, same services, same message/challenge/event tables — just different permissions and UI per type.
 
 ### DB change
-- [ ] Add `type GroupType` enum (`COACH | PEER`) to `Group` model in `schema.prisma`
-- [ ] Add `creatorId String` to `Group` model (who opened it)
-- [ ] Run `npx prisma db push`
+- [x] Add `type GroupType` enum (`COACH | PEER`) to `Group` model in `schema.prisma`
+- [x] Add `creatorId String?` to `Group` model (who opened it)
+- [x] Run `npx prisma db push`
 
 ### API changes
-- [ ] `POST /api/athlete/groups/create` — athlete creates a PEER group
-- [ ] `POST /api/athlete/groups/[groupId]/invite` — invite a chosen friend to peer group
-- [ ] `GET /api/athlete/groups/[groupId]` — group detail (works for both types)
-- [ ] Update `GET /api/athlete/groups` — return both COACH and PEER groups
+- [x] `POST /api/athlete/groups/create` — athlete creates a PEER group
+- [x] `POST /api/athlete/groups/[groupId]/invite` — invite a chosen friend to peer group
+- [x] `GET /api/athlete/groups/[groupId]` — group detail (works for both types)
+- [x] `GET/POST /api/athlete/groups/[groupId]/messages` — member-accessible messages (PEER: any member can post; COACH: read-only)
+- [x] Update `GET /api/athlete/groups` — return both COACH and PEER groups
 
 ### Features inside a PEER group (same as COACH group, different roles)
 - [ ] Messaging (chat between members)
@@ -363,10 +379,11 @@ Same DB model, same services, same message/challenge/event tables — just diffe
 - [ ] Group creator can approve/remove members
 
 ### UI — Athlete side
-- [ ] "צור קבוצה" button in `/athlete` hub (opens create-peer-group form)
-- [ ] Group detail page (`/groups/[groupId]`) — shared UI for COACH + PEER groups
-- [ ] Group page tabs: הודעות | אתגרים | חברים | השוואה
-- [ ] Invite friends from chosen contacts list
+- [x] "קבוצות" cube added to `/athlete` hub → `/groups`
+- [x] `/groups` page — list COACH + PEER groups, "צור קבוצה" inline form
+- [x] `/groups/[groupId]` — shared detail page for COACH + PEER groups
+- [x] Group page tabs: חברים | הודעות | אתגרים
+- [ ] Invite friends from chosen contacts list (show contact picker in group detail)
 
 ### UI — Coach side
 - [ ] No changes needed — coach groups stay as-is under `/coach/groups`
