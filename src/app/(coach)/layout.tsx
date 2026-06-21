@@ -5,8 +5,8 @@ import CoachShell from "@/components/layout/CoachShell";
 
 export default async function CoachLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as { role?: string }).role !== "COACH") {
-    redirect("/coach/sign-in");
+  if (!session?.user) {
+    redirect("/");
   }
   return <CoachShell>{children}</CoachShell>;
 }

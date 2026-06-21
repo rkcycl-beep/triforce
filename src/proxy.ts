@@ -26,16 +26,7 @@ export function proxy(request: NextRequest): NextResponse {
     request.cookies.has("next-auth.session-token") ||
     request.cookies.has("__Secure-next-auth.session-token");
 
-  // Public paths that must never be blocked, even when they start with a protected prefix.
-  const alwaysPublic = ["/coach/sign-in", "/coach/sign-up"];
-  if (alwaysPublic.some((p) => pathname.startsWith(p))) {
-    return NextResponse.next();
-  }
-
   // These paths require the user to be logged in (any role).
-  // Role-based protection (e.g. /coach requires COACH role) is handled in the
-  // route group layout via getServerSession — proxy can't decode the JWT role
-  // under Next 16 without triggering "Router action dispatched before init" errors.
   // /invite/* is intentionally public — anyone can open an invite link.
   const protectedPaths = [
     "/dashboard", "/activities", "/challenges", "/profile",
@@ -44,10 +35,8 @@ export function proxy(request: NextRequest): NextResponse {
   ];
   const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
 
-  // Not authenticated → send to coach sign-in for /coach/* paths, otherwise home
   if (isProtected && !hasSession) {
-    const dest = pathname.startsWith("/coach") ? "/coach/sign-in" : "/";
-    return NextResponse.redirect(new URL(dest, request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   // The "/" → role-aware redirect is handled by app/page.tsx (server component).
