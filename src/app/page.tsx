@@ -88,7 +88,13 @@ export default function LandingPage() {
 
           {/* Cube 2: Coach */}
           <button
-            onClick={() => router.push("/coach")}
+            onClick={() => {
+              if (isAuth) {
+                router.push("/coach");
+              } else {
+                signIn("strava", { callbackUrl: "/coach" });
+              }
+            }}
             className="group flex aspect-square flex-col items-center justify-center gap-2 rounded-[20px] border border-white/15 bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 shadow-[0_12px_28px_rgba(51,65,85,0.25),0_4px_8px_rgba(51,65,85,0.12)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1.5 hover:scale-[1.04] hover:shadow-[0_20px_40px_rgba(51,65,85,0.35),0_6px_12px_rgba(51,65,85,0.18)] active:translate-y-0.5 active:scale-[0.98]"
           >
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-xl backdrop-blur-sm">
