@@ -56,14 +56,16 @@
 ---
 
 ## Phase 1B: Groups + Roles ✅ CLOSED
-- [x] Coach registration: add Credentials provider (email/password)
+- [x] Coach registration: add Credentials provider (email/password) → later removed; Strava-only now
 - [x] Create services/group.service.ts
-- [x] Create /api/coach/groups route (create group) — COACH role check restored
+- [x] Create /api/coach/groups route (create group)
 - [x] Create /api/athlete/groups/join route (join via invite code)
 - [x] Add role to NextAuth session
 - [x] proxy.ts: protects /coach, /athlete, /groups, /members, /compare, /settings, /friends
-- [x] (coach)/layout.tsx: redirects non-COACH users to /
 - [x] (athlete)/layout.tsx: redirects unauthenticated users to /
+- [x] (coach)/layout.tsx: any authenticated user can access (role gate deferred to pre-launch)
+- [x] Coach sign-in/sign-up pages removed — single Strava login for all users
+- [x] package.json build script: prisma generate runs before next build (fixes Vercel cache)
 - [x] Create coach layout with sidebar navigation
 - [x] Coach dashboard page (basic)
 - [x] Group creation form UI
@@ -345,7 +347,45 @@
 - Rate limit: 100 req/15min (Standard Tier)
 
 ## Current Focus
-**Next: Phase 2A — Peer Groups (קבוצות עמיתים)**
+**Phase 2A core complete.** Groups (COACH + PEER) fully working: create, list all, detail, add/remove members, delete, messaging. Next: peer challenges + activity comparison inside groups.
+
+---
+
+## Session 2026-06-20→21 — Groups Overhaul + Auth Simplification
+
+### Architectural rule added
+- [x] "Scan Once, Read from DB" principle written into PLAN.md + TODO.md — applies to all future features
+
+### Mutual friends — scan-once fix
+- [x] Added `isMutual Boolean` + `mutualClubs String[]` to StravaContact schema
+- [x] `/api/athlete/mutual-friends` GET reads from DB (fast); `?refresh=1` scans Strava clubs + persists
+- [x] `staleTime: Infinity` on client — no auto re-scan on page load
+
+### Phase 2A: Peer Groups + Group management
+- [x] Schema: `GroupType` enum (COACH|PEER), `type` + `creatorId` added to Group
+- [x] `group.service.ts` fully rewritten: createGroup (sets creatorId+type), createPeerGroup, getAllGroups, getGroupDetail (non-member safe), getNonMembers (all TriForce users), addMemberToGroup, removeMemberFromGroup, deleteGroup
+- [x] `GET /api/groups` — all groups with isMember/isOwner flags per caller
+- [x] `GET /api/athlete/groups/[groupId]` — open to non-members (returns basic info)
+- [x] `GET /api/athlete/groups/[groupId]/non-members` — addable users for owner
+- [x] `POST/DELETE /api/athlete/groups/[groupId]/members/[userId]` — owner add/remove
+- [x] `GET/POST /api/athlete/groups/[groupId]/messages` — member-scoped messages
+- [x] `DELETE /api/groups/[groupId]` — owner deletes group (sequential dependency-order deletes)
+- [x] `GET /api/coach/groups` — added (was POST-only before)
+- [x] `/groups` page: all groups, two sections, "מחק קבוצה" with inline confirm
+- [x] `/groups/[groupId]`: 3-view page (non-member join | member tabs | owner picker+tabs)
+- [x] `/coach/groups/[groupId]` rebuilt as interactive client component with full picker
+- [x] `/coach/groups` fixed to use proper API (was fetching from dashboard endpoint)
+
+### Auth simplification
+- [x] Coach credentials sign-in/sign-up pages deleted
+- [x] Landing page Coach cube → Strava login if not authenticated, /coach if logged in
+- [x] Coach layout: any authenticated user (role gate deferred to pre-launch)
+
+### Build + deployment fixes
+- [x] `"build": "prisma generate && next build"` — prevents stale Prisma client on Vercel
+- [x] Fixed Turbopack cache issue locally (cleared .next, regenerated Prisma client)
+- [x] Group delete: switched from `$transaction` (blocked by Neon PgBouncer) to sequential awaits
+- [x] Member picker: now shows all TriForce users for both group types (was filtering to chosen contacts only)
 
 ---
 
@@ -371,22 +411,25 @@ Same DB model, same services, same message/challenge/event tables — just diffe
 - [x] Update `GET /api/athlete/groups` — return both COACH and PEER groups
 
 ### Features inside a PEER group (same as COACH group, different roles)
-- [ ] Messaging (chat between members)
+- [x] Messaging (chat between members — PEER: any member can send; COACH: read-only)
+- [x] Group creator can add/remove members (direct picker — no invite code needed)
 - [ ] Encouragement / likes on messages
 - [ ] Activity comparison between members
 - [ ] Peer challenges (sport / metric / goal / duration)
 - [ ] Virtual trophy / achievement scoring
-- [ ] Group creator can approve/remove members
 
 ### UI — Athlete side
 - [x] "קבוצות" cube added to `/athlete` hub → `/groups`
-- [x] `/groups` page — list COACH + PEER groups, "צור קבוצה" inline form
-- [x] `/groups/[groupId]` — shared detail page for COACH + PEER groups
+- [x] `/groups` page — all groups visible; owned/member groups + others with join; delete with confirm
+- [x] `/groups/[groupId]` — permission-aware: owner sees picker + remove buttons; member sees read tabs; non-member sees join form
 - [x] Group page tabs: חברים | הודעות | אתגרים
-- [ ] Invite friends from chosen contacts list (show contact picker in group detail)
+- [x] Member picker shows ALL TriForce users not in group (both COACH and PEER)
+- [x] Group delete: sequential deletes in dependency order (avoids Neon transaction issues)
 
 ### UI — Coach side
-- [ ] No changes needed — coach groups stay as-is under `/coach/groups`
+- [x] `/coach/groups/[groupId]` rebuilt as interactive client component
+- [x] Coach sees: current members with "הסר" buttons + full picker of all TriForce users not in group
+- [x] `/coach/groups` page fixed to use proper API endpoint (was using dashboard endpoint)
 
 ### Build order
 1. Schema change + DB push

@@ -12,18 +12,36 @@ Starting with ~40 athletes in one coaching group in Israel.
 
 ---
 
-## Current State (POC — Complete)
+## Current State (as of 2026-06-21)
 
-- Next.js 16 + TypeScript + Tailwind CSS
-- Strava OAuth working (NextAuth v4, JWT strategy)
-- Activity data fetching from Strava API with auto token refresh
-- Unified Activity type (multi-source ready)
-- Dashboard with stats cards, weekly chart, activity list
-- Activity detail page with route map (Leaflet.js)
-- Mobile-first responsive layout
-- NO database — everything is API-fetched + JWT-stored
-- NO roles — single user type (athlete via Strava)
-- LTR English only
+**Live at:** https://triforce-iota.vercel.app
+
+### Working
+- Next.js 16 + TypeScript + Tailwind CSS + Neon PostgreSQL + Prisma 5
+- Strava OAuth (NextAuth v4, JWT) — single login for all users (athletes + coaches)
+- Activity sync to DB on login + manual sync button; Strava webhooks (create/update/delete)
+- Dashboard: stats cards, weekly chart, activity list (from DB)
+- Activity detail with route map (Leaflet.js)
+- Mobile-first Hebrew RTL layout (Heebo font, i18n/he.json + en.json)
+- Groups (COACH + PEER): create, list all, detail view, add/remove members, delete, messaging
+- Friends discovery: Strava kudos contacts + mutual club members (scan-once, stored in DB)
+- Compare: side-by-side stats between any two TriForce users
+- Invite system: /invite/[userId] public page + WhatsApp share
+- Challenges: 3 scoring engines (age grade, category, personal improvement) + leaderboard
+- Coach hub: group management, challenges, messages, events, stats dashboard
+- Athlete hub: dashboard, groups, friends, history, messages, events, compare
+
+### Deferred to pre-launch
+- COACH role gate (currently any authenticated user can access /coach)
+- Personal conversation threads (athlete ↔ coach)
+- Unread message badges
+- PWA manifest + service worker
+- Error/loading/empty state audit
+
+### Next up
+- Peer challenges (inside peer groups)
+- Activity comparison tab inside group detail
+- Prize display on challenges (Phase 1C remainder)
 
 ---
 
