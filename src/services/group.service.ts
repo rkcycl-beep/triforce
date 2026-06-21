@@ -190,32 +190,12 @@ export async function getNonMembers(groupId: string, requesterId: string) {
 
   const memberIds = group.memberships.map((m) => m.userId);
 
-  if (group.type === "COACH") {
-    const users = await prisma.user.findMany({
-      where: { id: { notIn: memberIds } },
-      select: { id: true, name: true, image: true, role: true },
-      orderBy: { name: "asc" },
-    });
-    return users.map((u) => ({ id: u.id, name: u.name, image: u.image, role: u.role }));
-  }
-
-  // PEER: only chosen friends that have a TriForce account
-  const contacts = await prisma.stravaContact.findMany({
-    where: {
-      userId: requesterId,
-      isChosen: true,
-      triforceUserId: { not: null, notIn: memberIds },
-    },
-    select: { triforceUserId: true, name: true },
-  });
-
-  // Resolve their TriForce user records
-  const ids = contacts.map((c) => c.triforceUserId as string);
-  if (ids.length === 0) return [];
-
+  // Show all registered TriForce users not already in the group,
+  // for both COACH and PEER types.
   const users = await prisma.user.findMany({
-    where: { id: { in: ids } },
+    where: { id: { notIn: [...memberIds, requesterId] } },
     select: { id: true, name: true, image: true, role: true },
+    orderBy: { name: "asc" },
   });
   return users.map((u) => ({ id: u.id, name: u.name, image: u.image, role: u.role }));
 }
