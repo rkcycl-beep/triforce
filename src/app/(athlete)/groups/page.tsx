@@ -62,6 +62,7 @@ export default function GroupsPage() {
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [joinCode, setJoinCode] = useState("");
   const [joinError, setJoinError] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const { data: groups = [], isLoading, isError } = useQuery({
     queryKey: ["all-groups"],
@@ -86,6 +87,17 @@ export default function GroupsPage() {
       setJoinError("");
     },
     onError: (e: Error) => setJoinError(e.message),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (groupId: string) => {
+      const res = await fetch(`/api/groups/${groupId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-groups"] });
+      setConfirmDeleteId(null);
+    },
   });
 
   const myGroups = groups.filter((g) => g.isMember || g.isOwner);
@@ -157,28 +169,62 @@ export default function GroupsPage() {
           <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">הקבוצות שלי</p>
           <div className="flex flex-col gap-3">
             {myGroups.map((g) => (
-              <Link
-                key={g.id}
-                href={`/groups/${g.id}`}
-                className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm active:bg-gray-50"
-              >
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg font-extrabold text-white ${g.type === "COACH" ? "bg-[#1D9E75]" : "bg-pink-500"}`}>
-                  {g.name[0]}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-bold text-gray-800">{g.name}</p>
-                    {g.isOwner && (
-                      <span className="rounded-full bg-[#1D9E75]/10 px-1.5 py-0.5 text-[10px] font-bold text-[#085041]">מנהל</span>
+              <div key={g.id} className="rounded-2xl bg-white shadow-sm">
+                <Link
+                  href={`/groups/${g.id}`}
+                  className="flex items-center gap-3 p-4 active:bg-gray-50"
+                >
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg font-extrabold text-white ${g.type === "COACH" ? "bg-[#1D9E75]" : "bg-pink-500"}`}>
+                    {g.name[0]}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-bold text-gray-800">{g.name}</p>
+                      {g.isOwner && (
+                        <span className="rounded-full bg-[#1D9E75]/10 px-1.5 py-0.5 text-[10px] font-bold text-[#085041]">מנהל</span>
+                      )}
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-2">
+                      <TypeBadge type={g.type} />
+                      <span className="text-xs text-gray-400">{g.memberCount} חברים</span>
+                    </div>
+                  </div>
+                  <span className="shrink-0 text-gray-300">‹</span>
+                </Link>
+
+                {/* Delete — owner only */}
+                {g.isOwner && (
+                  <div className="border-t border-gray-100 px-4 py-2">
+                    {confirmDeleteId === g.id ? (
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">למחוק את הקבוצה?</span>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => deleteMutation.mutate(g.id)}
+                            disabled={deleteMutation.isPending}
+                            className="rounded-lg bg-red-500 px-3 py-1 text-xs font-bold text-white disabled:opacity-50"
+                          >
+                            {deleteMutation.isPending ? "מוחק..." : "כן, מחק"}
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="rounded-lg border border-gray-200 px-3 py-1 text-xs text-gray-500"
+                          >
+                            ביטול
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDeleteId(g.id)}
+                        className="text-xs text-red-400 hover:text-red-600"
+                      >
+                        מחק קבוצה
+                      </button>
                     )}
                   </div>
-                  <div className="mt-0.5 flex items-center gap-2">
-                    <TypeBadge type={g.type} />
-                    <span className="text-xs text-gray-400">{g.memberCount} חברים</span>
-                  </div>
-                </div>
-                <span className="shrink-0 text-gray-300">‹</span>
-              </Link>
+                )}
+              </div>
             ))}
           </div>
         </section>
