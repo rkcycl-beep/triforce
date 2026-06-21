@@ -281,44 +281,44 @@ export async function removeMemberFromGroup(
 export async function deleteGroup(groupId: string, requesterId: string) {
   if (!(await isOwner(groupId, requesterId))) return null;
 
-  // Delete everything in dependency order inside a transaction so we never
-  // hit FK constraint errors regardless of what the DB-level actions are.
-  return prisma.$transaction(async (tx) => {
-    // Detach activities (groupId is nullable — don't delete the activities)
-    await tx.activity.updateMany({ where: { groupId }, data: { groupId: null } });
+  // Sequential deletes in dependency order — avoids interactive transactions
+  // which are unsupported on Neon's connection pooler.
 
-    // Challenge subtree: links → entries → prizes → challenges
-    const challengeIds = (
-      await tx.challenge.findMany({ where: { groupId }, select: { id: true } })
-    ).map((c) => c.id);
+  // 1. Detach activities (groupId nullable — keep the athlete's history)
+  await prisma.activity.updateMany({ where: { groupId }, data: { groupId: null } });
 
-    if (challengeIds.length > 0) {
-      const entryIds = (
-        await tx.challengeEntry.findMany({
-          where: { challengeId: { in: challengeIds } },
-          select: { id: true },
-        })
-      ).map((e) => e.id);
+  // 2. Challenge subtree
+  const challengeIds = (
+    await prisma.challenge.findMany({ where: { groupId }, select: { id: true } })
+  ).map((c) => c.id);
 
-      if (entryIds.length > 0) {
-        await tx.challengeActivityLink.deleteMany({
-          where: { challengeEntryId: { in: entryIds } },
-        });
-        await tx.challengeEntry.deleteMany({ where: { id: { in: entryIds } } });
-      }
+  if (challengeIds.length > 0) {
+    const entryIds = (
+      await prisma.challengeEntry.findMany({
+        where: { challengeId: { in: challengeIds } },
+        select: { id: true },
+      })
+    ).map((e) => e.id);
 
-      await tx.prize.deleteMany({ where: { challengeId: { in: challengeIds } } });
-      await tx.challenge.deleteMany({ where: { id: { in: challengeIds } } });
+    if (entryIds.length > 0) {
+      await prisma.challengeActivityLink.deleteMany({
+        where: { challengeEntryId: { in: entryIds } },
+      });
+      await prisma.challengeEntry.deleteMany({ where: { id: { in: entryIds } } });
     }
 
-    // Flat children
-    await tx.message.deleteMany({ where: { groupId } });
-    await tx.event.deleteMany({ where: { groupId } });
-    await tx.payment.deleteMany({ where: { groupId } });
-    await tx.groupMembership.deleteMany({ where: { groupId } });
+    await prisma.prize.deleteMany({ where: { challengeId: { in: challengeIds } } });
+    await prisma.challenge.deleteMany({ where: { id: { in: challengeIds } } });
+  }
 
-    return tx.group.delete({ where: { id: groupId } });
-  });
+  // 3. Flat children
+  await prisma.message.deleteMany({ where: { groupId } });
+  await prisma.event.deleteMany({ where: { groupId } });
+  await prisma.payment.deleteMany({ where: { groupId } });
+  await prisma.groupMembership.deleteMany({ where: { groupId } });
+
+  // 4. The group itself
+  return prisma.group.delete({ where: { id: groupId } });
 }
 
 export async function getUserMemberships(userId: string) {
