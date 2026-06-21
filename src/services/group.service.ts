@@ -281,14 +281,44 @@ export async function removeMemberFromGroup(
 export async function deleteGroup(groupId: string, requesterId: string) {
   if (!(await isOwner(groupId, requesterId))) return null;
 
-  // Detach any activities that reference this group before deleting,
-  // to avoid FK constraint errors regardless of DB-level referential action.
-  await prisma.activity.updateMany({
-    where: { groupId },
-    data: { groupId: null },
-  });
+  // Delete everything in dependency order inside a transaction so we never
+  // hit FK constraint errors regardless of what the DB-level actions are.
+  return prisma.$transaction(async (tx) => {
+    // Detach activities (groupId is nullable — don't delete the activities)
+    await tx.activity.updateMany({ where: { groupId }, data: { groupId: null } });
 
-  return prisma.group.delete({ where: { id: groupId } });
+    // Challenge subtree: links → entries → prizes → challenges
+    const challengeIds = (
+      await tx.challenge.findMany({ where: { groupId }, select: { id: true } })
+    ).map((c) => c.id);
+
+    if (challengeIds.length > 0) {
+      const entryIds = (
+        await tx.challengeEntry.findMany({
+          where: { challengeId: { in: challengeIds } },
+          select: { id: true },
+        })
+      ).map((e) => e.id);
+
+      if (entryIds.length > 0) {
+        await tx.challengeActivityLink.deleteMany({
+          where: { challengeEntryId: { in: entryIds } },
+        });
+        await tx.challengeEntry.deleteMany({ where: { id: { in: entryIds } } });
+      }
+
+      await tx.prize.deleteMany({ where: { challengeId: { in: challengeIds } } });
+      await tx.challenge.deleteMany({ where: { id: { in: challengeIds } } });
+    }
+
+    // Flat children
+    await tx.message.deleteMany({ where: { groupId } });
+    await tx.event.deleteMany({ where: { groupId } });
+    await tx.payment.deleteMany({ where: { groupId } });
+    await tx.groupMembership.deleteMany({ where: { groupId } });
+
+    return tx.group.delete({ where: { id: groupId } });
+  });
 }
 
 export async function getUserMemberships(userId: string) {
