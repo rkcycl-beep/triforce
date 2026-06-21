@@ -280,6 +280,14 @@ export async function removeMemberFromGroup(
 
 export async function deleteGroup(groupId: string, requesterId: string) {
   if (!(await isOwner(groupId, requesterId))) return null;
+
+  // Detach any activities that reference this group before deleting,
+  // to avoid FK constraint errors regardless of DB-level referential action.
+  await prisma.activity.updateMany({
+    where: { groupId },
+    data: { groupId: null },
+  });
+
   return prisma.group.delete({ where: { id: groupId } });
 }
 

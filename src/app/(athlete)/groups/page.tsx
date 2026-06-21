@@ -63,6 +63,7 @@ export default function GroupsPage() {
   const [joinCode, setJoinCode] = useState("");
   const [joinError, setJoinError] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState("");
 
   const { data: groups = [], isLoading, isError } = useQuery({
     queryKey: ["all-groups"],
@@ -92,12 +93,15 @@ export default function GroupsPage() {
   const deleteMutation = useMutation({
     mutationFn: async (groupId: string) => {
       const res = await fetch(`/api/groups/${groupId}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((data as { error?: string }).error ?? "שגיאה במחיקה");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["all-groups"] });
       setConfirmDeleteId(null);
+      setDeleteError("");
     },
+    onError: (e: Error) => setDeleteError(e.message),
   });
 
   const myGroups = groups.filter((g) => g.isMember || g.isOwner);
@@ -196,23 +200,28 @@ export default function GroupsPage() {
                 {g.isOwner && (
                   <div className="border-t border-gray-100 px-4 py-2">
                     {confirmDeleteId === g.id ? (
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">למחוק את הקבוצה?</span>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => deleteMutation.mutate(g.id)}
-                            disabled={deleteMutation.isPending}
-                            className="rounded-lg bg-red-500 px-3 py-1 text-xs font-bold text-white disabled:opacity-50"
-                          >
-                            {deleteMutation.isPending ? "מוחק..." : "כן, מחק"}
-                          </button>
-                          <button
-                            onClick={() => setConfirmDeleteId(null)}
-                            className="rounded-lg border border-gray-200 px-3 py-1 text-xs text-gray-500"
-                          >
-                            ביטול
-                          </button>
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">למחוק את הקבוצה לצמיתות?</span>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => { setDeleteError(""); deleteMutation.mutate(g.id); }}
+                              disabled={deleteMutation.isPending}
+                              className="rounded-lg bg-red-500 px-3 py-1 text-xs font-bold text-white disabled:opacity-50"
+                            >
+                              {deleteMutation.isPending ? "מוחק..." : "כן, מחק"}
+                            </button>
+                            <button
+                              onClick={() => { setConfirmDeleteId(null); setDeleteError(""); }}
+                              className="rounded-lg border border-gray-200 px-3 py-1 text-xs text-gray-500"
+                            >
+                              ביטול
+                            </button>
+                          </div>
                         </div>
+                        {deleteError && (
+                          <p className="mt-1 text-xs text-red-500">{deleteError}</p>
+                        )}
                       </div>
                     ) : (
                       <button

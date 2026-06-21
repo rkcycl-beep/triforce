@@ -171,7 +171,7 @@ model Activity {
   duplicateOfId      String?
 
   user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  group                  Group?                  @relation(fields: [groupId], references: [id])
+  group                  Group?                  @relation(fields: [groupId], references: [id], onDelete: SetNull)
   challengeActivityLinks ChallengeActivityLink[]
 
   @@unique([provider, providerActivityId, userId])
