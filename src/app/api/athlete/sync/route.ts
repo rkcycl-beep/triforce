@@ -17,9 +17,11 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // months = 0 → no date limit, fetches full history
     const result = await syncStravaActivitiesForUser(
       session.user.id,
-      session.accessToken
+      session.accessToken,
+      0
     );
     return NextResponse.json({ success: true, synced: result.synced });
   } catch (error) {

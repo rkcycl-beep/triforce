@@ -42,11 +42,13 @@ function stravaActivityToDbInput(
 export async function syncStravaActivitiesForUser(
   userId: string,
   accessToken: string,
-  months = 3
+  months = 3          // pass 0 for full history (no date limit)
 ): Promise<{ synced: number }> {
-  const after = Math.floor((Date.now() - months * 30 * 24 * 60 * 60 * 1000) / 1000);
+  const after = months > 0
+    ? Math.floor((Date.now() - months * 30 * 24 * 60 * 60 * 1000) / 1000)
+    : undefined;
   const allActivities: StravaActivity[] = [];
-  for (let page = 1; page <= 20; page++) {
+  for (let page = 1; page <= 50; page++) {   // up to 5 000 activities
     const batch = await getActivities(accessToken, page, 100, after);
     allActivities.push(...batch);
     if (batch.length < 100) break;

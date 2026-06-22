@@ -16,7 +16,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export default function ActivitiesPage() {
-  const { data, isLoading, error } = useActivities(1, 50);
+  const { data, isLoading, error } = useActivities(1, 500);
   const { t } = useTranslation();
 
   return (
