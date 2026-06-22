@@ -71,15 +71,25 @@ export async function upsertActivity(
 export type ListActivitiesOptions = {
   take?: number;
   skip?: number;
+  from?: Date;
+  to?: Date;
 };
 
 export async function listActivitiesForUser(
   userId: string,
   opts: ListActivitiesOptions = {}
 ): Promise<DbActivity[]> {
-  const { take = 30, skip = 0 } = opts;
+  const { take = 30, skip = 0, from, to } = opts;
   return prisma.activity.findMany({
-    where: { userId },
+    where: {
+      userId,
+      ...(from || to ? {
+        startDate: {
+          ...(from ? { gte: from } : {}),
+          ...(to   ? { lte: to   } : {}),
+        },
+      } : {}),
+    },
     orderBy: { startDate: "desc" },
     take,
     skip,

@@ -1,12 +1,3 @@
-/**
- * useActivities — A React hook to fetch the signed-in athlete's activities.
- *
- * Reads from /api/athlete/activities, which is backed by the Postgres
- * Activity table (populated by sign-in sync + future webhooks).
- *
- * Uses TanStack Query for caching, loading/error states, and background refresh.
- */
-
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
@@ -18,17 +9,40 @@ interface ActivitiesResponse {
   perPage: number;
 }
 
-export function useActivities(page: number = 1, perPage: number = 30) {
+interface UseActivitiesOptions {
+  page?: number;
+  perPage?: number;
+  from?: Date | null;
+  to?: Date | null;
+}
+
+export function useActivities(
+  pageOrOpts: number | UseActivitiesOptions = 1,
+  perPage: number = 30
+) {
+  const opts: UseActivitiesOptions =
+    typeof pageOrOpts === "number"
+      ? { page: pageOrOpts, perPage }
+      : pageOrOpts;
+
+  const page    = opts.page    ?? 1;
+  const per     = opts.perPage ?? perPage;
+  const from    = opts.from    ?? null;
+  const to      = opts.to      ?? null;
+
   return useQuery<ActivitiesResponse>({
-    queryKey: ["activities", page, perPage],
+    queryKey: ["activities", page, per, from?.toISOString(), to?.toISOString()],
     queryFn: async () => {
-      const res = await fetch(
-        `/api/athlete/activities?page=${page}&per_page=${perPage}`
-      );
-      if (!res.ok) {
-        throw new Error("Failed to fetch activities");
-      }
+      const params = new URLSearchParams({
+        page:     String(page),
+        per_page: String(per),
+      });
+      if (from) params.set("from", from.toISOString());
+      if (to)   params.set("to",   to.toISOString());
+      const res = await fetch(`/api/athlete/activities?${params}`);
+      if (!res.ok) throw new Error("Failed to fetch activities");
       return res.json();
     },
+    staleTime: Infinity,
   });
 }

@@ -28,11 +28,17 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const page = Math.max(1, Number(searchParams.get("page") ?? "1"));
   const perPage = Math.max(1, Number(searchParams.get("per_page") ?? "30"));
+  const fromParam = searchParams.get("from");
+  const toParam   = searchParams.get("to");
+  const from = fromParam ? new Date(fromParam) : undefined;
+  const to   = toParam   ? new Date(toParam)   : undefined;
 
   try {
     const rows = await listActivitiesForUser(session.user.id, {
       take: perPage,
       skip: (page - 1) * perPage,
+      from,
+      to,
     });
     const activities = rows.map(dbActivityToUnified);
     return NextResponse.json({ activities, page, perPage });
