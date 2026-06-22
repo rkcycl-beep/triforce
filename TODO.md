@@ -347,7 +347,30 @@
 - Rate limit: 100 req/15min (Standard Tier)
 
 ## Current Focus
-**Phase 2A core complete.** Groups (COACH + PEER) fully working: create, list all, detail, add/remove members, delete, messaging. Next: peer challenges + activity comparison inside groups.
+**History page complete.** Full Strava history synced (1,416 activities), client-side filtering, sync/filter separation explained. Next: peer challenges + activity comparison inside groups.
+
+---
+
+## Session 2026-06-22 — History Page + Activity Sync
+
+### Activity sync — full history
+- [x] `syncStravaActivitiesForUser`: `months=0` → no date limit (fetches entire Strava history)
+- [x] Page limit raised 20→50 pages (up to 5,000 activities)
+- [x] Manual sync endpoint passes `months=0` — full history on every manual sync
+- [x] Auto-sync on login stays at 3 months (fast path)
+- [x] Confirmed: 1,416 activities synced (was 123 before)
+
+### History page — filters, sync button, UX
+- [x] Sync button on history page (in addition to dashboard)
+- [x] Last sync timestamp shown under page title
+- [x] Period filter pills: 3 חודשים / חצי שנה / שנה / שנתיים / הכל / בחר...
+- [x] "בחר..." reveals custom from/to date pickers
+- [x] **Filters are client-side** — all activities fetched once, `useMemo` filters in memory; switching periods is instant, zero network calls
+- [x] `useActivities` hook updated to support `from`/`to` date params (kept for future use)
+- [x] `listActivitiesForUser` + API route support `from`/`to` filtering (DB-side, for other callers)
+- [x] Count shows "X פעילויות (מתוך Y בסה"כ)" when filtered
+- [x] Sync button subtitle: "מוסיף אימונים חדשים מ-Strava"
+- [x] Info note above filters: explains filter uses existing DB data, no re-sync needed
 
 ---
 

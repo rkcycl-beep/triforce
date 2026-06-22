@@ -43,6 +43,12 @@ Starting with ~40 athletes in one coaching group in Israel.
 - Activity comparison tab inside group detail
 - Prize display on challenges (Phase 1C remainder)
 
+### Architecture note — sync vs filter separation
+Sync and filtering are fully decoupled:
+- **Sync** (`POST /api/athlete/sync`) → pulls from Strava API → upserts to DB → records `lastStravaSync` timestamp
+- **Filter** → client-side `useMemo` on already-fetched data → zero network calls → instant
+- This pattern must be maintained for all future list views
+
 ---
 
 ## User Types
