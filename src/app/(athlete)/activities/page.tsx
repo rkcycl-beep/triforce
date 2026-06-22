@@ -113,22 +113,25 @@ export default function ActivitiesPage() {
     <div className="space-y-4 pb-24" dir="rtl">
 
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-extrabold text-[#085041]">היסטוריה</h1>
           {lastSyncLabel && (
             <p className="mt-0.5 text-[11px] text-gray-400">
-              עודכן לאחרונה: {lastSyncLabel}
+              סונכרן לאחרונה: {lastSyncLabel}
             </p>
           )}
         </div>
-        <button
-          onClick={handleSync}
-          disabled={syncing}
-          className="rounded-xl bg-[#1D9E75] px-4 py-2 text-sm font-bold text-white shadow-sm disabled:opacity-50"
-        >
-          {syncing ? "מסנכרן..." : "🔄 סנכרן"}
-        </button>
+        <div className="flex shrink-0 flex-col items-end gap-0.5">
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="rounded-xl bg-[#1D9E75] px-4 py-2 text-sm font-bold text-white shadow-sm disabled:opacity-50"
+          >
+            {syncing ? "מסנכרן..." : "🔄 סנכרן"}
+          </button>
+          <p className="text-[10px] text-gray-400">מוסיף אימונים חדשים מ-Strava</p>
+        </div>
       </div>
 
       {syncMsg && (
@@ -138,6 +141,11 @@ export default function ActivitiesPage() {
           {syncMsg}
         </p>
       )}
+
+      {/* Info note */}
+      <p className="rounded-xl bg-gray-50 px-3 py-2 text-[11px] text-gray-400">
+        הפילטר פועל על הנתונים שכבר נשמרו — אין צורך לסנכרן מחדש כדי לסנן לפי תאריך
+      </p>
 
       {/* Period filter — switches instantly, no network call */}
       <div className="flex flex-wrap gap-2">
