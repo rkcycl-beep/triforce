@@ -684,3 +684,158 @@ Actual screenshots of the running app are stored in `/screenshots/`:
 6. **Messages** (`/coach/groups/[id]/messages`) — broadcast compose + history
 7. **Events** (`/coach/groups/[id]/events`) — create + manage events
 8. **New Challenge** (`/coach/groups/[id]/challenges/new`) — challenge creation form
+
+---
+
+## Challenges System — KIMI Unified Design (2026-06-23)
+
+> **Design Assistant:** This challenges system redesign was architected in collaboration with **KIMI** (Kimi Code CLI). It unifies coach-created and trainee-created challenges under one data model, with sport-specific, age/gender-adjusted scoring, invitation lifecycle, and rich comparison analytics.
+
+### Overview
+
+A **Challenge** is a goal-based competition defined by a creator, a sport, a distance, a time window, and explicit invitations. The same lifecycle and scoring engine are used whether the creator is a coach or a trainee.
+
+| Creator | Can Invite |
+|---|---|
+| Coach | Teams / groups + individual trainees |
+| Trainee | Friends (chosen friends / TriForce follows) only |
+
+### Core Rules
+
+1. **One model for everyone** — no separate coach vs trainee challenge tables.
+2. **Invitation required** — recipients must accept or decline; sender is notified.
+3. **Age/gender adjusted scoring** — full score is given for running near the expected pace for the participant's age and gender, with a configurable tolerance range.
+4. **Sport-specific parameters** — running uses pace (min/km); cycling will use speed (km/h); swimming will use pace per 100 m.
+5. **Track from DB** — activities are already synced; challenge scoring reads from the `Activity` table, following the existing "scan once, read from DB" rule.
+6. **Analytics-ready** — every state and score is persisted, enabling success rates, trends, comparisons, and leaderboards.
+
+### Data Model Changes
+
+#### New and updated Prisma models
+
+- **`Challenge`** — adds `createdById`, `sportType`, `distanceKm`, `metric`, `targetValue`, `targetUnit`, `tolerancePercent`, `bonusFactor`, `penaltyFactor`. `groupId` becomes optional so friend challenges do not require a group.
+- **`ChallengeEntry`** — extended with `status` (`INVITED`, `ACCEPTED`, `DECLINED`, `COMPLETED`), `invitedAt`, `respondedAt`, `completedAt`, `actualPace`, `expectedPace`, `tolerancePace`, `progressValue`, and `score`.
+- **`ChallengeActivityLink`** — extended with `value` and `isBest` so the best counted activity is tracked.
+- **`SportReferencePace`** — new table storing expected pace by `sportType`, `gender`, `age`, and `distanceKm`.
+- **`Notification`** — new table for challenge invites, acceptances, declines, and completion notices.
+
+#### Relationships
+
+```
+User 1--* Challenge           (created challenges)
+User 1--* ChallengeEntry      (participation + score)
+User 1--* Notification        (inbox)
+Challenge 1--* ChallengeEntry
+ChallengeEntry 1--* ChallengeActivityLink
+Activity 1--* ChallengeActivityLink
+SportReferencePace (lookup table)
+```
+
+### Scoring Method
+
+For running, the reference table gives the expected average pace for the participant's age and gender.
+
+```text
+expectedPace  = SportReferencePace(age, gender, distanceKm)
+tolerancePace = expectedPace × (1 + tolerancePercent / 100)
+actualPace    = activity moving time (min) / distance (km)
+
+if actualPace <= expectedPace:
+    score = 100 + ((expectedPace / actualPace) - 1) × bonusFactor
+elif actualPace <= tolerancePace:
+    score = 100
+else:
+    score = 100 × (tolerancePace / actualPace)
+```
+
+- **Exact expected pace** = 100 points.
+- **Within tolerance range** = 100 points (forgiving zone).
+- **Faster than expected** = bonus above 100.
+- **Slower than tolerance** = penalty below 100.
+
+The tolerance percentage is configurable per challenge and will later be editable from a setup page.
+
+### Reference Table UI
+
+A colorful, Hebrew-explained table is shown on demand:
+
+> **איך מחושב הניקוד?**
+> הריצה שלך נמדדת מול הקצב הממוצע לגיל ולמגדר שלך.
+> 🟢 בטווח הירוק — 100 נקודות
+> 🔵 מהיר יותר — בונוס
+> 🔴 איטי מדי — ניקוד יורד
+
+The table displays expected pace, full-score range, bonus zone, and penalty zone per age group.
+
+### Invitation Lifecycle
+
+1. **Create** — creator fills sport, distance, dates, tolerance, and recipients.
+2. **Send** — system creates `Challenge` + `ChallengeEntry` rows with `INVITED` status + `Notification` for each recipient.
+3. **Receive** — recipient sees the challenge in the challenges inbox with **אשר השתתפות** / **דחה** buttons.
+4. **Respond** — status changes to `ACCEPTED` or `DECLINED`; creator receives a `Notification`.
+5. **Active** — on `startDate`, challenge becomes `ACTIVE`; accepted participants can start scoring.
+6. **Track** — every synced activity matching sport/distance/date is evaluated; the best attempt is kept.
+7. **Complete** — on `endDate`, status becomes `COMPLETED` and final ranks are locked.
+
+### Tracking Flow
+
+- Activity sync (manual or Strava webhook) writes to `Activity`.
+- Challenge scoring job reads `Activity` for each active challenge participant.
+- Qualifying activities (correct sport, distance ≥ challenge distance, date in range) are linked via `ChallengeActivityLink`.
+- The participant's best attempt updates `ChallengeEntry` with `actualPace`, `expectedPace`, `tolerancePace`, and `score`.
+- Leaderboard reads `ChallengeEntry` ordered by `score DESC`.
+
+### Comparison & Results
+
+Everyone with access to the challenge sees:
+
+- Challenge card (title, dates, sport, distance, my status, my score).
+- **Leaderboard** ranked by score with actual pace, expected pace, status, and completion badge.
+- **My result card** showing my actual pace, expected pace, tolerance pace, and the counted activity.
+- **Reference table button** to open the colorful scoring explanation.
+
+The creator also sees:
+
+- Invitation status panel (accepted / declined / pending).
+- Admin actions: remind, edit (before start), cancel.
+
+### Analytics Examples
+
+Because all states are persisted, queries like these are possible:
+
+- How many challenges did David complete in the last 3 months?
+- What is David's success rate (completed / accepted)?
+- Best performing sport for each athlete.
+- Monthly completion trend.
+- Cross-athlete leaderboard across all challenges.
+- How many activities it took to complete a challenge.
+
+### API Design
+
+Recommended unified endpoints:
+
+```text
+POST   /api/challenges                    — create challenge + send invitations
+GET    /api/challenges                    — list my challenges (created + invited)
+GET    /api/challenges/[id]               — challenge detail + leaderboard
+PATCH  /api/challenges/[id]               — edit (creator only, before start)
+DELETE /api/challenges/[id]               — cancel/delete (creator or group owner)
+POST   /api/challenges/[id]/accept        — accept invitation
+POST   /api/challenges/[id]/decline       — decline invitation
+POST   /api/challenges/[id]/remind        — remind pending invitees (creator only)
+```
+
+### Development Stages
+
+1. **Schema & migration** — update Prisma schema, create `SportReferencePace` and `Notification`, push to Neon.
+2. **Reference data** — seed running pace table for 5K, 10K, half marathon, marathon by age/gender.
+3. **Scoring engine** — implement age/gender/tolerance scoring function.
+4. **Challenge API** — create, read, update, delete, accept, decline.
+5. **Notifications** — invite/response messages.
+6. **Activity integration** — wire scoring into sync and webhook handlers.
+7. **UI components** — challenge form, reference table modal, inbox, detail/leaderboard.
+8. **Testing & polish** — demo users, edge cases, empty/loading/error states, screenshots.
+
+### Backward Compatibility
+
+Existing challenges using `ScoringMethod` (`AGE_GRADE`, `CATEGORY`, `PERSONAL_IMPROVEMENT`) are preserved. New fields are additive. Old challenges continue to work while new goal-based challenges use the KIMI-designed scoring flow. If desired, the old scoring methods can be exposed later as "advanced challenge types" within the same unified model.

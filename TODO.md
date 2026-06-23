@@ -472,3 +472,80 @@ Same DB model, same services, same message/challenge/event tables — just diffe
 - User has TWO parallel contexts: coach group (structured) + peer group (informal)
 - Strava contacts NOT on TriForce → show "הזמן ל-TriForce" instead of features
 - `StravaContact.isChosen = true` = pool of friends to invite to peer groups
+
+---
+
+## Current Focus — KIMI Unified Challenges Redesign (2026-06-23)
+
+> **Design Assistant:** This implementation plan was prepared with **KIMI** (Kimi Code CLI). The key model for this phase is KIMI.
+
+### Phase 3: Unified Challenges System
+
+Goal: one challenge model for coaches and trainees, with sport-specific, age/gender-adjusted scoring, explicit invitations, and rich comparison analytics.
+
+#### Stage 1 — Schema & Migration
+- [ ] Update `Challenge` model: add `createdById`, `sportType`, `distanceKm`, `metric`, `targetValue`, `targetUnit`, `tolerancePercent`, `bonusFactor`, `penaltyFactor`; make `groupId` optional.
+- [ ] Update `ChallengeEntry` model: add `status`, `invitedAt`, `respondedAt`, `completedAt`, `actualPace`, `expectedPace`, `tolerancePace`, `progressValue`.
+- [ ] Update `ChallengeActivityLink`: add `value`, `isBest`.
+- [ ] Create `SportReferencePace` model.
+- [ ] Create `Notification` model.
+- [ ] Add `User.createdChallenges` relation.
+- [ ] Add performance indexes.
+- [ ] Run `npx prisma db push` against Neon.
+
+#### Stage 2 — Reference Data
+- [ ] Build running pace table for ages 10–80, genders M/F, distances 5K / 10K / half marathon / marathon.
+- [ ] Decide data source (WMA-derived, public statistics, or custom table).
+- [ ] Create seed script `scripts/seed-reference-pace.ts`.
+- [ ] Run seed in dev and production.
+
+#### Stage 3 — Scoring Engine
+- [ ] Implement `calculateChallengeScore(age, gender, distanceKm, actualPace, tolerancePercent, bonusFactor, penaltyFactor)`.
+- [ ] Handle edge cases: missing DOB/gender, no qualifying activity, tie breaking.
+- [ ] Add unit tests for score calculation.
+
+#### Stage 4 — Challenge Lifecycle API
+- [ ] `POST /api/challenges` — create challenge + invitations.
+- [ ] `GET /api/challenges` — list my challenges.
+- [ ] `GET /api/challenges/[id]` — detail + leaderboard.
+- [ ] `PATCH /api/challenges/[id]` — edit before start.
+- [ ] `DELETE /api/challenges/[id]` — cancel/delete.
+- [ ] `POST /api/challenges/[id]/accept` — accept invitation.
+- [ ] `POST /api/challenges/[id]/decline` — decline invitation.
+- [ ] `POST /api/challenges/[id]/remind` — remind pending invitees.
+
+#### Stage 5 — Notifications
+- [ ] Send `CHALLENGE_INVITED` notification to each recipient.
+- [ ] Send `CHALLENGE_ACCEPTED` / `CHALLENGE_DECLINED` notification to creator.
+- [ ] Send `CHALLENGE_COMPLETED` notification when participant reaches goal.
+- [ ] Build notifications API and unread badge.
+
+#### Stage 6 — Activity Integration
+- [ ] On activity sync (manual + webhook), evaluate active challenges for the user.
+- [ ] Create/update `ChallengeActivityLink` for qualifying activities.
+- [ ] Update `ChallengeEntry` with best attempt and score.
+- [ ] Recalculate leaderboard.
+
+#### Stage 7 — UI Components
+- [ ] `ChallengeForm` — sport, distance, dates, tolerance, participant picker.
+- [ ] `ReferenceTableModal` — colorful Hebrew explanation table.
+- [ ] `ChallengeInbox` — pending invitations with accept/decline.
+- [ ] `ChallengeDetail` — leaderboard + my result + reference table.
+- [ ] `ChallengeParticipantPicker` — coach version (groups/individuals) and trainee version (friends).
+- [ ] Add challenge creation entry points: coach hub, athlete hub, friends page, group detail tab.
+
+#### Stage 8 — Testing & Polish
+- [ ] Test coach → team flow with demo data.
+- [ ] Test trainee → friends flow.
+- [ ] Test accept/decline notifications.
+- [ ] Test scoring with users of different ages/genders.
+- [ ] Add empty, loading, and error states.
+- [ ] Update screenshots.
+- [ ] Run `npm run build` clean.
+
+### Deferred
+- [ ] Cycling and swimming parameters.
+- [ ] Prizes display on challenges.
+- [ ] Advanced scoring methods integration (age-grade, category, personal improvement) inside the unified model.
+- [ ] Challenge analytics dashboard.
+- [ ] Materialized views for heavy leaderboards.
