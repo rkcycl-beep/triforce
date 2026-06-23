@@ -16,7 +16,7 @@ interface Cube {
 const cubes: Cube[] = [
   {
     emoji: "🏠",
-    label: "הבית שלי",
+    label: "האימונים שלי",
     sub: "דשבורד אישי",
     href: "/dashboard",
     gradient: "from-[#1D9E75] via-[#158a63] to-[#0d6b4d]",
