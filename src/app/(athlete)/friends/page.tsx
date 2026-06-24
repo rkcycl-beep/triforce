@@ -1,32 +1,55 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
-interface StavaFriend {
-  stravaId: number;
+interface KudosFriend {
+  id: string;
   name: string;
-  image: string;
   count: number;
+  latestDate: string;
+  isChosen: boolean;
+  triforceUserId: string | null;
+  stravaAthleteId: string | null;
 }
 
 interface FriendsResponse {
-  friends: StavaFriend[];
-  scanned: number;
-  withKudos: number;
+  kudosFriends: KudosFriend[];
+  scanned: number | null;
+  withKudos: number | null;
+  uniquePeople: number;
+  errors: number;
+  fromCache: boolean;
+  lastSync: string | null;
 }
 
 export default function FriendsPage() {
-  const { data, isLoading, error, refetch } = useQuery<FriendsResponse>({
-    queryKey: ["strava-friends-clean"],
+  const { data, isLoading, error, refetch, isFetching } = useQuery<FriendsResponse>({
+    queryKey: ["strava-kudos"],
     queryFn: async () => {
-      const res = await fetch("/api/athlete/strava-friends");
+      const res = await fetch("/api/athlete/strava-kudos");
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: Infinity,
   });
+
+  const [isScanning, setIsScanning] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsScanning(true);
+    try {
+      const res = await fetch("/api/athlete/strava-kudos?refresh=1");
+      if (!res.ok) throw new Error("Refresh failed");
+      await refetch(); // re-read from DB after scan
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsScanning(false);
+    }
+  };
 
   return (
     <div className="space-y-4 pb-24">
@@ -45,14 +68,14 @@ export default function FriendsPage() {
       {isLoading && (
         <div className="flex flex-col items-center justify-center gap-3 py-16">
           <LoadingSpinner />
-          <p className="text-sm text-gray-400">טוען מ-Strava, זה יכול לקחת כמה שניות...</p>
+          <p className="text-sm text-gray-400">טוען חברים...</p>
         </div>
       )}
 
       {/* Error */}
       {error && (
         <div className="rounded-xl border border-red-100 bg-red-50 p-6 text-center">
-          <p className="text-sm font-medium text-red-700">שגיאה בטעינת החברים מ-Strava</p>
+          <p className="text-sm font-medium text-red-700">שגיאה בטעינת החברים</p>
           <button
             onClick={() => refetch()}
             className="mt-3 rounded-lg bg-red-600 px-5 py-2 text-sm font-medium text-white hover:bg-red-700"
@@ -67,13 +90,23 @@ export default function FriendsPage() {
         <>
           {/* Stats bar */}
           <div className="rounded-xl bg-gray-50 px-4 py-2 text-center text-xs text-gray-500">
-            סרקנו <span className="font-bold text-gray-700">{data.scanned}</span> פעילויות ·{" "}
-            <span className="font-bold text-gray-700">{data.withKudos}</span> עם לייקים ·{" "}
-            <span className="font-bold text-[#1D9E75]">{data.friends.length}</span> חברים נמצאו
+            <span className="font-bold text-[#1D9E75]">{data.uniquePeople}</span> חברים נמצאו
+            {data.lastSync && (
+              <span className="me-1"> · נסרק לאחרונה: {new Date(data.lastSync).toLocaleDateString("he-IL")}</span>
+            )}
           </div>
 
+          {/* Refresh button */}
+          <button
+            onClick={handleRefresh}
+            disabled={isScanning || isFetching}
+            className="w-full rounded-xl border border-gray-200 bg-white py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+          >
+            {isScanning || isFetching ? "טוען..." : "רענן מ-Strava"}
+          </button>
+
           {/* Empty */}
-          {data.friends.length === 0 && (
+          {data.kudosFriends.length === 0 && (
             <div className="rounded-xl border border-gray-100 bg-white p-10 text-center">
               <div className="text-5xl">👍</div>
               <p className="mt-3 text-sm font-semibold text-gray-700">לא נמצאו חברים</p>
@@ -84,29 +117,26 @@ export default function FriendsPage() {
           )}
 
           {/* Friend list */}
-          {data.friends.length > 0 && (
+          {data.kudosFriends.length > 0 && (
             <div className="overflow-hidden rounded-[20px] border border-gray-100 bg-white shadow-sm">
-              {data.friends.map((friend, idx) => (
+              {data.kudosFriends.map((friend, idx) => (
                 <div
-                  key={String(friend.stravaId)}
+                  key={friend.id}
                   className={`flex items-center gap-3 px-4 py-3 ${
-                    idx < data.friends.length - 1 ? "border-b border-gray-50" : ""
+                    idx < data.kudosFriends.length - 1 ? "border-b border-gray-50" : ""
                   }`}
                 >
                   {/* Avatar */}
-                  <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200">
-                    {friend.image ? (
-                      <img src={friend.image} alt={friend.name} className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-sm font-bold text-gray-500">
-                        {friend.name?.[0] ?? "?"}
-                      </div>
-                    )}
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-100 to-orange-200 text-sm font-bold text-orange-600">
+                    {friend.name?.[0] ?? "?"}
                   </div>
 
                   {/* Name */}
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-gray-900">{friend.name}</p>
+                    {friend.triforceUserId && (
+                      <p className="text-xs text-green-600">ב-TriForce</p>
+                    )}
                   </div>
 
                   {/* Kudos count */}

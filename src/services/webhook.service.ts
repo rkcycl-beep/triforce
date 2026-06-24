@@ -76,15 +76,32 @@ async function recalculateUserChallenges(
     select: { groupId: true },
   });
   const groupIds = memberships.map((m) => m.groupId);
-  if (groupIds.length === 0) return;
+
+  const participantChallengeIds = await prisma.challengeEntry.findMany({
+    where: { userId },
+    select: { challengeId: true },
+  });
+  const entryChallengeIds = participantChallengeIds.map((e) => e.challengeId);
 
   const challenges = await prisma.challenge.findMany({
     where: {
-      groupId: { in: groupIds },
       status: "ACTIVE",
-      sportTypes: { has: activitySportType },
       startDate: { lte: activityStartDate },
       endDate: { gte: activityStartDate },
+      AND: [
+        {
+          OR: [
+            { groupId: { in: groupIds } },
+            { id: { in: entryChallengeIds } },
+          ],
+        },
+        {
+          OR: [
+            { sportTypes: { has: activitySportType } },
+            { sportType: activitySportType },
+          ],
+        },
+      ],
     },
   });
 
@@ -99,11 +116,16 @@ async function recalculateUserChallenges(
     const baselineStart = new Date(challenge.startDate);
     baselineStart.setDate(baselineStart.getDate() - baselineWeeks * 7);
 
+    const sportFilter =
+      challenge.sportTypes.length > 0
+        ? challenge.sportTypes
+        : [challenge.sportType];
+
     const [activities, baseline] = await Promise.all([
       prisma.activity.findMany({
         where: {
           userId,
-          sportType: { in: challenge.sportTypes },
+          sportType: { in: sportFilter },
           startDate: { gte: challenge.startDate, lte: challenge.endDate },
           isDuplicate: false,
         },
@@ -111,14 +133,14 @@ async function recalculateUserChallenges(
       prisma.activity.findMany({
         where: {
           userId,
-          sportType: { in: challenge.sportTypes },
+          sportType: { in: sportFilter },
           startDate: { gte: baselineStart, lt: challenge.startDate },
           isDuplicate: false,
         },
       }),
     ]);
 
-    const { score, metadata } = computeScore(challenge, user, activities, baseline);
+    const { score, metadata } = await computeScore(challenge, user, activities, baseline);
 
     await prisma.challengeEntry.upsert({
       where: { challengeId_userId: { challengeId: challenge.id, userId } },

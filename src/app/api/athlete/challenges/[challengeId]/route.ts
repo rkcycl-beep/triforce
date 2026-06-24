@@ -22,19 +22,35 @@ export async function GET(
 
   const { challengeId } = await params;
 
-  // Confirm the athlete is a member of the challenge's group
+  // Confirm the athlete has access to the challenge
   const challenge = await prisma.challenge.findUnique({
     where: { id: challengeId },
-    select: { groupId: true },
+    select: { groupId: true, createdById: true },
   });
   if (!challenge) return NextResponse.json({ error: "Not found." }, { status: 404 });
 
-  const membership = await prisma.groupMembership.findUnique({
-    where: {
-      userId_groupId: { userId: session.user.id, groupId: challenge.groupId },
-    },
-  });
-  if (!membership) return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+  let hasAccess = false;
+  if (challenge.groupId) {
+    // Group-scoped challenge: member of the group
+    const membership = await prisma.groupMembership.findUnique({
+      where: {
+        userId_groupId: { userId: session.user.id, groupId: challenge.groupId },
+      },
+    });
+    hasAccess = !!membership;
+  } else {
+    // Friend challenge: participant or creator
+    const entry = await prisma.challengeEntry.findUnique({
+      where: {
+        challengeId_userId: { challengeId, userId: session.user.id },
+      },
+    });
+    hasAccess = !!entry || challenge.createdById === session.user.id;
+  }
+
+  if (!hasAccess) {
+    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+  }
 
   const result = await computeLeaderboard(challengeId);
   if (!result) return NextResponse.json({ error: "Not found." }, { status: 404 });

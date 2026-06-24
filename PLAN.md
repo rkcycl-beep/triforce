@@ -690,6 +690,8 @@ Actual screenshots of the running app are stored in `/screenshots/`:
 ## Challenges System — KIMI Unified Design (2026-06-23)
 
 > **Design Assistant:** This challenges system redesign was architected in collaboration with **KIMI** (Kimi Code CLI). It unifies coach-created and trainee-created challenges under one data model, with sport-specific, age/gender-adjusted scoring, invitation lifecycle, and rich comparison analytics.
+>
+> **Implementation status (2026-06-23):** Schema, scoring engine, API, and core UI are built and tested locally. Remaining work: entry points polish, notifications badge, i18n extraction, real amateur-average reference data, and deployment.
 
 ### Overview
 

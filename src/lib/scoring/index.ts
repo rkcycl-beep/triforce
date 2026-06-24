@@ -2,6 +2,7 @@ import type { Activity, Challenge, User } from "@prisma/client";
 import { scoreAgeGrade } from "./age-grade";
 import { scorePersonalImprovement } from "./personal-improvement";
 import { scoreCategoryActivity, getAgeCategory } from "./category";
+import { computeGoalBasedScore } from "./goal-based";
 
 export interface ScoreResult {
   score: number;
@@ -12,19 +13,23 @@ export interface ScoreResult {
  * Compute a challenge score for one athlete.
  *
  * @param challenge   The challenge record from the DB.
- * @param user        The athlete (needs dateOfBirth + sex for age-grade / category).
+ * @param user        The athlete (needs dateOfBirth + sex for age-grade / category / goal-based).
  * @param activities  Activities during the challenge window.
  * @param baseline    Activities during the baseline window (PI only).
  */
-export function computeScore(
+export async function computeScore(
   challenge: Challenge,
   user: User,
   activities: Activity[],
   baseline: Activity[]
-): ScoreResult {
+): Promise<ScoreResult> {
   const cfg = (challenge.config ?? {}) as Record<string, unknown>;
 
   switch (challenge.scoringMethod) {
+    case "GOAL_BASED": {
+      return computeGoalBasedScore(challenge, user, activities);
+    }
+
     case "PERSONAL_IMPROVEMENT": {
       const metric = (cfg.metric as string) ?? "distance";
       const baselineWeeks = (cfg.baselineWeeks as number) ?? 4;
@@ -73,3 +78,5 @@ export function computeScore(
       return { score: 0, metadata: {} };
   }
 }
+
+export * from "./goal-based";

@@ -549,3 +549,38 @@ Goal: one challenge model for coaches and trainees, with sport-specific, age/gen
 - [ ] Advanced scoring methods integration (age-grade, category, personal improvement) inside the unified model.
 - [ ] Challenge analytics dashboard.
 - [ ] Materialized views for heavy leaderboards.
+
+---
+
+## Session 2026-06-23 — KIMI Unified Challenges Implementation (Complete)
+
+> **Design + implementation assistant: KIMI (Kimi Code CLI).**
+
+### Completed today
+- [x] Prisma schema migration pushed to Neon (Challenge, ChallengeEntry, ChallengeActivityLink, SportReferencePace, Notification).
+- [x] Backfilled 6 existing challenges with creator, sportType, distanceKm, metric.
+- [x] Seeded 608 reference pace rows for running (ages 10–85, M/F, 5K/10K/half/marathon).
+- [x] Built goal-based scoring engine with 30% tolerance and 0–100 score cap.
+- [x] Created unified challenge API: create, list, detail, accept, decline.
+- [x] Added notifications API for invites/responses.
+- [x] Updated Strava webhook to score friend challenges too.
+- [x] Built colorful reference table modal.
+- [x] Built `/challenges/new` creation form with colored sections.
+- [x] Updated `/challenges` list page and `/challenges/[id]` detail/leaderboard page.
+- [x] Updated `/friends` page to read kudos contacts from DB (fast) with explicit refresh.
+- [x] Linked challenge creation to chosen friends (`isChosen=true` Strava contacts).
+- [x] Created `scripts/setup-demo-friends.ts` and ran it — all demo users now follow each other and are chosen contacts.
+- [x] Build passes clean.
+
+### Current state
+- App runs at `http://localhost:3000`.
+- Demo users can create challenges, invite demo friends, accept, and see leaderboards.
+- Score calculation verified with test activity.
+
+### Next (tomorrow)
+- Polish entry points (coach hub, athlete hub, group detail challenges tab).
+- Add notifications badge in navigation.
+- Extract Hebrew strings to `i18n/he.json`.
+- Replace KIMI-derived reference pace table with real amateur-average data from online source.
+- UI/UX refinement based on user testing.
+- Deploy to Vercel when ready.

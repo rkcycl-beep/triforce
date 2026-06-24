@@ -19,6 +19,7 @@ enum ScoringMethod {
   AGE_GRADE
   CATEGORY
   PERSONAL_IMPROVEMENT
+  GOAL_BASED
 }
 
 enum ChallengeStatus {
@@ -28,10 +29,24 @@ enum ChallengeStatus {
   CANCELLED
 }
 
+enum ParticipantStatus {
+  INVITED
+  ACCEPTED
+  DECLINED
+  COMPLETED
+}
+
 enum MessageType {
   CHAT
   ANNOUNCEMENT
   SYSTEM
+}
+
+enum NotificationType {
+  CHALLENGE_INVITED
+  CHALLENGE_ACCEPTED
+  CHALLENGE_DECLINED
+  CHALLENGE_COMPLETED
 }
 
 enum PaymentStatus {
@@ -86,31 +101,33 @@ model VerificationToken {
 // ─── Core Models ──────────────────────────────────────────────
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  role          Role      @default(ATHLETE)
-  passwordHash    String?   // bcrypt hash; null for OAuth-only users
-  sex             String?   // "M" or "F" — for age-grade scoring
-  dateOfBirth     DateTime?
-  lastStravaSync  DateTime?
-  createdAt       DateTime  @default(now())
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  role           Role      @default(ATHLETE)
+  passwordHash   String? // bcrypt hash; null for OAuth-only users
+  sex            String? // "M" or "F" — for age-grade scoring
+  dateOfBirth    DateTime?
+  lastStravaSync DateTime?
+  createdAt      DateTime  @default(now())
 
-  accounts    Account[]
-  sessions    Session[]
-  memberships GroupMembership[]
-  activities  Activity[]
-  entries     ChallengeEntry[]
-  messages    Message[]
-  events      Event[]           @relation("EventCreator")
-  payments    Payment[]
-  following        Follow[]        @relation("UserFollowing")
-  followers        Follow[]        @relation("UserFollowers")
-  stravaContacts   StravaContact[]
-  stravaContactOf  StravaContact[] @relation("StravaContactTriforce")
-  createdGroups    Group[]         @relation("GroupCreator")
+  accounts          Account[]
+  sessions          Session[]
+  memberships       GroupMembership[]
+  activities        Activity[]
+  entries           ChallengeEntry[]
+  messages          Message[]
+  events            Event[]           @relation("EventCreator")
+  payments          Payment[]
+  following         Follow[]          @relation("UserFollowing")
+  followers         Follow[]          @relation("UserFollowers")
+  stravaContacts    StravaContact[]
+  stravaContactOf   StravaContact[]   @relation("StravaContactTriforce")
+  createdGroups     Group[]           @relation("GroupCreator")
+  createdChallenges Challenge[]       @relation("ChallengeCreator")
+  Notification      Notification[]
 }
 
 model Group {
@@ -119,7 +136,7 @@ model Group {
   slug       String    @unique
   inviteCode String    @unique // 6-char code athletes use to join
   type       GroupType @default(COACH)
-  creatorId  String?   // set for PEER groups; null for legacy COACH groups
+  creatorId  String? // set for PEER groups; null for legacy COACH groups
   timezone   String    @default("Asia/Jerusalem")
   locale     String    @default("he")
   createdAt  DateTime  @default(now())
@@ -134,11 +151,11 @@ model Group {
 }
 
 model GroupMembership {
-  id        String   @id @default(cuid())
-  userId    String
-  groupId   String
-  role      Role     @default(ATHLETE)
-  joinedAt  DateTime @default(now())
+  id       String   @id @default(cuid())
+  userId   String
+  groupId  String
+  role     Role     @default(ATHLETE)
+  joinedAt DateTime @default(now())
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
@@ -150,20 +167,20 @@ model Activity {
   id                 String   @id @default(cuid())
   userId             String
   groupId            String?
-  provider           String   // "strava" | "garmin"
+  provider           String // "strava" | "garmin"
   providerActivityId String
   name               String
-  sportType          String   // normalized: "run" | "ride" | "swim" | "walk" | "hike" | "other"
+  sportType          String // normalized: "run" | "ride" | "swim" | "walk" | "hike" | "other"
   rawSportType       String
   startDate          DateTime
-  distance           Float    // meters
-  movingTime         Int      // seconds
-  elapsedTime        Int      // seconds
-  elevationGain      Float    // meters
-  averageSpeed       Float    // m/s
-  maxSpeed           Float    // m/s
-  averageHeartrate   Float?   // BPM
-  maxHeartrate       Float?   // BPM
+  distance           Float // meters
+  movingTime         Int // seconds
+  elapsedTime        Int // seconds
+  elevationGain      Float // meters
+  averageSpeed       Float // m/s
+  maxSpeed           Float // m/s
+  averageHeartrate   Float? // BPM
+  maxHeartrate       Float? // BPM
   hasHeartrate       Boolean  @default(false)
   mapPolyline        String?  @db.Text
   calories           Float?
@@ -177,52 +194,80 @@ model Activity {
   @@unique([provider, providerActivityId, userId])
   @@index([userId, startDate])
   @@index([groupId, startDate])
+  @@index([userId, sportType, startDate])
 }
 
 model Challenge {
-  id            String          @id @default(cuid())
-  groupId       String
-  name          String
-  description   String?
-  sportTypes    String[]        // ["run", "ride", ...]
-  scoringMethod ScoringMethod
-  startDate     DateTime
-  endDate       DateTime
-  status        ChallengeStatus @default(DRAFT)
-  config        Json?           // scoring-method-specific params
-  createdAt     DateTime        @default(now())
+  id               String          @id @default(cuid())
+  createdById      String
+  groupId          String? // optional — friend challenges may not belong to a group
+  name             String
+  description      String?
+  sportTypes       String[] // legacy field; new challenges use sportType
+  sportType        String // canonical sport: "run" | "ride" | "swim"
+  distanceKm       Float // challenge distance in kilometers
+  metric           String // "pace" | "time" | "distance" | "elevation" | "activities"
+  targetValue      Float? // optional goal value for metric-based challenges
+  targetUnit       String? // e.g., "km", "min", "m", "sessions"
+  tolerancePercent Float           @default(30) // % within expected pace = full score
+  bonusFactor      Float           @default(50) // controls bonus steepness
+  penaltyFactor    Float           @default(100) // controls penalty steepness
+  scoringMethod    ScoringMethod   @default(GOAL_BASED)
+  startDate        DateTime
+  endDate          DateTime
+  status           ChallengeStatus @default(DRAFT)
+  config           Json? // scoring-method-specific params
+  createdAt        DateTime        @default(now())
 
-  group   Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  entries ChallengeEntry[]
-  prizes  Prize[]
+  createdBy User             @relation("ChallengeCreator", fields: [createdById], references: [id])
+  group     Group?           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  entries   ChallengeEntry[]
+  prizes    Prize[]
+
+  @@index([createdById])
+  @@index([groupId, status])
+  @@index([status, endDate])
 }
 
 model ChallengeEntry {
-  id          String   @id @default(cuid())
-  challengeId String
-  userId      String
-  score       Float    @default(0)
-  rank        Int?
-  metadata    Json?    // method-specific scoring data
-  updatedAt   DateTime @updatedAt
+  id            String            @id @default(cuid())
+  challengeId   String
+  userId        String
+  status        ParticipantStatus @default(INVITED)
+  invitedAt     DateTime          @default(now())
+  respondedAt   DateTime?
+  completedAt   DateTime?
+  score         Float             @default(0)
+  rank          Int?
+  actualPace    Float? // participant's best pace (min/km)
+  expectedPace  Float? // expected pace from reference table
+  tolerancePace Float? // expected pace × (1 + tolerancePercent)
+  progressValue Float? // accumulated metric value (for distance/time goals)
+  metadata      Json? // method-specific scoring data / breakdown
+  updatedAt     DateTime          @updatedAt
 
-  challenge       Challenge              @relation(fields: [challengeId], references: [id], onDelete: Cascade)
-  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  activityLinks   ChallengeActivityLink[]
+  challenge     Challenge               @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user          User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activityLinks ChallengeActivityLink[]
 
   @@unique([challengeId, userId])
+  @@index([challengeId, score])
+  @@index([userId, status])
 }
 
 model ChallengeActivityLink {
-  id               String @id @default(cuid())
+  id               String  @id @default(cuid())
   challengeEntryId String
   activityId       String
-  pointsAwarded    Float  @default(0)
+  pointsAwarded    Float   @default(0)
+  value            Float? // raw metric value from this activity (e.g., pace min/km)
+  isBest           Boolean @default(false) // true if this is the participant's best attempt
 
   entry    ChallengeEntry @relation(fields: [challengeEntryId], references: [id], onDelete: Cascade)
   activity Activity       @relation(fields: [activityId], references: [id], onDelete: Cascade)
 
   @@unique([challengeEntryId, activityId])
+  @@index([challengeEntryId])
 }
 
 model Message {
@@ -261,6 +306,38 @@ model Prize {
   challenge Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
 }
 
+// Reference pace data by sport, gender, age, and distance.
+// Used by the KIMI-designed goal-based challenge scoring engine.
+model SportReferencePace {
+  id           String  @id @default(cuid())
+  sportType    String // "run" | "ride" | "swim"
+  gender       String // "M" | "F"
+  age          Int
+  distanceKm   Float
+  paceMinPerKm Float // expected average pace in minutes per km
+  source       String? // e.g., "WMA-derived", "custom"
+
+  @@unique([sportType, gender, age, distanceKm])
+  @@index([sportType, gender, age])
+}
+
+// User notifications for challenge invites, responses, and completions.
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String // recipient
+  type      NotificationType
+  title     String
+  content   String
+  metadata  Json? // { challengeId, senderId, ... }
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
 model Payment {
   id        String        @id @default(cuid())
   groupId   String
@@ -268,7 +345,7 @@ model Payment {
   amount    Float
   currency  String        @default("ILS")
   status    PaymentStatus @default(PENDING)
-  provider  String?       // "stripe" etc.
+  provider  String? // "stripe" etc.
   createdAt DateTime      @default(now())
 
   group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
@@ -292,17 +369,17 @@ model Follow {
 // Strava contacts discovered via kudos — stored locally so we don't re-scan every visit.
 // When a contact joins TriForce, their triforceUserId is filled in and a Follow is created.
 model StravaContact {
-  id             String   @id @default(cuid())
-  userId         String                      // the TriForce user who discovered this contact
-  name           String                      // firstname + lastname from Strava kudos
-  kudosCount     Int      @default(1)
-  latestKudosAt  DateTime
-  scannedAt      DateTime @default(now())
-  isChosen        Boolean  @default(false)   // user explicitly marked this as a friend
-  isMutual        Boolean  @default(false)   // appears in a shared Strava club — set by /api/athlete/mutual-friends?refresh=1
-  mutualClubs     String[]                   // club names where this contact was found
-  triforceUserId  String?                     // filled when this contact joins TriForce
-  stravaAthleteId String?                     // Strava numeric ID — set for club members, enables direct API comparison
+  id              String   @id @default(cuid())
+  userId          String // the TriForce user who discovered this contact
+  name            String // firstname + lastname from Strava kudos
+  kudosCount      Int      @default(1)
+  latestKudosAt   DateTime
+  scannedAt       DateTime @default(now())
+  isChosen        Boolean  @default(false) // user explicitly marked this as a friend
+  isMutual        Boolean  @default(false) // appears in a shared Strava club — set by /api/athlete/mutual-friends?refresh=1
+  mutualClubs     String[] // club names where this contact was found
+  triforceUserId  String? // filled when this contact joins TriForce
+  stravaAthleteId String? // Strava numeric ID — set for club members, enables direct API comparison
 
   user         User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   triforceUser User? @relation("StravaContactTriforce", fields: [triforceUserId], references: [id])

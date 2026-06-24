@@ -21,13 +21,29 @@ function statusLabel(status: string, t: (k: string) => string) {
   return t("challenges.draft");
 }
 
+function participantStatusLabel(status: string) {
+  if (status === "INVITED") return "ממתין לאישור";
+  if (status === "ACCEPTED") return "משתתף";
+  if (status === "DECLINED") return "דחה";
+  if (status === "COMPLETED") return "השלים";
+  return status;
+}
+
 export default function ChallengesPage() {
   const { data: challenges, isLoading, error } = useChallenges();
   const { t } = useTranslation();
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-900">{t("challenges.title")}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">{t("challenges.title")}</h1>
+        <Link
+          href="/challenges/new"
+          className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+        >
+          אתגר חדש
+        </Link>
+      </div>
 
       {isLoading && (
         <div className="flex justify-center py-12">
@@ -52,8 +68,10 @@ export default function ChallengesPage() {
             status: string;
             startDate: string;
             endDate: string;
-            group: { name: string };
-            entries: { rank?: number | null; score: number }[];
+            group: { name: string } | null;
+            createdBy: { name: string | null };
+            entries: { status: string; rank?: number | null; score: number }[];
+            _count: { entries: number };
           }) => {
             const entry = c.entries[0];
             const now = new Date();
@@ -70,7 +88,9 @@ export default function ChallengesPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="truncate font-semibold text-gray-900">{c.name}</p>
-                      <p className="mt-0.5 text-xs text-gray-500">{c.group.name}</p>
+                      <p className="mt-0.5 text-xs text-gray-500">
+                        {c.group?.name ?? `נשלח על ידי ${c.createdBy.name ?? "מישהו"}`}
+                      </p>
                     </div>
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusBadgeClass(c.status)}`}>
                       {statusLabel(c.status, t)}
@@ -81,11 +101,13 @@ export default function ChallengesPage() {
                       {start.toLocaleDateString("he-IL", { day: "numeric", month: "short" })}
                       {" – "}
                       {end.toLocaleDateString("he-IL", { day: "numeric", month: "short", year: "numeric" })}
-                      {c.status === "ACTIVE" && daysLeft > 0 && ` · ${daysLeft} ${daysLeft === 1 ? t("challenges.dayLeft") : t("challenges.daysLeft")}`}
+                      {c.status === "ACTIVE" && daysLeft > 0 && ` · ${daysLeft} ימים נותרו`}
                     </span>
                     {entry && (
                       <span className="font-medium text-gray-700">
-                        {t("challenges.rankOf", { rank: String(entry.rank ?? "—"), total: String(c.entries.length) })} · {entry.score.toFixed(1)}pts
+                        {entry.status === "INVITED"
+                          ? participantStatusLabel(entry.status)
+                          : `${entry.score.toFixed(1)} נק׳ · מקום ${entry.rank ?? "—"} מתוך ${c._count.entries}`}
                       </span>
                     )}
                   </div>
