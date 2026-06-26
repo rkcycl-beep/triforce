@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Button from "@/components/ui/Button";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ReferenceRow {
   id: string;
@@ -35,6 +36,7 @@ export default function ReferenceTableModal({
   isOpen,
   onClose,
 }: ReferenceTableModalProps) {
+  const { t } = useTranslation();
   const [gender, setGender] = useState<"M" | "F">("M");
 
   const { data: rows, isLoading } = useQuery<ReferenceRow[]>({
@@ -72,25 +74,25 @@ export default function ReferenceTableModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50 px-5 py-4">
-          <h2 className="text-lg font-bold text-gray-900">טבלת ערכים וניקוד</h2>
+          <h2 className="text-lg font-bold text-gray-900">{t("challenges.referenceTableModal.title")}</h2>
           <p className="mt-1 text-sm text-gray-600">
-            {distanceKm} ק״מ — טווח סבלנות {tolerancePercent}%
+            {t("challenges.referenceTableModal.subtitle").replace("{distance}", String(distanceKm)).replace("{tolerance}", String(tolerancePercent))}
           </p>
         </div>
 
         <div className="px-5 py-4">
           <div className="mb-4 rounded-xl bg-gray-50 p-3 text-sm leading-relaxed text-gray-700">
-            <p className="font-semibold text-gray-900">איך מחושב הניקוד?</p>
-            <p>הריצה שלך נמדדת מול הקצב הממוצע לגיל ולמגדר שלך.</p>
+            <p className="font-semibold text-gray-900">{t("challenges.referenceTableModal.howScored")}</p>
+            <p>{t("challenges.referenceTableModal.description")}</p>
             <div className="mt-2 flex flex-wrap gap-3">
               <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
-                🟢 בטווח — 100
+                🟢 {t("challenges.referenceTableModal.inRange")}
               </span>
               <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
-                🔵 מהיר יותר — 100
+                🔵 {t("challenges.referenceTableModal.faster")}
               </span>
               <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-800">
-                🔴 איטי מדי — פחות
+                🔴 {t("challenges.referenceTableModal.slower")}
               </span>
             </div>
           </div>
@@ -104,7 +106,7 @@ export default function ReferenceTableModal({
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
-              גברים
+              {t("challenges.referenceTableModal.men")}
             </button>
             <button
               onClick={() => setGender("F")}
@@ -114,24 +116,24 @@ export default function ReferenceTableModal({
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
-              נשים
+              {t("challenges.referenceTableModal.women")}
             </button>
           </div>
 
           {isLoading ? (
-            <div className="py-8 text-center text-gray-500">טוען...</div>
+            <div className="py-8 text-center text-gray-500">{t("challenges.referenceTableModal.loading")}</div>
           ) : (
             <div className="max-h-[45vh] overflow-auto rounded-xl border border-gray-200">
               <table className="w-full text-sm">
                 <thead className="sticky top-0 bg-gray-50 text-xs font-semibold text-gray-600">
                   <tr>
-                    <th className="px-3 py-2 text-center">גיל</th>
-                    <th className="px-3 py-2 text-center">ממוצע</th>
+                    <th className="px-3 py-2 text-center">{t("challenges.referenceTableModal.age")}</th>
+                    <th className="px-3 py-2 text-center">{t("challenges.referenceTableModal.average")}</th>
                     <th className="bg-green-50 px-3 py-2 text-center text-green-800">
-                      טווח מלא
+                      {t("challenges.referenceTableModal.fullScoreRange")}
                     </th>
                     <th className="bg-red-50 px-3 py-2 text-center text-red-800">
-                      מתחת
+                      {t("challenges.referenceTableModal.below")}
                     </th>
                   </tr>
                 </thead>
@@ -148,10 +150,10 @@ export default function ReferenceTableModal({
                           {formatPace(row.paceMinPerKm)}
                         </td>
                         <td className="bg-green-50/50 px-3 py-2 text-center text-green-800">
-                          עד {formatPace(tolerancePace)}
+                          {t("challenges.upTo").replace("{pace}", formatPace(tolerancePace))}
                         </td>
                         <td className="bg-red-50/50 px-3 py-2 text-center text-red-700">
-                          מעל {formatPace(tolerancePace)}
+                          {t("challenges.referenceTableModal.below").replace("{pace}", formatPace(tolerancePace))}
                         </td>
                       </tr>
                     );
@@ -164,7 +166,7 @@ export default function ReferenceTableModal({
 
         <div className="border-t border-gray-100 px-5 py-4">
           <Button onClick={onClose} className="w-full">
-            סגור
+            {t("challenges.referenceTableModal.close")}
           </Button>
         </div>
       </div>

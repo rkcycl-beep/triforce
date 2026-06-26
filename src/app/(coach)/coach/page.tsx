@@ -46,6 +46,12 @@ export default function CoachHomePage() {
     return "/coach/groups";
   }
 
+  function challengeLink() {
+    if (!hasGroups) return "/coach/groups/new";
+    if (data!.groups.length === 1) return `/challenges/new?groupId=${firstGroup!.id}`;
+    return "/coach/groups";
+  }
+
   const cubes: Cube[] = [
     {
       emoji: "👥",
@@ -59,7 +65,7 @@ export default function CoachHomePage() {
       emoji: "🏆",
       label: "אתגרים",
       sub: "ניהול ויצירה",
-      href: groupLink("challenges/new"),
+      href: challengeLink(),
       gradient: "from-[#e07b3a] via-[#c45e2b] to-[#a34820]",
       shadow: "shadow-[0_12px_28px_rgba(192,94,43,0.25)]",
     },

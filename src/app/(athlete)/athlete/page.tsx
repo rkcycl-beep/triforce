@@ -33,7 +33,7 @@ const cubes: Cube[] = [
   {
     emoji: "🏆",
     label: "אתגרים",
-    sub: "אתגרי קבוצה",
+    sub: "צור או הצטרף",
     href: "/challenges",
     gradient: "from-[#e07b3a] via-[#c45e2b] to-[#a34820]",
     shadow: "shadow-[0_12px_28px_rgba(192,94,43,0.25)]",

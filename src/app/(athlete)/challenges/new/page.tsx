@@ -1,25 +1,40 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Button from "@/components/ui/Button";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { useTranslation } from "@/hooks/useTranslation";
 
-export default function NewChallengePage() {
+function NewChallengeForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const isCoach = session?.user?.role === "COACH";
+  const preselectedGroupId = searchParams.get("groupId");
+
+  const today = new Date().toISOString().split("T")[0];
+  const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
   const [name, setName] = useState("");
   const [distanceKm, setDistanceKm] = useState("5");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState(today);
+  const [endDate, setEndDate] = useState(nextWeek);
   const [tolerance, setTolerance] = useState("30");
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (preselectedGroupId && isCoach) {
+      setSelectedGroupIds((prev) =>
+        prev.includes(preselectedGroupId) ? prev : [preselectedGroupId]
+      );
+    }
+  }, [preselectedGroupId, isCoach]);
 
   // Chosen friends (marked by user in /members or /friends)
   const { data: chosenData, isLoading: chosenLoading } = useQuery({
@@ -98,20 +113,20 @@ export default function NewChallengePage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-bold text-gray-900">אתגר חדש</h1>
+      <h1 className="text-2xl font-bold text-gray-900">{t("challenges.new")}</h1>
 
       <div className="space-y-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
         {/* Name */}
         <div className="rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 p-3">
           <label className="flex items-center gap-2 text-sm font-bold text-blue-800">
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-xs text-white">🏷️</span>
-            שם האתגר
+            {t("challenges.name")}
           </label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="למשל: 5K יולי"
+            placeholder={t("challenges.namePlaceholder")}
             className="mt-2 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
           />
         </div>
@@ -120,17 +135,17 @@ export default function NewChallengePage() {
         <div className="rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 p-3">
           <label className="flex items-center gap-2 text-sm font-bold text-emerald-800">
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-xs text-white">📏</span>
-            מרחק (ק״מ)
+            {t("challenges.distance")}
           </label>
           <select
             value={distanceKm}
             onChange={(e) => setDistanceKm(e.target.value)}
             className="mt-2 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm"
           >
-            <option value="5">5 ק״מ</option>
-            <option value="10">10 ק״מ</option>
-            <option value="21.0975">חצי מרתון</option>
-            <option value="42.195">מרתון</option>
+            <option value="5">{t("challenges.distances.5k")}</option>
+            <option value="10">{t("challenges.distances.10k")}</option>
+            <option value="21.0975">{t("challenges.distances.halfMarathon")}</option>
+            <option value="42.195">{t("challenges.distances.marathon")}</option>
           </select>
         </div>
 
@@ -139,7 +154,7 @@ export default function NewChallengePage() {
           <div className="rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 p-3">
             <label className="flex items-center gap-2 text-sm font-bold text-amber-800">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-xs text-white">📅</span>
-              מתאריך
+              {t("challenges.startDate")}
             </label>
             <input
               type="date"
@@ -151,7 +166,7 @@ export default function NewChallengePage() {
           <div className="rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 p-3">
             <label className="flex items-center gap-2 text-sm font-bold text-rose-800">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-rose-500 text-xs text-white">🏁</span>
-              עד תאריך
+              {t("challenges.endDate")}
             </label>
             <input
               type="date"
@@ -166,7 +181,7 @@ export default function NewChallengePage() {
         <div className="rounded-xl bg-gradient-to-r from-green-50 to-lime-50 p-3">
           <label className="flex items-center gap-2 text-sm font-bold text-green-800">
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-xs text-white">✅</span>
-            מרווח מותר (%)
+            {t("challenges.tolerance")}
           </label>
           <input
             type="number"
@@ -177,7 +192,7 @@ export default function NewChallengePage() {
             className="mt-2 w-full rounded-lg border border-green-200 bg-white px-3 py-2 text-sm"
           />
           <p className="mt-2 text-xs font-medium text-green-700">
-            קצב ריצה בשונות של 30% מהממוצע עדיין יזכה אותך במלוא הניקוד.
+            {t("challenges.toleranceHint").replace("{percent}", tolerance)}
           </p>
         </div>
 
@@ -186,7 +201,7 @@ export default function NewChallengePage() {
           <div className="rounded-xl bg-gradient-to-r from-purple-50 to-violet-50 p-3">
             <label className="flex items-center gap-2 text-sm font-bold text-purple-800">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-500 text-xs text-white">👥</span>
-              קבוצות
+              {t("challenges.groups")}
             </label>
             <div className="mt-2 space-y-2">
               {groups.map((g: { id: string; name: string }) => (
@@ -209,20 +224,20 @@ export default function NewChallengePage() {
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 text-sm font-bold text-cyan-800">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500 text-xs text-white">🤝</span>
-                חברים
+                {t("challenges.friends")}
               </label>
               <a
                 href="/members"
                 className="rounded-full bg-white px-2 py-1 text-xs font-medium text-cyan-700 shadow-sm hover:bg-cyan-100"
               >
-                נהל חברים
+                {t("challenges.manageFriends")}
               </a>
             </div>
             {chosenFriends.length === 0 ? (
               <div className="mt-2 rounded-lg bg-white/70 p-3 text-center text-sm text-cyan-800">
-                <p>לא בחרת חברים עדיין</p>
+                <p>{t("challenges.noFriendsChosen")}</p>
                 <a href="/members" className="mt-1 inline-block text-cyan-600 underline hover:text-cyan-800">
-                  בחר חברים כאן
+                  {t("challenges.chooseFriendsHere")}
                 </a>
               </div>
             ) : (
@@ -249,13 +264,13 @@ export default function NewChallengePage() {
                         <span className="flex-1 text-gray-500">{f.name}</span>
                         <a
                           href={`https://wa.me/?text=${encodeURIComponent(
-                            `היי ${f.name}, הצטרף/י אליי ל-TriForce! https://triforce-iota.vercel.app/invite/${session?.user?.id}`
+                            t("friends.inviteMessage").replace("{name}", f.name).replace("{url}", `https://triforce-iota.vercel.app/invite/${session?.user?.id}`)
                           )}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 hover:bg-green-200"
                         >
-                          הזמן בווטסאפ
+                          {t("challenges.inviteOnWhatsApp")}
                         </a>
                       </>
                     )}
@@ -277,21 +292,35 @@ export default function NewChallengePage() {
           loading={createMutation.isPending}
           className="w-full"
         >
-          צור אתגר
+          {t("challenges.create")}
         </Button>
 
         {!canSubmit && (
           <p className="text-center text-xs text-amber-600">
-            יש למלא שם, מרחק, תאריכים ולבחור לפחות חבר או קבוצה אחת.
+            {t("challenges.validationHint")}
           </p>
         )}
 
         {createMutation.isError && (
           <p className="text-center text-sm text-red-600">
-            {createMutation.error instanceof Error ? createMutation.error.message : "שגיאה"}
+            {createMutation.error instanceof Error ? createMutation.error.message : t("challenges.error")}
           </p>
         )}
       </div>
     </div>
+  );
+}
+
+export default function NewChallengePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center py-16">
+          <LoadingSpinner />
+        </div>
+      }
+    >
+      <NewChallengeForm />
+    </Suspense>
   );
 }

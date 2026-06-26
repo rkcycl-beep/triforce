@@ -2,9 +2,11 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useEffect } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useNotifications, useMarkAllNotificationsRead, type Notification } from "@/hooks/useNotifications";
 
 interface Message {
   id: string;
@@ -13,6 +15,50 @@ interface Message {
   createdAt: string;
   user: { id: string; name: string | null; image: string | null; role: string };
   group: { id: string; name: string };
+}
+
+function NotificationCard({ notification }: { notification: Notification }) {
+  const { t } = useTranslation();
+  const date = new Date(notification.createdAt).toLocaleString("he-IL", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const isInvite = notification.type === "CHALLENGE_INVITED";
+  const challengeId =
+    typeof notification.metadata?.challengeId === "string"
+      ? notification.metadata.challengeId
+      : null;
+
+  const content = (
+    <div className={`rounded-xl p-4 shadow-sm ${isInvite ? "border border-amber-200 bg-amber-50" : "border border-blue-100 bg-blue-50"}`}>
+      <div className="mb-2 flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${isInvite ? "bg-amber-200 text-amber-800" : "bg-blue-100 text-blue-700"}`}>
+            {isInvite ? "🏆" : "🔔"}
+          </div>
+          <div>
+            <p className="text-sm font-bold text-gray-900">{notification.title}</p>
+            <p className="text-[10px] text-gray-400">{date}</p>
+          </div>
+        </div>
+        <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[9px] font-bold text-white">{t("challenges.notifications.new")}</span>
+      </div>
+      <p className="text-sm leading-relaxed text-gray-700">{notification.content}</p>
+    </div>
+  );
+
+  if (challengeId) {
+    return (
+      <Link href={`/challenges/${challengeId}`} className="block">
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
 }
 
 function MessageCard({ msg }: { msg: Message }) {
@@ -63,6 +109,16 @@ export default function MessagesPage() {
     },
   });
 
+  const { data: notifications = [] } = useNotifications();
+  const markAllRead = useMarkAllNotificationsRead();
+
+  useEffect(() => {
+    if (notifications.length > 0) {
+      markAllRead.mutate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="space-y-4 pb-24">
       <div className="flex items-center justify-between">
@@ -78,6 +134,14 @@ export default function MessagesPage() {
         </Link>
       </div>
 
+      {notifications.length > 0 && (
+        <div className="space-y-3">
+          {notifications.map((n) => (
+            <NotificationCard key={n.id} notification={n} />
+          ))}
+        </div>
+      )}
+
       {isLoading && (
         <div className="flex justify-center py-12">
           <LoadingSpinner />
@@ -88,7 +152,7 @@ export default function MessagesPage() {
         <ErrorMessage message={t("messages.loadError")} onRetry={() => refetch()} />
       )}
 
-      {data && data.messages.length === 0 && (
+      {data && data.messages.length === 0 && notifications.length === 0 && (
         <div className="rounded-[20px] border border-gray-100 bg-white p-8 text-center shadow-sm">
           <div className="text-5xl">💬</div>
           <p className="mt-3 text-sm font-semibold text-gray-700">{t("messages.empty")}</p>

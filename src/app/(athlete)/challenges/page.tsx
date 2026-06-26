@@ -21,11 +21,11 @@ function statusLabel(status: string, t: (k: string) => string) {
   return t("challenges.draft");
 }
 
-function participantStatusLabel(status: string) {
-  if (status === "INVITED") return "ממתין לאישור";
-  if (status === "ACCEPTED") return "משתתף";
-  if (status === "DECLINED") return "דחה";
-  if (status === "COMPLETED") return "השלים";
+function participantStatusLabel(status: string, t: (k: string) => string) {
+  if (status === "INVITED") return t("challenges.invited");
+  if (status === "ACCEPTED") return t("challenges.accepted");
+  if (status === "DECLINED") return t("challenges.declined");
+  if (status === "COMPLETED") return t("challenges.completedStatus");
   return status;
 }
 
@@ -41,7 +41,7 @@ export default function ChallengesPage() {
           href="/challenges/new"
           className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
         >
-          אתגר חדש
+          {t("challenges.new")}
         </Link>
       </div>
 
@@ -89,7 +89,7 @@ export default function ChallengesPage() {
                     <div className="min-w-0">
                       <p className="truncate font-semibold text-gray-900">{c.name}</p>
                       <p className="mt-0.5 text-xs text-gray-500">
-                        {c.group?.name ?? `נשלח על ידי ${c.createdBy.name ?? "מישהו"}`}
+                        {c.group?.name ?? t("challenges.sentBy").replace("{name}", c.createdBy.name ?? t("members.unknown"))}
                       </p>
                     </div>
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusBadgeClass(c.status)}`}>
@@ -101,13 +101,13 @@ export default function ChallengesPage() {
                       {start.toLocaleDateString("he-IL", { day: "numeric", month: "short" })}
                       {" – "}
                       {end.toLocaleDateString("he-IL", { day: "numeric", month: "short", year: "numeric" })}
-                      {c.status === "ACTIVE" && daysLeft > 0 && ` · ${daysLeft} ימים נותרו`}
+                      {c.status === "ACTIVE" && daysLeft > 0 && ` · ${t("challenges.daysLeft").replace("{days}", String(daysLeft))}`}
                     </span>
                     {entry && (
                       <span className="font-medium text-gray-700">
                         {entry.status === "INVITED"
-                          ? participantStatusLabel(entry.status)
-                          : `${entry.score.toFixed(1)} נק׳ · מקום ${entry.rank ?? "—"} מתוך ${c._count.entries}`}
+                          ? participantStatusLabel(entry.status, t)
+                          : `${entry.score.toFixed(1)} ${t("challenges.points")} · ${t("challenges.rankOf").replace("{rank}", String(entry.rank ?? "—")).replace("{total}", String(c._count.entries))}`}
                       </span>
                     )}
                   </div>

@@ -1,49 +1,90 @@
-import { prisma } from "../src/lib/prisma";
+import { PrismaClient } from "@prisma/client";
 
-// Base paces (min/km) at peak age (30) for each gender/distance.
-// These represent an "average" recreational runner, not an elite runner.
-const BASE_PACES: Record<string, Record<number, number>> = {
+const prisma = new PrismaClient();
+
+/**
+ * Reference paces for recreational runners.
+ *
+ * Data source:
+ *   5K average finish times by age and sex come from RunRepeat / IAAF 2018 data
+ *   as summarized by Healthline (https://www.healthline.com/health/exercise-fitness/average-5k-time).
+ *
+ *   Longer distances are projected from the 5K times using Riegel's formula,
+ *   which is well validated for recreational runners:
+ *     T2 = T1 × (D2 / D1) ^ 1.06
+ *   See marathonhandbook.com discussion of Riegel for recreational runners.
+ *
+ * These paces represent amateur averages, not elites, so a runner matching the
+ * expected pace gets a solid 100-point score in TriForce challenges.
+ */
+
+// 5K average finish times in minutes, by age bracket and gender.
+// Source: RunRepeat / IAAF 2018 amateur race data (Healthline summary).
+const AVERAGE_5K_MINUTES: Record<string, Record<number, number>> = {
   M: {
-    5: 4.5,       // 5K
-    10: 4.75,     // 10K
-    21.0975: 5.0, // Half marathon
-    42.195: 5.5,  // Marathon
+    15: 31.47, // <20 bracket midpoint
+    25: 33.32,
+    35: 34.6,
+    45: 35.4,
+    55: 36.57,
+    65: 40.7,
+    75: 48.0,
+    85: 58.0,
   },
   F: {
-    5: 5.0,
-    10: 5.25,
-    21.0975: 5.55,
-    42.195: 6.1,
+    15: 38.63,
+    25: 38.73,
+    35: 40.22,
+    45: 41.67,
+    55: 43.95,
+    65: 48.68,
+    75: 58.0,
+    85: 70.0,
   },
 };
 
-// Age factor: how much slower the average pace is compared to peak age 30.
-function getAgeFactor(age: number): number {
-  if (age < 20) {
-    // Teenagers are slightly slower on average than peak
-    return 1.0 + (20 - age) * 0.01;
+const DISTANCES_KM = [5, 10, 21.0975, 42.195];
+
+function timeToMinutes(timeStr: string): number {
+  const [min, sec] = timeStr.split(":").map(Number);
+  return min + sec / 60;
+}
+
+function minutesToTime(minutes: number): string {
+  const min = Math.floor(minutes);
+  const sec = Math.round((minutes - min) * 60);
+  return `${min}:${sec.toString().padStart(2, "0")}`;
+}
+
+// Linear interpolation between known age brackets.
+function get5KMinutes(gender: "M" | "F", age: number): number {
+  const table = AVERAGE_5K_MINUTES[gender];
+  const ages = Object.keys(table).map(Number).sort((a, b) => a - b);
+
+  if (age <= ages[0]) return table[ages[0]];
+  if (age >= ages[ages.length - 1]) return table[ages[ages.length - 1]];
+
+  let lower = ages[0];
+  let upper = ages[ages.length - 1];
+  for (const a of ages) {
+    if (a <= age) lower = a;
+    if (a >= age && upper === ages[ages.length - 1]) upper = a;
   }
-  if (age < 30) {
-    // Approaching peak
-    return 1.0 + (30 - age) * 0.005;
-  }
-  if (age === 30) {
-    return 1.0;
-  }
-  if (age <= 50) {
-    // ~1% per year slowdown
-    return 1.0 + (age - 30) * 0.01;
-  }
-  if (age <= 60) {
-    // ~1.5% per year slowdown
-    return 1.2 + (age - 50) * 0.015;
-  }
-  if (age <= 70) {
-    // ~2% per year slowdown
-    return 1.35 + (age - 60) * 0.02;
-  }
-  // 70+ ~2.5% per year slowdown
-  return 1.55 + (age - 70) * 0.025;
+
+  if (lower === upper) return table[lower];
+
+  const ratio = (age - lower) / (upper - lower);
+  return table[lower] + (table[upper] - table[lower]) * ratio;
+}
+
+// Riegel formula: predict time at distance2 from known time at distance1.
+function riegelPredict(
+  time1Minutes: number,
+  distance1Km: number,
+  distance2Km: number,
+  exponent = 1.06
+): number {
+  return time1Minutes * Math.pow(distance2Km / distance1Km, exponent);
 }
 
 async function main() {
@@ -65,10 +106,11 @@ async function main() {
 
   for (const gender of ["M", "F"] as const) {
     for (let age = 10; age <= 85; age++) {
-      for (const distanceKm of [5, 10, 21.0975, 42.195]) {
-        const basePace = BASE_PACES[gender][distanceKm];
-        const ageFactor = getAgeFactor(age);
-        const paceMinPerKm = parseFloat((basePace * ageFactor).toFixed(2));
+      const avg5KMin = get5KMinutes(gender, age);
+
+      for (const distanceKm of DISTANCES_KM) {
+        const predictedTimeMin = riegelPredict(avg5KMin, 5, distanceKm);
+        const paceMinPerKm = parseFloat((predictedTimeMin / distanceKm).toFixed(2));
 
         rows.push({
           sportType: "run",
@@ -76,7 +118,8 @@ async function main() {
           age,
           distanceKm,
           paceMinPerKm,
-          source: "KIMI-derived recreational average",
+          source:
+            "RunRepeat/IAAF 2018 amateur 5K averages + Riegel projection for longer distances",
         });
       }
     }
@@ -93,7 +136,23 @@ async function main() {
     console.log(`Inserted batch ${i / batchSize + 1}/${Math.ceil(rows.length / batchSize)}`);
   }
 
-  console.log(`Seeded ${rows.length} reference pace rows for running.`);
+  // Print a sample for sanity checking
+  console.log("\nSample paces (age 30, M):");
+  for (const distanceKm of DISTANCES_KM) {
+    const row = rows.find((r) => r.age === 30 && r.gender === "M" && r.distanceKm === distanceKm);
+    if (row) {
+      console.log(`  ${distanceKm} km: ${minutesToTime(row.paceMinPerKm)} /km`);
+    }
+  }
+  console.log("Sample paces (age 30, F):");
+  for (const distanceKm of DISTANCES_KM) {
+    const row = rows.find((r) => r.age === 30 && r.gender === "F" && r.distanceKm === distanceKm);
+    if (row) {
+      console.log(`  ${distanceKm} km: ${minutesToTime(row.paceMinPerKm)} /km`);
+    }
+  }
+
+  console.log(`\nSeeded ${rows.length} reference pace rows for running.`);
 }
 
 main()

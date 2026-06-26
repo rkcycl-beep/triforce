@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface NavItem {
   href: string;
@@ -68,23 +69,33 @@ const navItems: NavItem[] = [
 export default function BottomNav() {
   const pathname = usePathname();
   const { t } = useTranslation();
+  const { data: notifications = [] } = useNotifications();
+  const unreadCount = notifications.length;
 
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 border-t border-gray-200 bg-white/95 backdrop-blur-md safe-bottom">
       <div className="mx-auto flex max-w-md items-center justify-around">
         {navItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+          const showBadge = item.href === "/messages" && unreadCount > 0;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex min-h-[60px] min-w-[44px] flex-1 flex-col items-center justify-center gap-1 text-xs transition-colors ${
+              className={`relative flex min-h-[60px] min-w-[44px] flex-1 flex-col items-center justify-center gap-1 text-xs transition-colors ${
                 isActive
                   ? "text-[#1D9E75] font-semibold"
                   : "text-gray-400 hover:text-gray-600"
               }`}
             >
-              {item.icon}
+              <span className="relative">
+                {item.icon}
+                {showBadge && (
+                  <span className="absolute -top-1.5 -end-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </span>
               <span>{t(item.labelKey)}</span>
             </Link>
           );

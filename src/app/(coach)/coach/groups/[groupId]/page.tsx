@@ -3,6 +3,7 @@
 import { useState, use } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -89,6 +90,7 @@ function Avatar({ user }: { user: Member }) {
 export default function CoachGroupDetailPage({ params }: { params: Promise<{ groupId: string }> }) {
   const { groupId } = use(params);
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [pendingAdd, setPendingAdd] = useState<string | null>(null);
   const [pendingRemove, setPendingRemove] = useState<string | null>(null);
@@ -296,7 +298,7 @@ export default function CoachGroupDetailPage({ params }: { params: Promise<{ gro
             אתגרים ({challenges.length})
           </p>
           <Link
-            href={`/coach/groups/${groupId}/challenges/new`}
+            href={`/challenges/new?groupId=${groupId}`}
             className="text-xs font-bold text-[#1D9E75]"
           >
             + חדש
@@ -307,7 +309,7 @@ export default function CoachGroupDetailPage({ params }: { params: Promise<{ gro
           <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-5 text-center">
             <p className="text-sm text-gray-400">אין אתגרים עדיין</p>
             <Link
-              href={`/coach/groups/${groupId}/challenges/new`}
+              href={`/challenges/new?groupId=${groupId}`}
               className="mt-2 inline-block text-sm font-bold text-[#1D9E75]"
             >
               צור אתגר ראשון
@@ -316,14 +318,15 @@ export default function CoachGroupDetailPage({ params }: { params: Promise<{ gro
         ) : (
           <div className="flex flex-col gap-2">
             {challenges.map((ch) => (
-              <div
+              <Link
                 key={ch.id}
-                className="flex items-center justify-between rounded-2xl bg-white p-4 shadow-sm"
+                href={`/challenges/${ch.id}`}
+                className="flex items-center justify-between rounded-2xl bg-white p-4 shadow-sm transition-colors hover:bg-gray-50"
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-gray-800">{ch.name}</p>
                   <p className="text-xs text-gray-400">
-                    {ch.scoringMethod.replace(/_/g, " ").toLowerCase()} · {ch._count.entries} משתתפים
+                    {ch.scoringMethod === "GOAL_BASED" ? t("challenges.goalBased") : ch.scoringMethod.replace(/_/g, " ").toLowerCase()} · {ch._count.entries} {t("coach.participants")}
                   </p>
                 </div>
                 <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${
@@ -335,7 +338,7 @@ export default function CoachGroupDetailPage({ params }: { params: Promise<{ gro
                 }`}>
                   {ch.status === "ACTIVE" ? "פעיל" : ch.status === "COMPLETED" ? "הסתיים" : "טיוטה"}
                 </span>
-              </div>
+              </Link>
             ))}
           </div>
         )}

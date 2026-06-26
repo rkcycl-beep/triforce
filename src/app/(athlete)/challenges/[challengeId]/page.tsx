@@ -19,11 +19,11 @@ function formatPace(paceMinPerKm: number): string {
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
-function participantStatusLabel(status: string) {
-  if (status === "INVITED") return "ממתין לאישור";
-  if (status === "ACCEPTED") return "משתתף";
-  if (status === "DECLINED") return "דחה";
-  if (status === "COMPLETED") return "השלים";
+function participantStatusLabel(status: string, t: (k: string) => string) {
+  if (status === "INVITED") return t("challenges.invited");
+  if (status === "ACCEPTED") return t("challenges.accepted");
+  if (status === "DECLINED") return t("challenges.declined");
+  if (status === "COMPLETED") return t("challenges.completedStatus");
   return status;
 }
 
@@ -73,7 +73,7 @@ export default function ChallengeDetailPage() {
         <h1 className="text-2xl font-bold text-gray-900">{c.name}</h1>
         {c.description && <p className="mt-1 text-sm text-gray-600">{c.description}</p>}
         <p className="mt-1 text-xs text-gray-500">
-          {c.distanceKm} ק״מ · {c.sportType === "run" ? "ריצה" : c.sportType} ·{" "}
+          {c.distanceKm} {t("activities.km")} · {c.sportType === "run" ? t("sportTypes.run") : c.sportType} ·{" "}
           {new Date(c.startDate).toLocaleDateString(locale === "he" ? "he-IL" : "en-US", { day: "numeric", month: "short" })}
           {" – "}
           {new Date(c.endDate).toLocaleDateString(locale === "he" ? "he-IL" : "en-US", { day: "numeric", month: "short", year: "numeric" })}
@@ -83,17 +83,17 @@ export default function ChallengeDetailPage() {
       {/* Invitation actions */}
       {myEntry?.status === "INVITED" && (
         <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-4">
-          <p className="text-sm text-yellow-900">הוזמנת להשתתף באתגר זה</p>
+          <p className="text-sm text-yellow-900">{t("challenges.invitedPrompt")}</p>
           <div className="mt-3 flex gap-3">
             <Button onClick={() => respondMutation.mutate({ action: "accept" })} loading={respondMutation.isPending}>
-              אשר השתתפות
+              {t("challenges.accept")}
             </Button>
             <Button
               variant="secondary"
               onClick={() => respondMutation.mutate({ action: "decline" })}
               loading={respondMutation.isPending}
             >
-              דחה
+              {t("challenges.decline")}
             </Button>
           </div>
         </div>
@@ -104,33 +104,33 @@ export default function ChallengeDetailPage() {
         <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-blue-600">התוצאה שלי</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-blue-600">{t("challenges.yourResult")}</p>
               <div className="mt-1 flex items-baseline gap-3">
                 <span className="text-3xl font-bold text-blue-900">
-                  {myEntry.score.toFixed(1)} נק׳
+                  {myEntry.score.toFixed(1)} {t("challenges.points")}
                 </span>
                 <span className="text-sm text-blue-700">
-                  מקום {myEntry.rank ?? "—"} מתוך {entries.length}
+                  {t("challenges.rankOf").replace("{rank}", String(myEntry.rank ?? "—")).replace("{total}", String(entries.length))}
                 </span>
               </div>
             </div>
             <Button variant="secondary" onClick={() => setShowTable(true)} className="text-xs">
-              טבלת ערכים
+              {t("challenges.referenceTable")}
             </Button>
           </div>
           {typeof metadata.actualPace === "number" && (
             <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
               <div className="rounded-lg bg-white p-2">
-                <p className="text-gray-500">קצב שלי</p>
+                <p className="text-gray-500">{t("challenges.myPace")}</p>
                 <p className="font-semibold text-gray-900">{formatPace(Number(metadata.actualPace))}</p>
               </div>
               <div className="rounded-lg bg-white p-2">
-                <p className="text-gray-500">ממוצע צפוי</p>
+                <p className="text-gray-500">{t("challenges.expectedPace")}</p>
                 <p className="font-semibold text-gray-900">{formatPace(Number(metadata.expectedPace))}</p>
               </div>
               <div className="rounded-lg bg-white p-2">
-                <p className="text-gray-500">טווח מלא</p>
-                <p className="font-semibold text-green-700">עד {formatPace(Number(metadata.tolerancePace))}</p>
+                <p className="text-gray-500">{t("challenges.fullScoreRange")}</p>
+                <p className="font-semibold text-green-700">{t("challenges.upTo").replace("{pace}", formatPace(Number(metadata.tolerancePace)))}</p>
               </div>
             </div>
           )}
@@ -140,17 +140,17 @@ export default function ChallengeDetailPage() {
       {/* Reference table button for non-participants or pending */}
       {(!myEntry || myEntry.status === "INVITED" || myEntry.status === "DECLINED") && (
         <Button variant="secondary" onClick={() => setShowTable(true)} className="w-full">
-          צפה בטבלת ערכים וניקוד
+          {t("challenges.viewReferenceTable")}
         </Button>
       )}
 
       {/* Leaderboard */}
       <div className="rounded-xl border border-gray-200 bg-white">
         <div className="border-b border-gray-100 px-5 py-4">
-          <h2 className="font-semibold text-gray-900">לוח תוצאות</h2>
+          <h2 className="font-semibold text-gray-900">{t("challenges.leaderboard")}</h2>
         </div>
         {entries.length === 0 ? (
-          <p className="px-5 py-4 text-sm text-gray-500">אין עדיין משתתפים</p>
+          <p className="px-5 py-4 text-sm text-gray-500">{t("challenges.noParticipants")}</p>
         ) : (
           <ol className="divide-y divide-gray-100">
             {entries.map((entry: { id: string; status: string; rank: number; user: { id: string; name: string | null; image: string | null }; score: number }) => {
@@ -173,12 +173,12 @@ export default function ChallengeDetailPage() {
                   )}
                   <div className="min-w-0 flex-1">
                     <p className={`truncate text-sm font-medium ${isMe ? "text-blue-900" : "text-gray-900"}`}>
-                      {entry.user.name ?? "?"}{isMe && " (אתה)"}
+                      {entry.user.name ?? "?"}{isMe && ` (${t("challenges.you")})`}
                     </p>
-                    <p className="text-xs text-gray-500">{participantStatusLabel(entry.status)}</p>
+                    <p className="text-xs text-gray-500">{participantStatusLabel(entry.status, t)}</p>
                   </div>
                   <span className="shrink-0 text-sm font-semibold text-gray-700">
-                    {entry.score > 0 ? `${entry.score.toFixed(1)} נק׳` : "—"}
+                    {entry.score > 0 ? `${entry.score.toFixed(1)} ${t("challenges.points")}` : "—"}
                   </span>
                 </li>
               );
