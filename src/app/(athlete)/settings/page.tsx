@@ -28,7 +28,8 @@ export default function SettingsPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setCoachStatus("error");
-        setCoachMessage(data.error ?? t("settings.becomeCoachError"));
+        const detail = data.details ? ` (${data.details})` : "";
+        setCoachMessage((data.error ?? t("settings.becomeCoachError")) + detail);
         return;
       }
       setCoachStatus("success");

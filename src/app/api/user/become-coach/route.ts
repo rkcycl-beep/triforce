@@ -48,6 +48,10 @@ export async function POST() {
     return NextResponse.json({ message: "Coach capability added.", roles: updated.roles });
   } catch (error) {
     console.error("Failed to upgrade user to coach:", error);
-    return NextResponse.json({ error: "Failed to upgrade role." }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json(
+      { error: "Failed to upgrade role.", details: message },
+      { status: 500 }
+    );
   }
 }
