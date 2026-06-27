@@ -26,18 +26,25 @@ function NotificationCard({ notification }: { notification: Notification }) {
     minute: "2-digit",
   });
 
-  const isInvite = notification.type === "CHALLENGE_INVITED";
+  const isChallengeInvite = notification.type === "CHALLENGE_INVITED";
+  const isGroupInvite = notification.type === "GROUP_INVITED";
+  const isInvite = isChallengeInvite || isGroupInvite;
   const challengeId =
     typeof notification.metadata?.challengeId === "string"
       ? notification.metadata.challengeId
       : null;
+  const groupId =
+    typeof notification.metadata?.groupId === "string"
+      ? notification.metadata.groupId
+      : null;
+  const inviteTarget = challengeId ?? groupId;
 
   const content = (
     <div className={`rounded-xl p-4 shadow-sm ${isInvite ? "border border-amber-200 bg-amber-50" : "border border-blue-100 bg-blue-50"}`}>
       <div className="mb-2 flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${isInvite ? "bg-amber-200 text-amber-800" : "bg-blue-100 text-blue-700"}`}>
-            {isInvite ? "🏆" : "🔔"}
+            {isChallengeInvite ? "🏆" : isGroupInvite ? "👥" : "🔔"}
           </div>
           <div>
             <p className="text-sm font-bold text-gray-900">{notification.title}</p>
@@ -50,9 +57,9 @@ function NotificationCard({ notification }: { notification: Notification }) {
     </div>
   );
 
-  if (challengeId) {
+  if (inviteTarget) {
     return (
-      <Link href={`/challenges/${challengeId}`} className="block">
+      <Link href={isGroupInvite ? `/groups/${groupId}` : `/challenges/${challengeId}`} className="block">
         {content}
       </Link>
     );

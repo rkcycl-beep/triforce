@@ -317,3 +317,71 @@ export async function inviteFriendToPeerGroup(
 ) {
   return addMemberToGroup(groupId, inviterId, inviteeId);
 }
+
+// ─── Coach group invitations ────────────────────────────────────────────────
+
+export async function inviteUserToGroup(
+  groupId: string,
+  inviterId: string,
+  inviteeId: string
+) {
+  if (!(await isOwner(groupId, inviterId))) return null;
+  if (inviterId === inviteeId) return null;
+
+  // If already a member, no need to invite
+  const existingMembership = await prisma.groupMembership.findUnique({
+    where: { userId_groupId: { userId: inviteeId, groupId } },
+  });
+  if (existingMembership) return { alreadyMember: true };
+
+  const invitation = await prisma.groupInvitation.upsert({
+    where: { groupId_inviteeId: { groupId, inviteeId } },
+    update: { status: "PENDING", inviterId },
+    create: { groupId, inviterId, inviteeId, status: "PENDING" },
+  });
+
+  return { invitation };
+}
+
+export async function getGroupInvitations(groupId: string, inviterId: string) {
+  if (!(await isOwner(groupId, inviterId))) return null;
+
+  return prisma.groupInvitation.findMany({
+    where: { groupId, status: "PENDING" },
+    include: {
+      invitee: { select: { id: true, name: true, image: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function respondToGroupInvitation(
+  invitationId: string,
+  userId: string,
+  action: "accept" | "decline"
+) {
+  const invitation = await prisma.groupInvitation.findUnique({
+    where: { id: invitationId },
+  });
+  if (!invitation || invitation.inviteeId !== userId) return null;
+  if (invitation.status !== "PENDING") return null;
+
+  if (action === "decline") {
+    return prisma.groupInvitation.update({
+      where: { id: invitationId },
+      data: { status: "DECLINED" },
+    });
+  }
+
+  // Accept: add membership and mark invitation accepted
+  await prisma.groupMembership.upsert({
+    where: { userId_groupId: { userId, groupId: invitation.groupId } },
+    update: {},
+    create: { userId, groupId: invitation.groupId, role: "ATHLETE" },
+  });
+
+  return prisma.groupInvitation.update({
+    where: { id: invitationId },
+    data: { status: "ACCEPTED" },
+  });
+}

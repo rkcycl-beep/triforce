@@ -47,6 +47,7 @@ enum NotificationType {
   CHALLENGE_ACCEPTED
   CHALLENGE_DECLINED
   CHALLENGE_COMPLETED
+  GROUP_INVITED
 }
 
 enum PaymentStatus {
@@ -122,13 +123,15 @@ model User {
   messages          Message[]
   events            Event[]           @relation("EventCreator")
   payments          Payment[]
-  following         Follow[]          @relation("UserFollowing")
-  followers         Follow[]          @relation("UserFollowers")
-  stravaContacts    StravaContact[]
-  stravaContactOf   StravaContact[]   @relation("StravaContactTriforce")
-  createdGroups     Group[]           @relation("GroupCreator")
-  createdChallenges Challenge[]       @relation("ChallengeCreator")
-  Notification      Notification[]
+  following           Follow[]            @relation("UserFollowing")
+  followers           Follow[]            @relation("UserFollowers")
+  stravaContacts      StravaContact[]
+  stravaContactOf     StravaContact[]     @relation("StravaContactTriforce")
+  createdGroups       Group[]             @relation("GroupCreator")
+  createdChallenges   Challenge[]         @relation("ChallengeCreator")
+  Notification        Notification[]
+  sentGroupInvites    GroupInvitation[]   @relation("SentGroupInvitations")
+  receivedGroupInvites GroupInvitation[]  @relation("ReceivedGroupInvitations")
 }
 
 model Group {
@@ -142,13 +145,14 @@ model Group {
   locale     String    @default("he")
   createdAt  DateTime  @default(now())
 
-  creator     User?             @relation("GroupCreator", fields: [creatorId], references: [id])
-  memberships GroupMembership[]
-  activities  Activity[]
-  challenges  Challenge[]
-  messages    Message[]
-  events      Event[]
-  payments    Payment[]
+  creator      User?             @relation("GroupCreator", fields: [creatorId], references: [id])
+  memberships  GroupMembership[]
+  invitations  GroupInvitation[]
+  activities   Activity[]
+  challenges   Challenge[]
+  messages     Message[]
+  events       Event[]
+  payments     Payment[]
 }
 
 model GroupMembership {
@@ -162,6 +166,25 @@ model GroupMembership {
   group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@unique([userId, groupId])
+  @@index([groupId])
+}
+
+model GroupInvitation {
+  id        String   @id @default(cuid())
+  groupId   String
+  inviterId String
+  inviteeId String
+  status    String   @default("PENDING") // PENDING | ACCEPTED | DECLINED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  group   Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  inviter User  @relation("SentGroupInvitations", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee User  @relation("ReceivedGroupInvitations", fields: [inviteeId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, inviteeId])
+  @@index([inviterId, status])
+  @@index([inviteeId, status])
 }
 
 model Activity {

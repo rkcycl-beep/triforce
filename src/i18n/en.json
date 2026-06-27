@@ -321,7 +321,18 @@
     "step1": "1. Name the group and tap Create",
     "step2": "2. You'll get a 6-character invite code",
     "step3": "3. Share the code with your athletes",
-    "step4": "4. They enter it in Settings → Join group"
+    "step4": "4. They enter it in Settings → Join group",
+    "inviteWhatsAppText": "Hi! Join my training group on TriForce. Invite code: {code}\n{url}",
+    "pendingInvitations": "Pending invitations",
+    "waitingForResponse": "Waiting for response",
+    "addMembers": "Add athletes",
+    "friendsTab": "Friends",
+    "allUsersTab": "All users",
+    "noFriendsYet": "No friends yet. Find friends on the Members page.",
+    "allFriendsAdded": "All friends are already in the group or invited",
+    "friend": "Friend",
+    "sendInvite": "Send invite",
+    "allUsersInGroup": "All registered users are already in the group"
   },
   "messages": {
     "title": "Messages",
@@ -377,6 +388,7 @@
     "copied": "Copied!",
     "close": "Close",
     "open": "Open",
+    "sending": "Sending...",
     "somethingWentWrong": "Something went wrong. Please try again."
   }
 }
