@@ -14,7 +14,7 @@ export async function GET() {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
-  if ((session.user as { role?: string }).role !== "COACH") {
+  if (!session.user.roles?.includes("COACH")) {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
 
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
-  if ((session.user as { role?: string }).role !== "COACH") {
+  if (!session.user.roles?.includes("COACH")) {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
 

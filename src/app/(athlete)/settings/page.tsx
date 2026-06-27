@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useLocale } from "@/providers/LocaleProvider";
 import { useTranslation } from "@/hooks/useTranslation";
+import { isCoach } from "@/lib/roles";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 
@@ -15,6 +16,28 @@ export default function SettingsPage() {
   const [inviteCode, setInviteCode] = useState("");
   const [joinStatus, setJoinStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [joinMessage, setJoinMessage] = useState("");
+  const [coachStatus, setCoachStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [coachMessage, setCoachMessage] = useState("");
+  const userIsCoach = isCoach(session?.user?.roles, session?.user?.role);
+
+  async function onBecomeCoach() {
+    setCoachStatus("loading");
+    setCoachMessage("");
+    try {
+      const res = await fetch("/api/user/become-coach", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setCoachStatus("error");
+        setCoachMessage(data.error ?? t("settings.becomeCoachError"));
+        return;
+      }
+      setCoachStatus("success");
+      setCoachMessage(t("settings.becomeCoachSuccess"));
+    } catch {
+      setCoachStatus("error");
+      setCoachMessage(t("settings.becomeCoachError"));
+    }
+  }
 
   async function onJoin(e: React.FormEvent) {
     e.preventDefault();
@@ -57,7 +80,7 @@ export default function SettingsPage() {
                 : "border border-gray-300 text-gray-700 hover:bg-gray-50"
             }`}
           >
-            עברית
+            {t("settings.hebrew")}
           </button>
           <button
             onClick={() => setLocale("en")}
@@ -67,7 +90,7 @@ export default function SettingsPage() {
                 : "border border-gray-300 text-gray-700 hover:bg-gray-50"
             }`}
           >
-            English
+            {t("settings.english")}
           </button>
         </div>
       </div>
@@ -119,6 +142,28 @@ export default function SettingsPage() {
           <p className="mt-2 text-sm text-gray-500">{t("settings.notConnected")}</p>
         )}
       </div>
+
+      {/* Become a coach */}
+      {session && !userIsCoach && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <h2 className="font-semibold text-amber-900">{t("settings.becomeCoachTitle")}</h2>
+          <p className="mt-1 text-sm text-amber-700">
+            {t("settings.becomeCoachDesc")}
+          </p>
+          <Button
+            onClick={onBecomeCoach}
+            loading={coachStatus === "loading"}
+            className="mt-3 w-full"
+          >
+            {t("settings.becomeCoach")}
+          </Button>
+          {coachMessage && (
+            <p className={`mt-2 text-sm ${coachStatus === "success" ? "text-green-700" : "text-red-600"}`}>
+              {coachMessage}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Account actions */}
       {session && (

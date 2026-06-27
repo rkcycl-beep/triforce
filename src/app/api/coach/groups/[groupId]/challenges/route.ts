@@ -17,7 +17,7 @@ export async function GET(
   { params }: { params: Promise<{ groupId: string }> }
 ) {
   const session = await getServerSession(authOptions);
-  if (session?.user?.role !== "COACH") {
+  if (!session?.user?.roles?.includes("COACH")) {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
   const { groupId } = await params;
@@ -30,7 +30,7 @@ export async function POST(
   { params }: { params: Promise<{ groupId: string }> }
 ) {
   const session = await getServerSession(authOptions);
-  if (session?.user?.role !== "COACH") {
+  if (!session?.user?.roles?.includes("COACH")) {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
 

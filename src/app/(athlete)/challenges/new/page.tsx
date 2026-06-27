@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Button from "@/components/ui/Button";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { useTranslation } from "@/hooks/useTranslation";
+import { isCoach } from "@/lib/roles";
 
 function NewChallengeForm() {
   const router = useRouter();
@@ -14,7 +15,7 @@ function NewChallengeForm() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  const isCoach = session?.user?.role === "COACH";
+  const userIsCoach = isCoach(session?.user?.roles, session?.user?.role);
   const preselectedGroupId = searchParams.get("groupId");
 
   const today = new Date().toISOString().split("T")[0];
@@ -29,12 +30,12 @@ function NewChallengeForm() {
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
 
   useEffect(() => {
-    if (preselectedGroupId && isCoach) {
+    if (preselectedGroupId && userIsCoach) {
       setSelectedGroupIds((prev) =>
         prev.includes(preselectedGroupId) ? prev : [preselectedGroupId]
       );
     }
-  }, [preselectedGroupId, isCoach]);
+  }, [preselectedGroupId, userIsCoach]);
 
   // Chosen friends (marked by user in /members or /friends)
   const { data: chosenData, isLoading: chosenLoading } = useQuery({
@@ -54,7 +55,7 @@ function NewChallengeForm() {
       if (!res.ok) throw new Error("Failed to load groups");
       return res.json();
     },
-    enabled: isCoach,
+    enabled: userIsCoach,
   });
   const groups = groupsData?.groups ?? [];
 
@@ -197,7 +198,7 @@ function NewChallengeForm() {
         </div>
 
         {/* Recipients */}
-        {isCoach && groups && (
+        {userIsCoach && groups && (
           <div className="rounded-xl bg-gradient-to-r from-purple-50 to-violet-50 p-3">
             <label className="flex items-center gap-2 text-sm font-bold text-purple-800">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-500 text-xs text-white">👥</span>
@@ -219,7 +220,7 @@ function NewChallengeForm() {
           </div>
         )}
 
-        {!isCoach && (
+        {!userIsCoach && (
           <div className="rounded-xl bg-gradient-to-r from-cyan-50 to-sky-50 p-3">
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 text-sm font-bold text-cyan-800">

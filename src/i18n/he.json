@@ -11,6 +11,7 @@
     "greeting": "שלום, {name}",
     "userFallback": "משתמש",
     "athlete": "מתאמן",
+    "myHub": "הכניסה שלי",
     "toDashboard": "לדשבורד",
     "coach": "מאמן",
     "coachDashboard": "לדשבורד",
@@ -198,7 +199,14 @@
     "signOutDesc": "התנתק/י מ-TriForce.",
     "signOut": "התנתק/י",
     "garmin": "Garmin",
-    "garminNote": "חיבור ל-Garmin יהיה זמין בשלב הבא."
+    "garminNote": "חיבור ל-Garmin יהיה זמין בשלב הבא.",
+    "hebrew": "עברית",
+    "english": "English",
+    "becomeCoachTitle": "הפוך למאמן",
+    "becomeCoachDesc": "קבל אפשרות ליצור קבוצות מאמן, לשלוח הודעות, ליצור אתגרים ולעקוב אחרי המתאמנים שלך.",
+    "becomeCoach": "הפוך למאמן",
+    "becomeCoachSuccess": "קיבלת הרשאת מאמן. התנתק ו התחבר מחדש כדי לראות את לוח הבקרה של המאמן.",
+    "becomeCoachError": "השדרוג למאמן נכשל. נסה שוב."
   },
   "members": {
     "title": "חברי הקבוצה",
@@ -252,6 +260,7 @@
     "noGroups": "אין קבוצות עדיין",
     "noGroupsPrompt": "צור/י קבוצה כדי לחבר את המתאמנים שלך.",
     "createFirstGroup": "צור/י את הקבוצה הראשונה",
+    "forbidden": "אין לך הרשאת מאמן לבצע פעולה זו. התחבר/י עם חשבון מאמן.",
     "myGroups": "הקבוצות שלי",
     "members": "מתאמנים",
     "member": "מתאמן",
@@ -336,7 +345,19 @@
     "adding": "מוסיף...",
     "added": "נוסף",
     "noCandidates": "כל המשתמשים כבר בקבוצה",
-    "noCandidatesPeer": "כל החברים שנבחרו כבר בקבוצה"
+    "noCandidatesPeer": "כל החברים שנבחרו כבר בקבוצה",
+    "newCoachGroup": "קבוצה חדשה",
+    "newCoachGroupHint": "תן שם לקבוצת האימונים — קוד הזמנה ייווצר אוטומטית",
+    "groupName": "שם הקבוצה",
+    "groupNamePlaceholder": "למשל: רצי בוקר תל אביב",
+    "newCoachGroupHelp": "לאחר היצירה תקבל קוד הזמנה — שתף אותו עם המתאמנים כדי שיצטרפו",
+    "createCoachGroup": "צור קבוצה",
+    "createError": "שגיאה ביצירת הקבוצה",
+    "howItWorks": "איך זה עובד?",
+    "step1": "1. תן שם לקבוצה ולחץ \"צור\"",
+    "step2": "2. תקבל קוד הזמנה בן 6 תווים",
+    "step3": "3. שתף את הקוד עם המתאמנים שלך",
+    "step4": "4. הם יזינו אותו בהגדרות ← הצטרפות לקבוצה"
   },
   "events": {
     "title": "אירועים",
@@ -371,11 +392,13 @@
   },
   "common": {
     "loading": "טוען...",
+    "creating": "יוצר...",
     "error": "שגיאה",
     "retry": "נסה/י שוב",
     "copy": "העתק",
     "copied": "הועתק!",
     "close": "סגור",
-    "open": "פתח"
+    "open": "פתח",
+    "somethingWentWrong": "משהו השתבש. נסה שוב."
   }
 }

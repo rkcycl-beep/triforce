@@ -3,7 +3,8 @@
  *
  * Adds the custom fields we set in the auth.ts callbacks:
  *  - user.id (Prisma cuid)
- *  - user.role (COACH | ATHLETE)
+ *  - user.role (legacy single role: COACH | ATHLETE)
+ *  - user.roles (capability set: ["ATHLETE"] | ["ATHLETE", "COACH"])
  *  - accessToken / athleteId (only present for users who signed in via Strava
  *    or who later linked Strava — coaches without Strava won't have them)
  */
@@ -18,6 +19,8 @@ declare module "next-auth" {
       id: string;
       /** Role on the account (NOT the per-group role) */
       role: "COACH" | "ATHLETE";
+      /** Capability set: every user has ATHLETE; COACH is additional */
+      roles: string[];
       name?: string | null;
       email?: string | null;
       image?: string | null;
@@ -40,6 +43,8 @@ declare module "next-auth/jwt" {
     userId?: string;
     /** Role on the account */
     role?: "COACH" | "ATHLETE";
+    /** Capability set */
+    roles?: string[];
     accessToken?: string;
     refreshToken?: string;
     expiresAt?: number;

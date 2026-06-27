@@ -159,12 +159,15 @@ const CoachCredentialsProvider = CredentialsProvider({
 
     // Return shape becomes the `user` argument in the jwt callback.
     // `id` MUST be the Prisma cuid — it propagates to JWT.userId.
+    const roles =
+      user.roles.length > 0 ? user.roles : user.role === "COACH" ? ["ATHLETE", "COACH"] : ["ATHLETE"];
     return {
       id: user.id,
       name: user.name ?? null,
       email: user.email,
       image: user.image,
       role: user.role,
+      roles,
     };
   },
 });
@@ -190,15 +193,21 @@ export const authOptions: AuthOptions = {
     }: {
       token: JWT;
       account: Account | null;
-      user?: User & { role?: "COACH" | "ATHLETE" };
+      user?: User & { role?: "COACH" | "ATHLETE"; roles?: string[] };
     }): Promise<JWT> {
       // OAuth (Strava) first sign-in: account + user both populated by the adapter.
       if (account && user && account.provider !== "credentials") {
         // Look up role + last sync once on first sign-in.
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { role: true, lastStravaSync: true },
+          select: { role: true, roles: true, lastStravaSync: true },
         });
+        const roles =
+          (dbUser?.roles && dbUser.roles.length > 0)
+            ? dbUser.roles
+            : dbUser?.role === "COACH"
+            ? ["ATHLETE", "COACH"]
+            : ["ATHLETE"];
         let syncError: string | undefined;
         if (account.access_token) {
           try {
@@ -212,6 +221,7 @@ export const authOptions: AuthOptions = {
           ...token,
           userId: user.id,
           role: dbUser?.role ?? "ATHLETE",
+          roles,
           lastStravaSync: dbUser?.lastStravaSync?.toISOString() ?? undefined,
           accessToken: account.access_token,
           refreshToken: account.refresh_token,
@@ -224,10 +234,17 @@ export const authOptions: AuthOptions = {
       // Credentials first sign-in: no account.access_token, no Strava sync.
       // `user.role` comes straight from CoachCredentialsProvider.authorize().
       if (user) {
+        const roles =
+          user.roles && user.roles.length > 0
+            ? user.roles
+            : user.role === "COACH"
+            ? ["ATHLETE", "COACH"]
+            : ["ATHLETE"];
         return {
           ...token,
           userId: user.id,
           role: user.role ?? "ATHLETE",
+          roles,
         };
       }
 
@@ -253,12 +270,15 @@ export const authOptions: AuthOptions = {
      * route handlers can scope DB queries and call Strava on the user's behalf.
      */
     async session({ session, token }) {
+      const fallbackRoles =
+        token.role === "COACH" ? ["ATHLETE", "COACH"] : ["ATHLETE"];
       return {
         ...session,
         user: {
           ...session.user,
           id: token.userId as string,
           role: (token.role as "COACH" | "ATHLETE") ?? "ATHLETE",
+          roles: (token.roles as string[] | undefined) ?? fallbackRoles,
         },
         accessToken: token.accessToken as string | undefined,
         athleteId: token.athleteId as string | undefined,

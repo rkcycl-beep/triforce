@@ -189,7 +189,10 @@ export interface UnifiedCreateChallengeInput {
   userIds?: string[];
 }
 
-function isCoach(user: { role: string }) {
+function isCoach(user: { role?: string; roles?: string[] }) {
+  if (user.roles && user.roles.length > 0) {
+    return user.roles.includes("COACH");
+  }
   return user.role === "COACH";
 }
 
@@ -202,7 +205,10 @@ export async function createUnifiedChallenge(
   creatorId: string,
   input: UnifiedCreateChallengeInput
 ) {
-  const creator = await prisma.user.findUnique({ where: { id: creatorId } });
+  const creator = await prisma.user.findUnique({
+    where: { id: creatorId },
+    select: { id: true, name: true, role: true, roles: true },
+  });
   if (!creator) throw new Error("Creator not found");
 
   const isUserCoach = isCoach(creator);

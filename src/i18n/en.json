@@ -11,6 +11,7 @@
     "greeting": "Hello, {name}",
     "userFallback": "User",
     "athlete": "Athlete",
+    "myHub": "My hub",
     "toDashboard": "Dashboard",
     "coach": "Coach",
     "coachDashboard": "Dashboard",
@@ -198,7 +199,14 @@
     "signOutDesc": "Sign out of TriForce.",
     "signOut": "Sign out",
     "garmin": "Garmin",
-    "garminNote": "Garmin connection will be available in the next phase."
+    "garminNote": "Garmin connection will be available in the next phase.",
+    "hebrew": "עברית",
+    "english": "English",
+    "becomeCoachTitle": "Become a coach",
+    "becomeCoachDesc": "Get the ability to create coach groups, send messages, create challenges and track your athletes.",
+    "becomeCoach": "Become a coach",
+    "becomeCoachSuccess": "You now have coach permissions. Sign out and back in to see the coach dashboard.",
+    "becomeCoachError": "Failed to upgrade to coach. Please try again."
   },
   "coach": {
     "title": "Dashboard",
@@ -206,6 +214,7 @@
     "noGroups": "No groups yet",
     "noGroupsPrompt": "Create a group to get your athletes connected.",
     "createFirstGroup": "Create your first group",
+    "forbidden": "You don't have coach permission to do this. Sign in with a coach account.",
     "members": "Members",
     "member": "member",
     "athletes": "athletes",
@@ -300,7 +309,19 @@
     "adding": "Adding...",
     "added": "Added",
     "noCandidates": "All users are already in the group",
-    "noCandidatesPeer": "All chosen friends are already in the group"
+    "noCandidatesPeer": "All chosen friends are already in the group",
+    "newCoachGroup": "New group",
+    "newCoachGroupHint": "Give your training group a name — an invite code will be created automatically",
+    "groupName": "Group name",
+    "groupNamePlaceholder": "e.g. Tel Aviv Morning Runners",
+    "newCoachGroupHelp": "After creation you'll get an invite code — share it with your athletes so they can join",
+    "createCoachGroup": "Create group",
+    "createError": "Failed to create group",
+    "howItWorks": "How it works",
+    "step1": "1. Name the group and tap Create",
+    "step2": "2. You'll get a 6-character invite code",
+    "step3": "3. Share the code with your athletes",
+    "step4": "4. They enter it in Settings → Join group"
   },
   "messages": {
     "title": "Messages",
@@ -349,11 +370,13 @@
   },
   "common": {
     "loading": "Loading...",
+    "creating": "Creating...",
     "error": "Error",
     "retry": "Retry",
     "copy": "Copy",
     "copied": "Copied!",
     "close": "Close",
-    "open": "Open"
+    "open": "Open",
+    "somethingWentWrong": "Something went wrong. Please try again."
   }
 }

@@ -106,7 +106,8 @@ model User {
   email          String?   @unique
   emailVerified  DateTime?
   image          String?
-  role           Role      @default(ATHLETE)
+  role           Role      @default(ATHLETE) // legacy single role; kept for compatibility
+  roles          String[]  @default(["ATHLETE"]) // capability set: ATHLETE, COACH
   passwordHash   String? // bcrypt hash; null for OAuth-only users
   sex            String? // "M" or "F" — for age-grade scoring
   dateOfBirth    DateTime?

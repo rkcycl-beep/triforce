@@ -3,13 +3,15 @@
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/hooks/useTranslation";
+import { isCoach } from "@/lib/roles";
 
 export default function LandingPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { t } = useTranslation();
   const isAuth = status === "authenticated";
-  const role = session?.user?.role;
+  const userIsCoach = isCoach(session?.user?.roles, session?.user?.role);
+  const isOnlyAthlete = isAuth && !userIsCoach;
 
   if (status === "loading") {
     return (
@@ -82,7 +84,7 @@ export default function LandingPage() {
             </div>
             <span className="text-base font-bold text-white">{t("landing.athlete")}</span>
             <span className="text-xs text-white/60">
-              {isAuth && role === "ATHLETE" ? "הכניסה שלי" : "Strava"}
+              {isAuth ? t("landing.myHub") : "Strava"}
             </span>
           </button>
 

@@ -7,7 +7,7 @@ const WEEKLY_TARGET = 4; // assumed workouts/week per athlete
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id || session.user.role !== "COACH") {
+  if (!session?.user?.id || !session.user.roles?.includes("COACH")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
