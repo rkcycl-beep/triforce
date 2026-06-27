@@ -1,5 +1,6 @@
 "use client";
 
+import { use } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -42,14 +43,15 @@ function formatDate(iso: string) {
 export default function FriendProfilePage({
   params,
 }: {
-  params: { userId: string };
+  params: Promise<{ userId: string }>;
 }) {
+  const { userId } = use(params);
   const router = useRouter();
 
   const { data, isLoading } = useQuery<FriendProfile>({
-    queryKey: ["friend-profile", params.userId],
+    queryKey: ["friend-profile", userId],
     queryFn: async () => {
-      const res = await fetch(`/api/athlete/users/${params.userId}/activities`);
+      const res = await fetch(`/api/athlete/users/${userId}/activities`);
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },
