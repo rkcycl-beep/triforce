@@ -332,7 +332,10 @@
     "allFriendsAdded": "All friends are already in the group or invited",
     "friend": "Friend",
     "sendInvite": "Send invite",
-    "allUsersInGroup": "All registered users are already in the group"
+    "allUsersInGroup": "All registered users are already in the group",
+    "inviteAccepted": "You joined the group",
+    "inviteDeclined": "Invitation declined",
+    "inviteRespondError": "Failed to respond to invitation"
   },
   "messages": {
     "title": "Messages",

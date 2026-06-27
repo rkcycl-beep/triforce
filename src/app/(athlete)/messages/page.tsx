@@ -1,10 +1,12 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useEffect } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ErrorMessage from "@/components/ui/ErrorMessage";
+import Button from "@/components/ui/Button";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useNotifications, useMarkAllNotificationsRead, type Notification } from "@/hooks/useNotifications";
 
@@ -19,6 +21,8 @@ interface Message {
 
 function NotificationCard({ notification }: { notification: Notification }) {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const [status, setStatus] = useState<"idle" | "loading" | "accepted" | "declined" | "error">("idle");
   const date = new Date(notification.createdAt).toLocaleString("he-IL", {
     day: "numeric",
     month: "short",
@@ -37,7 +41,29 @@ function NotificationCard({ notification }: { notification: Notification }) {
     typeof notification.metadata?.groupId === "string"
       ? notification.metadata.groupId
       : null;
+  const invitationId =
+    typeof notification.metadata?.invitationId === "string"
+      ? notification.metadata.invitationId
+      : null;
   const inviteTarget = challengeId ?? groupId;
+
+  const respond = useMutation({
+    mutationFn: async (action: "accept" | "decline") => {
+      if (!invitationId) throw new Error("No invitation id");
+      const res = await fetch(`/api/athlete/group-invitations/${invitationId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      return action;
+    },
+    onSuccess: (action) => {
+      setStatus(action === "accept" ? "accepted" : "declined");
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+    onError: () => setStatus("error"),
+  });
 
   const content = (
     <div className={`rounded-xl p-4 shadow-sm ${isInvite ? "border border-amber-200 bg-amber-50" : "border border-blue-100 bg-blue-50"}`}>
@@ -54,8 +80,42 @@ function NotificationCard({ notification }: { notification: Notification }) {
         <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[9px] font-bold text-white">{t("challenges.notifications.new")}</span>
       </div>
       <p className="text-sm leading-relaxed text-gray-700">{notification.content}</p>
+
+      {isGroupInvite && status === "idle" && invitationId && (
+        <div className="mt-3 flex gap-2">
+          <Button
+            onClick={(e) => { e.preventDefault(); respond.mutate("accept"); }}
+            loading={respond.isPending}
+            className="flex-1 text-xs"
+          >
+            {t("challenges.accept")}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={(e) => { e.preventDefault(); respond.mutate("decline"); }}
+            disabled={respond.isPending}
+            className="flex-1 text-xs"
+          >
+            {t("challenges.decline")}
+          </Button>
+        </div>
+      )}
+
+      {status === "accepted" && (
+        <p className="mt-3 text-sm font-bold text-green-700">{t("groups.inviteAccepted")}</p>
+      )}
+      {status === "declined" && (
+        <p className="mt-3 text-sm font-bold text-gray-500">{t("groups.inviteDeclined")}</p>
+      )}
+      {status === "error" && (
+        <p className="mt-3 text-sm font-bold text-red-600">{t("groups.inviteRespondError")}</p>
+      )}
     </div>
   );
+
+  if (isGroupInvite) {
+    return content;
+  }
 
   if (inviteTarget) {
     return (

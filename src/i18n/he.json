@@ -368,7 +368,10 @@
     "allFriendsAdded": "כל החברים כבר בקבוצה או הוזמנו",
     "friend": "חבר/ה",
     "sendInvite": "שלח הזמנה",
-    "allUsersInGroup": "כל המשתמשים הרשומים כבר בקבוצה"
+    "allUsersInGroup": "כל המשתמשים הרשומים כבר בקבוצה",
+    "inviteAccepted": "הצטרפת לקבוצה בהצלחה",
+    "inviteDeclined": "ההזמנה נדחתה",
+    "inviteRespondError": "שגיאה בתגובה להזמנה"
   },
   "events": {
     "title": "אירועים",
