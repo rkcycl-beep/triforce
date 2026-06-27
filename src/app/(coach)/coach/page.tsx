@@ -35,7 +35,7 @@ export default function CoachHomePage() {
     staleTime: 2 * 60 * 1000,
   });
 
-  const firstName = session?.user?.name?.split(" ")[0] ?? "מאמן";
+  const firstName = session?.user?.name?.split(" ")[0] ?? t("members.coach");
   const firstGroup = data?.groups?.[0];
   const hasGroups = (data?.groups?.length ?? 0) > 0;
 
@@ -55,51 +55,59 @@ export default function CoachHomePage() {
   const cubes: Cube[] = [
     {
       emoji: "👥",
-      label: "מתאמנים",
-      sub: data?.stats.totalAthletes ? `${data.stats.totalAthletes} פעילים` : "מצב וסטטוס",
+      label: t("coach.members"),
+      sub: data?.stats.totalAthletes ? t("coach.activeAthletes").replace("{count}", String(data.stats.totalAthletes)) : t("coach.statusAndState"),
       href: "/coach/stats",
       gradient: "from-[#1D9E75] via-[#158a63] to-[#0d6b4d]",
       shadow: "shadow-[0_12px_28px_rgba(29,158,117,0.3)]",
     },
     {
       emoji: "🏆",
-      label: "אתגרים",
-      sub: "ניהול ויצירה",
+      label: t("challenges.title"),
+      sub: t("coach.manageAndCreate"),
       href: challengeLink(),
       gradient: "from-[#e07b3a] via-[#c45e2b] to-[#a34820]",
       shadow: "shadow-[0_12px_28px_rgba(192,94,43,0.25)]",
     },
     {
       emoji: "💬",
-      label: "הודעות",
-      sub: data?.stats.pendingMessages ? `${data.stats.pendingMessages} השבוע` : "לקבוצה",
+      label: t("coach.messages"),
+      sub: data?.stats.pendingMessages ? `${data.stats.pendingMessages} ${t("coach.workoutsThisWeek")}` : t("coach.groupMessages"),
       href: groupLink("messages"),
       gradient: "from-[#6366f1] via-[#5558e8] to-[#4338ca]",
       shadow: "shadow-[0_12px_28px_rgba(99,102,241,0.25)]",
     },
     {
       emoji: "📅",
-      label: "אירועים",
-      sub: "לוח ותכנון",
+      label: t("coach.events"),
+      sub: t("coach.schedule"),
       href: groupLink("events"),
       gradient: "from-[#0ea5e9] via-[#0284c7] to-[#0369a1]",
       shadow: "shadow-[0_12px_28px_rgba(14,165,233,0.25)]",
     },
     {
       emoji: "📊",
-      label: "סטטיסטיקות",
-      sub: data?.stats.adherencePct != null ? `${data.stats.adherencePct}% עמידה` : "גרפים ומדדים",
+      label: t("coach.stats"),
+      sub: data?.stats.adherencePct != null ? t("coach.adherenceRate").replace("{pct}", String(data.stats.adherencePct)) : t("coach.chartsAndMetrics"),
       href: "/coach/stats",
       gradient: "from-slate-500 via-slate-600 to-slate-700",
       shadow: "shadow-[0_12px_28px_rgba(71,85,105,0.25)]",
     },
     {
       emoji: "⚙️",
-      label: "קבוצות",
-      sub: hasGroups ? `${data!.groups.length} קבוצות` : "צור קבוצה",
+      label: t("groups.title"),
+      sub: hasGroups ? `${data!.groups.length} ${t("groups.title")}` : t("groups.newCoachGroup"),
       href: hasGroups ? "/coach/groups" : "/coach/groups/new",
       gradient: "from-[#9b59b6] via-[#8e44ad] to-[#6c3483]",
       shadow: "shadow-[0_12px_28px_rgba(155,89,182,0.25)]",
+    },
+    {
+      emoji: "🤝",
+      label: t("coach.friends"),
+      sub: t("coach.friendsSubtitle"),
+      href: "/members",
+      gradient: "from-[#14b8a6] via-[#0d9488] to-[#0f766e]",
+      shadow: "shadow-[0_12px_28px_rgba(20,184,166,0.25)]",
     },
   ];
 
@@ -126,18 +134,18 @@ export default function CoachHomePage() {
             </div>
           </div>
           <h1 className="text-2xl font-extrabold tracking-tight text-[#085041]">
-            שלום, {firstName}
+            {t("coach.greeting").replace("{name}", firstName)}
           </h1>
           <p className="mt-1 text-sm text-slate-400">
             {hasGroups
               ? data!.groups.map((g) => g.name).join(" · ")
-              : "ממשק ניהול מאמן"}
+              : t("coach.coachPortal")}
           </p>
           {data?.stats && (
             <div className="mt-3 flex items-center justify-center gap-4 text-xs text-slate-400">
-              <span><strong className="text-[#1D9E75]">{data.stats.totalAthletes}</strong> מתאמנים</span>
+              <span><strong className="text-[#1D9E75]">{data.stats.totalAthletes}</strong> {t("coach.athletes")}</span>
               <span>·</span>
-              <span><strong className="text-[#1D9E75]">{data.stats.workoutsThisWeek}</strong> אימונים השבוע</span>
+              <span><strong className="text-[#1D9E75]">{data.stats.workoutsThisWeek}</strong> {t("coach.workoutsThisWeek")}</span>
             </div>
           )}
         </div>
@@ -162,7 +170,7 @@ export default function CoachHomePage() {
         {/* Sign out */}
         <div className="mt-8 text-center">
           <Link href="/" className="text-sm text-slate-400 underline underline-offset-2 hover:text-slate-600">
-            חזרה לדף הבית
+            {t("coach.backToHome")}
           </Link>
         </div>
       </div>

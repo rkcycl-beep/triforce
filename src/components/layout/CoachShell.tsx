@@ -14,19 +14,25 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface CoachShellProps {
   children: React.ReactNode;
 }
 
-const navItems = [
-  { href: "/coach", label: "לוח בקרה", exact: true },
-  { href: "/coach/groups", label: "קבוצות" },
-  { href: "/coach/groups/new", label: "+ קבוצה חדשה" },
-];
+function useNavItems(t: (key: string) => string) {
+  return [
+    { href: "/coach", label: t("coach.dashboard"), exact: true },
+    { href: "/coach/groups", label: t("groups.title") },
+    { href: "/coach/groups/new", label: t("coach.newGroupShort") },
+    { href: "/members", label: t("coach.friends") },
+  ];
+}
 
 export default function CoachShell({ children }: CoachShellProps) {
   const pathname = usePathname();
+  const { t } = useTranslation();
+  const navItems = useNavItems(t);
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 md:flex-row">
@@ -38,10 +44,10 @@ export default function CoachShell({ children }: CoachShellProps) {
               <circle cx="12" cy="8" r="6" /><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
             </svg>
           </div>
-          <span className="text-base font-bold text-gray-900">TriForce <span className="text-xs font-normal text-gray-400">· מאמן</span></span>
+          <span className="text-base font-bold text-gray-900">TriForce <span className="text-xs font-normal text-gray-400">· {t("members.coach")}</span></span>
         </Link>
         <button onClick={() => signOut({ callbackUrl: "/" })} className="text-xs text-gray-400 hover:text-gray-700">
-          התנתק
+          {t("coach.signOut")}
         </button>
       </header>
 
@@ -56,7 +62,7 @@ export default function CoachShell({ children }: CoachShellProps) {
             </div>
             <div>
               <p className="text-sm font-extrabold text-gray-900">TriForce</p>
-              <p className="text-[10px] text-gray-400">ממשק מאמן</p>
+              <p className="text-[10px] text-gray-400">{t("coach.coachPortal")}</p>
             </div>
           </div>
         </div>
@@ -83,7 +89,7 @@ export default function CoachShell({ children }: CoachShellProps) {
             onClick={() => signOut({ callbackUrl: "/" })}
             className="block w-full rounded-xl px-3 py-2.5 text-start text-sm text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-700"
           >
-            התנתק
+            {t("coach.signOut")}
           </button>
         </div>
       </aside>
