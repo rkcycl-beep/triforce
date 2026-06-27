@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState, use, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useCopyToClipboard } from "@/hooks/useCopyToClipboard";
 
@@ -45,6 +46,7 @@ interface Friend {
 interface Invitation {
   id: string;
   invitee: { id: string; name: string | null; image: string | null };
+  status: "PENDING" | "ACCEPTED" | "DECLINED";
   createdAt: string;
 }
 
@@ -89,8 +91,10 @@ async function fetchFriends(): Promise<Friend[]> {
   }));
 }
 
-async function fetchInvitations(groupId: string): Promise<Invitation[]> {
-  const res = await fetch(`/api/coach/groups/${groupId}/invitations`);
+async function fetchInvitations(groupId: string, status?: Invitation["status"]): Promise<Invitation[]> {
+  const url = new URL(`/api/coach/groups/${groupId}/invitations`, window.location.origin);
+  if (status) url.searchParams.set("status", status);
+  const res = await fetch(url.toString());
   if (!res.ok) return [];
   return (await res.json()).invitations ?? [];
 }
@@ -121,12 +125,23 @@ export default function CoachGroupDetailPage({ params }: { params: Promise<{ gro
   const { groupId } = use(params);
   const queryClient = useQueryClient();
   const { t } = useTranslation();
+  const searchParams = useSearchParams();
+  const inviteSectionRef = useRef<HTMLElement>(null);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [pendingAdd, setPendingAdd] = useState<string | null>(null);
   const [pendingRemove, setPendingRemove] = useState<string | null>(null);
   const [pendingInvite, setPendingInvite] = useState<string | null>(null);
   const [activeAddTab, setActiveAddTab] = useState<"friends" | "users">("friends");
+  const [selectedFriendIds, setSelectedFriendIds] = useState<Set<string>>(new Set());
   const { copied, copy } = useCopyToClipboard();
+
+  const startInInviteMode = searchParams.get("invite") === "1";
+
+  useEffect(() => {
+    if (startInInviteMode && inviteSectionRef.current) {
+      inviteSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [startInInviteMode]);
 
   const { data: group, isLoading, isError } = useQuery({
     queryKey: ["coach-group", groupId],
@@ -150,7 +165,14 @@ export default function CoachGroupDetailPage({ params }: { params: Promise<{ gro
 
   const { data: invitations = [] } = useQuery({
     queryKey: ["coach-group-invitations", groupId],
-    queryFn: () => fetchInvitations(groupId),
+    queryFn: () => fetchInvitations(groupId, "PENDING"),
+    staleTime: Infinity,
+    enabled: !!group,
+  });
+
+  const { data: acceptedInvitations = [] } = useQuery({
+    queryKey: ["coach-group-invitations", groupId, "ACCEPTED"],
+    queryFn: () => fetchInvitations(groupId, "ACCEPTED"),
     staleTime: Infinity,
     enabled: !!group,
   });
@@ -164,6 +186,7 @@ export default function CoachGroupDetailPage({ params }: { params: Promise<{ gro
 
   const memberIds = new Set(group?.memberships.map((m) => m.user.id) ?? []);
   const invitedIds = new Set(invitations.map((i) => i.invitee.id));
+  const acceptedInviteIds = new Set(acceptedInvitations.map((i) => i.invitee.id));
 
   const availableFriends = friends.filter(
     (f) => !memberIds.has(f.id) && !invitedIds.has(f.id)
@@ -196,6 +219,21 @@ export default function CoachGroupDetailPage({ params }: { params: Promise<{ gro
       setPendingInvite(null);
     },
     onError: () => setPendingInvite(null),
+  });
+
+  const bulkInviteFriends = useMutation({
+    mutationFn: async (userIds: string[]) => {
+      const results = await Promise.allSettled(
+        userIds.map((id) => fetch(`/api/coach/groups/${groupId}/invite/${id}`, { method: "POST" }))
+      );
+      const failed = results.filter((r) => r.status === "rejected" || (r.status === "fulfilled" && !r.value.ok));
+      if (failed.length > 0) throw new Error(`${failed.length} invites failed`);
+      return userIds;
+    },
+    onSuccess: () => {
+      setSelectedFriendIds(new Set());
+      queryClient.invalidateQueries({ queryKey: ["coach-group-invitations", groupId] });
+    },
   });
 
   const removeMember = useMutation({
@@ -251,49 +289,23 @@ export default function CoachGroupDetailPage({ params }: { params: Promise<{ gro
       {/* Header */}
       <div className="-mx-4 -mt-6 bg-gradient-to-br from-[#085041] to-[#1D9E75] px-5 py-6 text-white">
         <Link href="/coach/groups" className="mb-3 inline-flex items-center gap-1 text-xs text-white/60 hover:text-white">
-          → הקבוצות שלי
+          → {t("coach.myGroups")}
         </Link>
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight">{group.name}</h1>
-            <p className="mt-1 text-sm text-white/70">{group.memberCount} חברים</p>
-          </div>
-          {group.inviteCode && (
-            <div className="shrink-0 rounded-xl bg-white/15 px-3 py-2 text-center backdrop-blur-sm">
-              <p className="text-[10px] text-white/60">{t("groups.inviteCode")}</p>
-              <p className="text-base font-bold tracking-widest">{group.inviteCode}</p>
-              <div className="mt-1.5 flex items-center justify-center gap-2">
-                <button
-                  onClick={() => copy(group.inviteCode!)}
-                  className="rounded bg-white/20 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-white/30"
-                >
-                  {copied ? t("common.copied") : t("common.copy")}
-                </button>
-                <a
-                  href={`https://wa.me/?text=${encodeURIComponent(
-                    t("groups.inviteWhatsAppText").replace("{code}", group.inviteCode!).replace("{url}", `https://triforce-iota.vercel.app`)
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded bg-green-500/90 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-green-500"
-                >
-                  WhatsApp
-                </a>
-              </div>
-            </div>
-          )}
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight">{group.name}</h1>
+          <p className="mt-1 text-sm text-white/70">{group.memberCount} {t("coach.members")}</p>
         </div>
       </div>
 
       {/* ── Current members ────────────────────────────────────────────────── */}
       <section>
         <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-          חברים בקבוצה ({athletes.length})
+          {t("groups.groupMembers")} ({athletes.length})
         </p>
 
         {athletes.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-6 text-center text-sm text-gray-400">
-            אין מתאמנים עדיין — הוסף מתחת
+            {t("groups.noMembersYetAddBelow")}
           </div>
         ) : (
           <div className="flex flex-col gap-2">
@@ -304,9 +316,14 @@ export default function CoachGroupDetailPage({ params }: { params: Promise<{ gro
               >
                 <Avatar user={user} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-gray-800">{user.name ?? "ספורטאי"}</p>
+                  <p className="truncate text-sm font-semibold text-gray-800">{user.name ?? t("dashboard.athleteFallback")}</p>
                   {user.email && (
                     <p className="truncate text-xs text-gray-400">{user.email}</p>
+                  )}
+                  {acceptedInviteIds.has(user.id) && (
+                    <span className="mt-0.5 inline-block rounded-full bg-green-100 px-1.5 py-0.5 text-[9px] font-bold text-green-700">
+                      {t("groups.joinedViaInvite")}
+                    </span>
                   )}
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
@@ -318,9 +335,158 @@ export default function CoachGroupDetailPage({ params }: { params: Promise<{ gro
                     disabled={pendingRemove === user.id}
                     className="rounded-lg bg-red-50 px-2 py-1 text-xs font-semibold text-red-400 hover:bg-red-100 disabled:opacity-40"
                   >
-                    {pendingRemove === user.id ? "..." : "הסר"}
+                    {pendingRemove === user.id ? "..." : t("common.remove")}
                   </button>
                 </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ── Invite members section ─────────────────────────────────────────── */}
+      <section ref={inviteSectionRef} className="rounded-2xl border border-amber-100 bg-white p-4 shadow-sm">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+          {t("groups.inviteMembersTitle")}
+        </p>
+
+        {/* Invite by code */}
+        {group.inviteCode && (
+          <div className="mb-4 rounded-xl bg-[#FFFBF0] p-4">
+            <p className="text-sm font-bold text-amber-800">{t("groups.inviteByCode")}</p>
+            <p className="mt-0.5 text-xs text-amber-600">{t("groups.inviteByCodeHint")}</p>
+            <div className="mt-3 flex items-center gap-3">
+              <code className="rounded-lg bg-white px-3 py-2 text-lg font-bold tracking-widest text-amber-700 shadow-sm">
+                {group.inviteCode}
+              </code>
+              <button
+                onClick={() => copy(group.inviteCode!)}
+                className="rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-white hover:bg-amber-600"
+              >
+                {copied ? t("common.copied") : t("common.copy")}
+              </button>
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(
+                  t("groups.inviteWhatsAppText").replace("{code}", group.inviteCode!).replace("{url}", `https://triforce-iota.vercel.app`)
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg bg-green-500 px-3 py-2 text-xs font-bold text-white hover:bg-green-600"
+              >
+                WhatsApp
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* Tabs */}
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+            {t("groups.addMembers")}
+          </p>
+          <div className="flex gap-1 rounded-lg bg-gray-100 p-0.5">
+            <button
+              onClick={() => setActiveAddTab("friends")}
+              className={`rounded-md px-2 py-0.5 text-[10px] font-bold transition-colors ${
+                activeAddTab === "friends" ? "bg-white text-[#1D9E75] shadow-sm" : "text-gray-500"
+              }`}
+            >
+              {t("groups.friendsTab")}
+            </button>
+            <button
+              onClick={() => setActiveAddTab("users")}
+              className={`rounded-md px-2 py-0.5 text-[10px] font-bold transition-colors ${
+                activeAddTab === "users" ? "bg-white text-[#1D9E75] shadow-sm" : "text-gray-500"
+              }`}
+            >
+              {t("groups.allUsersTab")}
+            </button>
+          </div>
+        </div>
+
+        {activeAddTab === "friends" ? (
+          availableFriends.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-5 text-center text-sm text-gray-400">
+              {friends.length === 0 ? t("groups.noFriendsYet") : t("groups.allFriendsAdded")}
+            </div>
+          ) : (
+            <>
+              {selectedFriendIds.size > 0 && (
+                <div className="mb-3 flex items-center justify-between rounded-xl bg-amber-50 px-3 py-2">
+                  <span className="text-xs font-bold text-amber-800">
+                    {t("groups.selectedFriends").replace("{count}", String(selectedFriendIds.size))}
+                  </span>
+                  <button
+                    onClick={() => bulkInviteFriends.mutate(Array.from(selectedFriendIds))}
+                    disabled={bulkInviteFriends.isPending}
+                    className="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-600 disabled:opacity-50"
+                  >
+                    {bulkInviteFriends.isPending ? t("common.sending") : t("groups.sendBulkInvites")}
+                  </button>
+                </div>
+              )}
+              <div className="flex flex-col gap-2">
+                {availableFriends.map((f) => {
+                  const selected = selectedFriendIds.has(f.id);
+                  return (
+                    <div
+                      key={f.id}
+                      className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={() => {
+                          setSelectedFriendIds((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(f.id)) next.delete(f.id);
+                            else next.add(f.id);
+                            return next;
+                          });
+                        }}
+                        className="h-4 w-4 accent-amber-500"
+                      />
+                      <Avatar user={f} />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-gray-700">{f.name ?? t("dashboard.athleteFallback")}</p>
+                        <p className="text-xs text-gray-400">{t("groups.friend")}</p>
+                      </div>
+                      <button
+                        onClick={() => inviteFriend.mutate(f.id)}
+                        disabled={pendingInvite === f.id}
+                        className="shrink-0 rounded-xl bg-amber-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-600 disabled:opacity-50"
+                      >
+                        {pendingInvite === f.id ? t("common.sending") : t("groups.sendInvite")}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )
+        ) : visibleCandidates.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-5 text-center text-sm text-gray-400">
+            {t("groups.allUsersInGroup")}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            {visibleCandidates.map((c) => (
+              <div
+                key={c.id}
+                className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm"
+              >
+                <Avatar user={c} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-gray-700">{c.name ?? t("dashboard.athleteFallback")}</p>
+                  <p className="text-xs text-gray-400">{c.role === "COACH" ? t("members.coach") : t("dashboard.athleteFallback")}</p>
+                </div>
+                <button
+                  onClick={() => addMember.mutate(c.id)}
+                  disabled={pendingAdd === c.id}
+                  className="shrink-0 rounded-xl bg-[#1D9E75] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#178c68] disabled:opacity-50"
+                >
+                  {pendingAdd === c.id ? t("groups.adding") : t("groups.addMember")}
+                </button>
               </div>
             ))}
           </div>
@@ -350,88 +516,28 @@ export default function CoachGroupDetailPage({ params }: { params: Promise<{ gro
         </section>
       )}
 
-      {/* ── Add members picker ─────────────────────────────────────────────── */}
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-            {t("groups.addMembers")}
+      {/* ── Joined via invitation ──────────────────────────────────────────── */}
+      {acceptedInvitations.length > 0 && (
+        <section>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+            {t("groups.joinedViaInviteTitle")} ({acceptedInvitations.length})
           </p>
-          <div className="flex gap-1 rounded-lg bg-gray-100 p-0.5">
-            <button
-              onClick={() => setActiveAddTab("friends")}
-              className={`rounded-md px-2 py-0.5 text-[10px] font-bold transition-colors ${
-                activeAddTab === "friends" ? "bg-white text-[#1D9E75] shadow-sm" : "text-gray-500"
-              }`}
-            >
-              {t("groups.friendsTab")}
-            </button>
-            <button
-              onClick={() => setActiveAddTab("users")}
-              className={`rounded-md px-2 py-0.5 text-[10px] font-bold transition-colors ${
-                activeAddTab === "users" ? "bg-white text-[#1D9E75] shadow-sm" : "text-gray-500"
-              }`}
-            >
-              {t("groups.allUsersTab")}
-            </button>
-          </div>
-        </div>
-
-        {activeAddTab === "friends" ? (
-          availableFriends.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-5 text-center text-sm text-gray-400">
-              {friends.length === 0 ? t("groups.noFriendsYet") : t("groups.allFriendsAdded")}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {availableFriends.map((f) => (
-                <div
-                  key={f.id}
-                  className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm"
-                >
-                  <Avatar user={f} />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-gray-700">{f.name ?? t("dashboard.athleteFallback")}</p>
-                    <p className="text-xs text-gray-400">{t("groups.friend")}</p>
-                  </div>
-                  <button
-                    onClick={() => inviteFriend.mutate(f.id)}
-                    disabled={pendingInvite === f.id}
-                    className="shrink-0 rounded-xl bg-amber-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-600 disabled:opacity-50"
-                  >
-                    {pendingInvite === f.id ? t("common.sending") : t("groups.sendInvite")}
-                  </button>
-                </div>
-              ))}
-            </div>
-          )
-        ) : visibleCandidates.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-5 text-center text-sm text-gray-400">
-            {t("groups.allUsersInGroup")}
-          </div>
-        ) : (
           <div className="flex flex-col gap-2">
-            {visibleCandidates.map((c) => (
+            {acceptedInvitations.map((inv) => (
               <div
-                key={c.id}
-                className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm"
+                key={inv.id}
+                className="flex items-center gap-3 rounded-2xl border border-green-100 bg-green-50/50 p-3"
               >
-                <Avatar user={c} />
+                <Avatar user={inv.invitee} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-gray-700">{c.name ?? t("dashboard.athleteFallback")}</p>
-                  <p className="text-xs text-gray-400">{c.role === "COACH" ? t("members.coach") : t("dashboard.athleteFallback")}</p>
+                  <p className="truncate text-sm font-semibold text-gray-700">{inv.invitee.name ?? t("dashboard.athleteFallback")}</p>
+                  <p className="text-xs text-green-700">{t("groups.joinedViaInvite")}</p>
                 </div>
-                <button
-                  onClick={() => addMember.mutate(c.id)}
-                  disabled={pendingAdd === c.id}
-                  className="shrink-0 rounded-xl bg-[#1D9E75] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#178c68] disabled:opacity-50"
-                >
-                  {pendingAdd === c.id ? t("groups.adding") : t("groups.addMember")}
-                </button>
               </div>
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* ── Quick links ────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3">

@@ -343,11 +343,15 @@ export async function inviteUserToGroup(
   return { invitation };
 }
 
-export async function getGroupInvitations(groupId: string, inviterId: string) {
+export async function getGroupInvitations(
+  groupId: string,
+  inviterId: string,
+  status?: "PENDING" | "ACCEPTED" | "DECLINED"
+) {
   if (!(await isOwner(groupId, inviterId))) return null;
 
   return prisma.groupInvitation.findMany({
-    where: { groupId, status: "PENDING" },
+    where: { groupId, ...(status ? { status } : {}) },
     include: {
       invitee: { select: { id: true, name: true, image: true } },
     },

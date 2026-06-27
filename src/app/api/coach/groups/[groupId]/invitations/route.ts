@@ -4,18 +4,24 @@ import { authOptions } from "@/lib/auth";
 import { getGroupInvitations } from "@/services/group.service";
 
 /**
- * GET /api/coach/groups/[groupId]/invitations
+ * GET /api/coach/groups/[groupId]/invitations?status=PENDING|ACCEPTED|DECLINED
  *
- * Returns pending invitations for the group (coach only).
+ * Returns invitations for the group (coach only).
  */
-export async function GET(_req: Request, { params }: { params: Promise<{ groupId: string }> }) {
+export async function GET(req: Request, { params }: { params: Promise<{ groupId: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
   const { groupId } = await params;
+  const { searchParams } = new URL(req.url);
+  const statusParam = searchParams.get("status");
+  const status =
+    statusParam === "PENDING" || statusParam === "ACCEPTED" || statusParam === "DECLINED"
+      ? statusParam
+      : undefined;
 
-  const invitations = await getGroupInvitations(groupId, session.user.id);
+  const invitations = await getGroupInvitations(groupId, session.user.id, status);
   if (invitations === null) {
     return NextResponse.json({ error: "Forbidden or group not found." }, { status: 403 });
   }
