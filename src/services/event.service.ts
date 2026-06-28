@@ -50,3 +50,29 @@ export async function deleteEvent(eventId: string, requesterId: string) {
   if (!event) throw new Error("Not found");
   return prisma.event.delete({ where: { id: eventId } });
 }
+
+export async function updateEvent(
+  eventId: string,
+  requesterId: string,
+  data: {
+    name?: string;
+    description?: string | null;
+    location?: string | null;
+    eventDate?: Date;
+  }
+) {
+  const event = await prisma.event.findFirst({
+    where: { id: eventId, createdById: requesterId },
+  });
+  if (!event) throw new Error("Not found");
+  return prisma.event.update({
+    where: { id: eventId },
+    data: {
+      ...(data.name !== undefined && { name: data.name }),
+      ...(data.description !== undefined && { description: data.description }),
+      ...(data.location !== undefined && { location: data.location }),
+      ...(data.eventDate !== undefined && { eventDate: data.eventDate }),
+    },
+    include: { createdBy: { select: { id: true, name: true } } },
+  });
+}

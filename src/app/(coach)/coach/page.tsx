@@ -48,8 +48,7 @@ export default function CoachHomePage() {
 
   function challengeLink() {
     if (!hasGroups) return "/coach/groups/new";
-    if (data!.groups.length === 1) return `/challenges/new?groupId=${firstGroup!.id}`;
-    return "/coach/groups";
+    return `/challenges/new?groupId=${firstGroup!.id}&redirectTo=/coach`;
   }
 
   const cubes: Cube[] = [
@@ -84,14 +83,6 @@ export default function CoachHomePage() {
       href: groupLink("events"),
       gradient: "from-[#0ea5e9] via-[#0284c7] to-[#0369a1]",
       shadow: "shadow-[0_12px_28px_rgba(14,165,233,0.25)]",
-    },
-    {
-      emoji: "📊",
-      label: t("coach.stats"),
-      sub: data?.stats.adherencePct != null ? t("coach.adherenceRate").replace("{pct}", String(data.stats.adherencePct)) : t("coach.chartsAndMetrics"),
-      href: "/coach/stats",
-      gradient: "from-slate-500 via-slate-600 to-slate-700",
-      shadow: "shadow-[0_12px_28px_rgba(71,85,105,0.25)]",
     },
     {
       emoji: "⚙️",

@@ -11,6 +11,13 @@ async function assertCoachAccess(userId: string, groupId: string) {
   return membership?.role === "COACH";
 }
 
+async function assertMessageOwner(messageId: string, userId: string, groupId: string) {
+  const message = await prisma.message.findUnique({
+    where: { id: messageId },
+  });
+  return message && message.userId === userId && message.groupId === groupId;
+}
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ groupId: string }> }
@@ -56,5 +63,35 @@ export async function POST(
   } catch (error) {
     console.error("Failed to send message:", error);
     return NextResponse.json({ error: "Failed to send message." }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ groupId: string }> }
+) {
+  const { groupId } = await params;
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!(await assertCoachAccess(session.user.id, groupId))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const messageId = searchParams.get("messageId");
+    if (!messageId) {
+      return NextResponse.json({ error: "messageId required" }, { status: 400 });
+    }
+    if (!(await assertMessageOwner(messageId, session.user.id, groupId))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    await prisma.message.delete({ where: { id: messageId } });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("Failed to delete message:", error);
+    return NextResponse.json({ error: "Failed to delete message." }, { status: 500 });
   }
 }

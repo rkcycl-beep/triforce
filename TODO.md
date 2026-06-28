@@ -584,3 +584,69 @@ Goal: one challenge model for coaches and trainees, with sport-specific, age/gen
 - Replace KIMI-derived reference pace table with real amateur-average data from online source.
 - UI/UX refinement based on user testing.
 - Deploy to Vercel when ready.
+
+
+---
+
+## Coach Cube Audit & Repair (2026-06-26)
+
+### Preparation
+- [x] Read current coach hub, stats, messages, events, groups, and friends code.
+- [x] Compare each cube against PLAN.md original intent.
+- [x] Write audit plan into PLAN.md.
+- [x] Create actionable TODO list below.
+
+### Cube 3 — הודעות (Messages) — quick win
+- [ ] Extract all English strings to `i18n/he.json` + `i18n/en.json`.
+- [ ] Translate page title, form labels, placeholders, buttons, empty states.
+- [ ] Translate message-type badges (ANNOUNCEMENT → הודעה, CHAT → הודעה אישית).
+- [ ] Align badge colors with athlete `/messages` page.
+- [ ] Add delete message action.
+- [ ] Build + test locally.
+
+### Cube 4 — אירועים (Events) — quick win
+- [ ] Extract all English strings to i18n.
+- [ ] Translate page title, form labels, placeholders, buttons, empty states, dates.
+- [ ] Fix non-functional delete button (`CoachEventDelete`).
+- [ ] Add edit event flow.
+- [ ] Verify RTL date/time inputs.
+- [ ] Build + test locally.
+
+### Cube 2 — אתגרים (Challenges)
+- [ ] Fix coach hub challenge link when coach has multiple groups → `/challenges/new` with group selector visible.
+- [ ] Add `redirectTo` query param support on `/challenges/new` so coach returns to `/coach` or `/coach/groups/[id]` after creation.
+- [ ] Audit and fix any remaining old challenge URLs (`/coach/groups/[id]/challenges/new`) across the app.
+- [ ] Build + test locally.
+
+### Cube 1 — מתאמנים (Athletes)
+- [ ] Decide whether to merge Athletes + Statistics cubes or keep separate pages.
+- [ ] If merged: remove Statistics cube; if separate: create dedicated `/coach/statistics` page.
+- [ ] Make athlete rows in `/coach/stats` clickable → `/coach/athletes/[userId]`.
+- [ ] Create `/coach/athletes/[userId]` detail page with recent activity + message button.
+- [ ] Fix active-challenge card link to `/challenges/new?groupId=...`.
+- [ ] Fix "pending messages" stat to count unread messages or rename it.
+- [ ] Build + test locally.
+
+### Cube 5 — סטטיסטיקות (Statistics)
+- [ ] Apply merge/separate decision from Cube 1.
+- [ ] Add date-range filter.
+- [ ] Add per-sport activity breakdown.
+- [ ] Add CSV export.
+- [ ] Make weekly target configurable per group.
+- [ ] Build + test locally.
+
+### Cube 6 — קבוצות (Groups)
+- [ ] Audit all challenge links in group detail page.
+- [ ] Add group settings: rename + delete from `/coach/groups` list.
+- [ ] Verify all hardcoded strings are i18n'd.
+- [ ] Build + test locally.
+
+### Cube 7 — חברים (Friends)
+- [ ] Verify `/members` works correctly for coach users.
+- [ ] Add "הזמן לקבוצה" action when navigating from coach context.
+- [ ] Build + test locally.
+
+### Final
+- [ ] Full `npm run build` clean.
+- [ ] Deploy to Vercel.
+- [ ] Smoke-test each coach cube in production.

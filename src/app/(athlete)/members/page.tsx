@@ -1255,9 +1255,11 @@ function TabBar({
 
 export default function MembersPage() {
   const { t } = useTranslation();
+  const { data: session } = useSession();
   const queryClient = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("kudos");
+  const userIsCoach = session?.user?.roles?.includes("COACH");
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["members"] });
@@ -1290,6 +1292,18 @@ export default function MembersPage() {
 
   return (
     <div className="space-y-4 pb-24">
+      {userIsCoach && (
+        <div className="rounded-2xl bg-gradient-to-br from-[#085041] to-[#1D9E75] p-4 text-white shadow-md">
+          <p className="text-sm font-bold">{t("coach.coachInviteBanner")}</p>
+          <Link
+            href="/coach/groups"
+            className="mt-2 inline-block rounded-xl bg-white/20 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-white/30"
+          >
+            {t("coach.inviteToGroup")} →
+          </Link>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

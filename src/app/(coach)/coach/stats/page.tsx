@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
@@ -100,6 +101,7 @@ function ProgressBar({ pct, color = "#1D9E75" }: { pct: number; color?: string }
 export default function CoachDashboardPage() {
   const { data: session } = useSession();
   const { t } = useTranslation();
+  const router = useRouter();
 
   const { data, isLoading } = useQuery<DashboardData>({
     queryKey: ["coach-dashboard"],
@@ -170,7 +172,7 @@ export default function CoachDashboardPage() {
               }
             />
             <StatCard
-              label={t("coach.pendingMessages")}
+              label={t("coach.messagesThisWeek")}
               value={stats?.pendingMessages ?? 0}
               sub={t("coach.last7days")}
               accent="#6366F1"
@@ -193,7 +195,11 @@ export default function CoachDashboardPage() {
                     : 0;
                   const label = t(`coach.status${athlete.status}`);
                   return (
-                    <div key={athlete.id} className="flex items-center gap-3 px-4 py-3">
+                    <div
+                      key={athlete.id}
+                      onClick={() => router.push(`/coach/athletes/${athlete.id}`)}
+                      className="flex cursor-pointer items-center gap-3 px-4 py-3 transition-colors hover:bg-gray-50"
+                    >
                       <Avatar src={athlete.image} name={athlete.name ?? "?"} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
@@ -242,7 +248,7 @@ export default function CoachDashboardPage() {
 
           {/* ── Active Challenge ── */}
           {data.activeChallenge ? (
-            <Link href={`/coach/groups/${data.activeChallenge.groupId}/challenges/new`}>
+            <Link href={`/challenges/new?groupId=${data.activeChallenge.groupId}&redirectTo=/coach/stats`}>
               <div className="rounded-2xl border border-[#1D9E75]/20 bg-gradient-to-br from-[#E1F5EE] to-white p-4 shadow-[0_2px_8px_rgba(29,158,117,0.08)] transition-all hover:shadow-md">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
@@ -276,7 +282,7 @@ export default function CoachDashboardPage() {
               <p className="text-sm font-semibold text-gray-600">{t("coach.noChallengesPrompt")}</p>
               {data.groups[0] && (
                 <Link
-                  href={`/coach/groups/${data.groups[0].id}/challenges/new`}
+                  href={`/challenges/new?groupId=${data.groups[0].id}&redirectTo=/coach/stats`}
                   className="mt-3 inline-flex items-center gap-1 rounded-xl bg-[#1D9E75] px-4 py-2 text-xs font-bold text-white hover:bg-[#178c68]"
                 >
                   + {t("coach.newChallenge")}

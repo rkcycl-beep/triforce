@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { createGroup, getGroupsByCoach } from "@/services/group.service";
+import { createGroup, getGroupsByCoach, renameGroup, deleteGroup } from "@/services/group.service";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -56,4 +56,60 @@ export async function POST(request: NextRequest) {
 
   const group = await createGroup(session.user.id, { name });
   return NextResponse.json(group, { status: 201 });
+}
+
+export async function PATCH(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+  }
+  if (!session.user.roles?.includes("COACH")) {
+    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+  }
+
+  const { groupId, name } = body as { groupId?: unknown; name?: unknown };
+  if (typeof groupId !== "string" || typeof name !== "string" || name.trim().length === 0) {
+    return NextResponse.json({ error: "groupId and name are required." }, { status: 400 });
+  }
+
+  const updated = await renameGroup(groupId, session.user.id, name);
+  if (!updated) {
+    return NextResponse.json({ error: "Forbidden or not found." }, { status: 403 });
+  }
+  return NextResponse.json({ group: updated });
+}
+
+export async function DELETE(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+  }
+  if (!session.user.roles?.includes("COACH")) {
+    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+  }
+
+  const { groupId } = body as { groupId?: unknown };
+  if (typeof groupId !== "string") {
+    return NextResponse.json({ error: "groupId is required." }, { status: 400 });
+  }
+
+  const deleted = await deleteGroup(groupId, session.user.id);
+  if (!deleted) {
+    return NextResponse.json({ error: "Forbidden or not found." }, { status: 403 });
+  }
+  return NextResponse.json({ ok: true });
 }

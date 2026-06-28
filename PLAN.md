@@ -841,3 +841,164 @@ POST   /api/challenges/[id]/remind        — remind pending invitees (creator o
 ### Backward Compatibility
 
 Existing challenges using `ScoringMethod` (`AGE_GRADE`, `CATEGORY`, `PERSONAL_IMPROVEMENT`) are preserved. New fields are additive. Old challenges continue to work while new goal-based challenges use the KIMI-designed scoring flow. If desired, the old scoring methods can be exposed later as "advanced challenge types" within the same unified model.
+
+
+---
+
+## Coach Cube Audit & Repair Plan (2026-06-26)
+
+> Goal: verify every cube in the coach hub works according to the original platform plan, then fix gaps.
+
+### Audit method
+For each cube:
+1. Test the happy path in production.
+2. Compare current behavior to the original `PLAN.md` intent.
+3. List gaps: functionality, Hebrew/i18n, UX, auth, data accuracy.
+4. Define concrete fixes.
+
+### Execution order
+1. **Messages** — full Hebrew i18n (quick win).
+2. **Events** — full Hebrew i18n + fix delete (quick win).
+3. **Challenges** — fix multi-group link + redirect back to coach context.
+4. **Athletes / Statistics** — separate or merge the two cubes; add athlete drill-down.
+5. **Groups** — audit links + add settings.
+6. **Friends** — add coach-context invite action.
+7. **Final polish** — build, test, deploy.
+
+---
+
+### Cube 1 — מתאמנים (Athletes) → `/coach/stats`
+
+**Current state:** Stats dashboard with 4 cards, athletes status table, attention panel, active-challenge card, weekly bar chart, groups nav.
+
+**Gaps:**
+- **מתאמנים and סטטיסטיקות cubes both point to `/coach/stats`.**
+- Athlete rows are not clickable — no drill-down to individual athlete.
+- No individual athlete detail page (history, message, progress).
+- "Pending messages" stat counts all messages from last 7 days, not actual unread.
+- Active challenge card links to the old coach URL (`/coach/groups/[id]/challenges/new`) instead of the unified form.
+- Adherence logic is simplistic (≥3 workouts = adherent); weekly target hardcoded to 4.
+
+**Fixes:**
+- Decide: separate Athletes and Statistics pages, or merge into one cube.
+- Create `/coach/athletes/[userId]` detail page with activity history + message button.
+- Make athlete rows in `/coach/stats` clickable.
+- Fix pending-messages count to use actual unread tracking (or rename the stat).
+- Fix active-challenge link to `/challenges/new?groupId=...`.
+- Add weekly-target configuration per group.
+
+---
+
+### Cube 2 — אתגרים (Challenges) → `/challenges/new?groupId=...`
+
+**Current state:** Coach group challenge URL redirects to the unified colorful `/challenges/new`.
+
+**Gaps:**
+- If coach has **multiple groups**, the cube goes to `/coach/groups` instead of `/challenges/new` with group selector.
+- After creating a challenge, redirect goes to `/challenges` (athlete view), not back to coach context.
+- No coach-specific challenge management page (list created challenges, edit, cancel, remind).
+- Prize display still deferred.
+
+**Fixes:**
+- Multiple-groups case: open `/challenges/new` with group selector visible.
+- Add `redirectTo` param so coach returns to coach context after creation.
+- Create `/coach/challenges` list page with management actions.
+- Add edit/cancel/remind actions for draft/upcoming challenges.
+
+---
+
+### Cube 3 — הודעות (Messages) → `/coach/groups/[groupId]/messages`
+
+**Current state:** Compose form + sent-history list.
+
+**Gaps:**
+- **Page is in English** ("Messages", "Sent messages", "Send a message", message type labels).
+- No i18n extraction.
+- No delete or edit.
+- Only broadcast; no individual athlete messaging (deferred).
+- Message type display hardcoded English.
+
+**Fixes:**
+- Extract all strings to `i18n/he.json` and `i18n/en.json`.
+- Translate labels, placeholders, buttons, empty states to Hebrew.
+- Style message-type badges consistently with athlete `/messages`.
+- Add delete message action.
+
+---
+
+### Cube 4 — אירועים (Events) → `/coach/groups/[groupId]/events`
+
+**Current state:** Create form + event list.
+
+**Gaps:**
+- **Page is in English** ("Events", "All events", "Create an event", dates).
+- No i18n extraction.
+- **Delete button is non-functional** (`CoachEventDelete` renders an empty form).
+- No edit event.
+- Date/time pickers may not be RTL-friendly.
+
+**Fixes:**
+- Extract all strings to i18n.
+- Translate to Hebrew.
+- Fix delete button (POST with `_method=DELETE` or use API call).
+- Add edit event flow.
+- Verify RTL date/time inputs.
+
+---
+
+### Cube 5 — סטטיסטיקות (Statistics) → `/coach/stats`
+
+**Current state:** Same page as Athletes cube.
+
+**Gaps:**
+- Same destination as Athletes cube — confusing.
+- Lacks richer analytics (trends over time, per-sport breakdown, export).
+- Weekly target hardcoded to 4.
+
+**Fixes:**
+- Merge with Athletes cube OR create dedicated Statistics page.
+- Add date-range filter.
+- Add per-sport activity breakdown.
+- Add export to CSV.
+- Make weekly target configurable per group.
+
+---
+
+### Cube 6 — קבוצות (Groups) → `/coach/groups` + `/coach/groups/[id]`
+
+**Current state:** Group list with invite action; group detail with members, invitations, challenges.
+
+**Gaps:**
+- Group detail challenge links may still use old URL in some places.
+- No group settings (rename, delete) from the list.
+- Coach cannot create PEER groups (only COACH groups).
+- Some CTAs still hardcoded.
+
+**Fixes:**
+- Audit all group-detail challenge links.
+- Add group settings: rename, delete from `/coach/groups` list.
+- Verify all strings are i18n'd.
+- Keep PEER group creation athlete-only per PLAN.md.
+
+---
+
+### Cube 7 — חברים (Friends) → `/members`
+
+**Current state:** Coach cube links to the same `/members` page athletes use.
+
+**Gaps:**
+- No coach-specific flow to invite discovered friends directly into a group.
+- Coach might see Strava kudos/clubs tabs that are less relevant.
+
+**Fixes:**
+- Keep the page shared (coaches are also athletes).
+- Add a clear "הזמן לקבוצה" action when coming from coach context.
+- Verify the page works for coach users.
+
+---
+
+### Completion criteria
+- Every coach cube has a Hebrew UI consistent with the rest of the app.
+- Every interactive element (create, edit, delete, invite) works end-to-end.
+- Navigation between cubes is logical and does not duplicate destinations.
+- `npm run build` passes clean and production deploy succeeds.

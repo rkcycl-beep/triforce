@@ -17,6 +17,7 @@ function NewChallengeForm() {
   const { t } = useTranslation();
   const userIsCoach = isCoach(session?.user?.roles, session?.user?.role);
   const preselectedGroupId = searchParams.get("groupId");
+  const redirectTo = searchParams.get("redirectTo");
 
   const today = new Date().toISOString().split("T")[0];
   const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
@@ -81,7 +82,7 @@ function NewChallengeForm() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-challenges"] });
-      router.push("/challenges");
+      router.push(redirectTo || "/challenges");
     },
   });
 

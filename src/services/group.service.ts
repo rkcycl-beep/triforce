@@ -258,6 +258,14 @@ export async function removeMemberFromGroup(
   }).catch(() => null); // already removed — treat as success
 }
 
+export async function renameGroup(groupId: string, requesterId: string, newName: string) {
+  if (!(await isOwner(groupId, requesterId))) return null;
+  return prisma.group.update({
+    where: { id: groupId },
+    data: { name: newName.trim() },
+  });
+}
+
 export async function deleteGroup(groupId: string, requesterId: string) {
   if (!(await isOwner(groupId, requesterId))) return null;
 

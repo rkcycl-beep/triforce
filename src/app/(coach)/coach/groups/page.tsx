@@ -1,6 +1,7 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -14,13 +15,45 @@ interface Group {
 
 export default function CoachGroupsPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { t } = useTranslation();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
   const { data, isLoading } = useQuery<{ groups: Group[] }>({
     queryKey: ["coach-groups"],
     queryFn: async () => {
       const res = await fetch("/api/coach/groups");
       if (!res.ok) throw new Error("Failed");
       return res.json();
+    },
+  });
+
+  const renameMutation = useMutation({
+    mutationFn: async ({ groupId, name }: { groupId: string; name: string }) => {
+      const res = await fetch("/api/coach/groups", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ groupId, name }),
+      });
+      if (!res.ok) throw new Error("Failed");
+    },
+    onSuccess: () => {
+      setEditingId(null);
+      queryClient.invalidateQueries({ queryKey: ["coach-groups"] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (groupId: string) => {
+      const res = await fetch("/api/coach/groups", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ groupId }),
+      });
+      if (!res.ok) throw new Error("Failed");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["coach-groups"] });
     },
   });
 
@@ -80,12 +113,60 @@ export default function CoachGroupsPage() {
                     </div>
                   </div>
                 </button>
-                <button
-                  onClick={() => router.push(`/coach/groups/${group.id}?invite=1`)}
-                  className="shrink-0 rounded-xl bg-amber-500 px-3 py-2 text-xs font-bold text-white shadow-sm hover:bg-amber-600 active:scale-95"
-                >
-                  {t("coach.inviteMembers")}
-                </button>
+                <div className="flex shrink-0 flex-col gap-1">
+                  <button
+                    onClick={() => router.push(`/coach/groups/${group.id}?invite=1`)}
+                    className="rounded-xl bg-amber-500 px-3 py-2 text-xs font-bold text-white shadow-sm hover:bg-amber-600 active:scale-95"
+                  >
+                    {t("coach.inviteMembers")}
+                  </button>
+                  <div className="flex gap-1">
+                    {editingId === group.id ? (
+                      <>
+                        <input
+                          type="text"
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          className="w-24 rounded-lg border border-gray-200 px-2 py-1 text-xs"
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => renameMutation.mutate({ groupId: group.id, name: editName })}
+                          disabled={renameMutation.isPending || !editName.trim()}
+                          className="rounded-lg bg-[#1D9E75] px-2 py-1 text-xs font-bold text-white disabled:opacity-50"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => setEditingId(null)}
+                          className="rounded-lg bg-gray-100 px-2 py-1 text-xs font-bold text-gray-600"
+                        >
+                          ✕
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => { setEditingId(group.id); setEditName(group.name); }}
+                          className="rounded-lg bg-gray-100 px-2 py-1 text-xs font-bold text-gray-600 hover:bg-gray-200"
+                        >
+                          {t("coach.renameGroup")}
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm(t("coach.deleteGroupConfirm"))) {
+                              deleteMutation.mutate(group.id);
+                            }
+                          }}
+                          disabled={deleteMutation.isPending}
+                          className="rounded-lg bg-red-50 px-2 py-1 text-xs font-bold text-red-500 hover:bg-red-100 disabled:opacity-50"
+                        >
+                          {t("common.delete")}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
           </div>

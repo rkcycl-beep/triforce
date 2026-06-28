@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { createEvent, deleteEvent, getGroupEvents } from "@/services/event.service";
+import { createEvent, deleteEvent, getGroupEvents, updateEvent } from "@/services/event.service";
 
 async function assertCoachAccess(userId: string, groupId: string) {
   const membership = await prisma.groupMembership.findUnique({
@@ -66,6 +66,37 @@ export async function POST(
   } catch (error) {
     console.error("Failed to create event:", error);
     return NextResponse.json({ error: "Failed to create event." }, { status: 500 });
+  }
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ groupId: string }> }
+) {
+  const { groupId } = await params;
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!(await assertCoachAccess(session.user.id, groupId))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  try {
+    const { eventId, name, description, location, eventDate } = await req.json();
+    if (!eventId) {
+      return NextResponse.json({ error: "eventId required" }, { status: 400 });
+    }
+    const event = await updateEvent(eventId, session.user.id, {
+      name: name?.trim(),
+      description: description?.trim() || null,
+      location: location?.trim() || null,
+      eventDate: eventDate ? new Date(eventDate) : undefined,
+    });
+    return NextResponse.json({ event });
+  } catch (error) {
+    console.error("Failed to update event:", error);
+    return NextResponse.json({ error: "Failed to update event." }, { status: 500 });
   }
 }
 
