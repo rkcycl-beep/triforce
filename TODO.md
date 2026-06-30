@@ -657,18 +657,18 @@ Goal: one challenge model for coaches and trainees, with sport-specific, age/gen
 ## Athlete Dashboard Redesign — Trainings First (2026-06-26)
 
 ### Design
-- [ ] Reorder `/athlete` dashboard sections so trainings come first.
-- [ ] Add upcoming events section at the top.
-- [ ] Expand recent activities list to show last 30 days (10 by default, load more).
-- [ ] Add sport filter (All / Run / Ride / Swim / Other) and time range filter (7d / 30d / All).
-- [ ] Minimize friends section to a compact strip with "View all" link.
-- [ ] Keep coach group section compact.
+- [x] Reorder `/athlete` dashboard sections so trainings come first.
+- [x] Add upcoming events section at the top.
+- [x] Expand recent activities list to show last 30 days (5 by default, load more).
+- [x] Add sport filter (All / Run / Ride / Swim / Other) and time range filter (7d / 30d / All).
+- [x] Minimize friends section to a compact strip with "View all" link.
+- [x] Keep coach group section compact.
 
 ### Implementation
-- [ ] Read current `/app/(athlete)/athlete/page.tsx` and related APIs.
-- [ ] Fetch upcoming events from `/api/athlete/events`.
-- [ ] Fetch activities from `/api/athlete/activities` with date filter.
-- [ ] Build new dashboard layout.
-- [ ] Extract new strings to `i18n/he.json` + `i18n/en.json`.
-- [ ] Run `npm run build` clean.
-- [ ] Deploy to Vercel.
+- [x] Read current `/app/(athlete)/dashboard/page.tsx` and related components.
+- [x] Fetch upcoming events from `/api/athlete/events`.
+- [x] Fetch activities from `/api/athlete/activities` with date filter.
+- [x] Build new dashboard layout.
+- [x] Extract new strings to `i18n/he.json` + `i18n/en.json`.
+- [x] Run `npm run build` clean.
+- [x] Deploy to Vercel.

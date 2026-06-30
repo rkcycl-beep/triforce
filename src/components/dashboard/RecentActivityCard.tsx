@@ -112,6 +112,10 @@ export default function RecentActivityCard() {
           {t("dashboard.loadMore")}
         </button>
       )}
+
+      <p className="mt-3 border-t border-gray-100 pt-2 text-[10px] leading-relaxed text-gray-400">
+        ℹ️ {t("dashboard.localDataNote")}
+      </p>
     </div>
   );
 }
