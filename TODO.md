@@ -650,3 +650,25 @@ Goal: one challenge model for coaches and trainees, with sport-specific, age/gen
 - [x] Full `npm run build` clean.
 - [x] Deploy to Vercel.
 - [x] Smoke-test each coach cube in production.
+
+
+---
+
+## Athlete Dashboard Redesign — Trainings First (2026-06-26)
+
+### Design
+- [ ] Reorder `/athlete` dashboard sections so trainings come first.
+- [ ] Add upcoming events section at the top.
+- [ ] Expand recent activities list to show last 30 days (10 by default, load more).
+- [ ] Add sport filter (All / Run / Ride / Swim / Other) and time range filter (7d / 30d / All).
+- [ ] Minimize friends section to a compact strip with "View all" link.
+- [ ] Keep coach group section compact.
+
+### Implementation
+- [ ] Read current `/app/(athlete)/athlete/page.tsx` and related APIs.
+- [ ] Fetch upcoming events from `/api/athlete/events`.
+- [ ] Fetch activities from `/api/athlete/activities` with date filter.
+- [ ] Build new dashboard layout.
+- [ ] Extract new strings to `i18n/he.json` + `i18n/en.json`.
+- [ ] Run `npm run build` clean.
+- [ ] Deploy to Vercel.

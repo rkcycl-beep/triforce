@@ -8,6 +8,7 @@ import CoachWing from "@/components/dashboard/CoachWing";
 import FriendsWing from "@/components/dashboard/FriendsWing";
 import WeeklyStatsCard from "@/components/dashboard/WeeklyStatsCard";
 import RecentActivityCard from "@/components/dashboard/RecentActivityCard";
+import UpcomingEventsSection from "@/components/dashboard/UpcomingEventsSection";
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -65,21 +66,32 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Wing 1 — עם המאמן שלי */}
+      {/* Trainings first */}
+      <section>
+        <h2 className="mb-2 text-sm font-bold text-gray-700">{t("dashboard.myTrainings")}</h2>
+        <div className="space-y-3">
+          <UpcomingEventsSection />
+          <RecentActivityCard />
+        </div>
+      </section>
+
+      {/* Coach group — compact */}
       <section>
         <h2 className="mb-2 text-sm font-bold text-gray-700">{t("dashboard.withMyCoach")}</h2>
         <CoachWing />
       </section>
 
-      {/* Wing 2 — עם החברים שלי */}
+      {/* Friends — compact strip */}
       <section>
-        <h2 className="mb-2 text-sm font-bold text-gray-700">{t("dashboard.withMyFriends")}</h2>
-        <FriendsWing />
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-gray-700">{t("dashboard.withMyFriends")}</h2>
+          <Link href="/members" className="text-xs text-[#1D9E75]">{t("dashboard.allFriends")} ←</Link>
+        </div>
+        <FriendsWing compact />
       </section>
 
-      {/* Weekly stats + recent activity */}
+      {/* Weekly stats */}
       <WeeklyStatsCard />
-      <RecentActivityCard />
 
       {/* Quick links */}
       <div className="grid grid-cols-3 gap-2">

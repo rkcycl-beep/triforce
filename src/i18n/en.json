@@ -61,7 +61,27 @@
     "notOnTriforce": "Not on TriForce",
     "history": "History",
     "events": "Events",
-    "settings": "Settings"
+    "settings": "Settings",
+    "myTrainings": "My trainings",
+    "upcomingEvents": "Upcoming events",
+    "allEvents": "All events",
+    "recentActivity": "Recent activity",
+    "viewAll": "View all",
+    "loadMore": "Load more",
+    "noActivitiesInRange": "No activities in selected range",
+    "allFriends": "All friends",
+    "sport": {
+      "all": "All",
+      "run": "Run",
+      "ride": "Ride",
+      "swim": "Swim",
+      "other": "Other"
+    },
+    "range": {
+      "7d": "7 days",
+      "30d": "30 days",
+      "all": "All"
+    }
   },
   "stats": {
     "runs": "Runs",

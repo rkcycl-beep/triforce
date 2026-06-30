@@ -33,7 +33,7 @@ function Avatar({ name }: { name: string }) {
   );
 }
 
-export default function FriendsWing() {
+export default function FriendsWing({ compact = false }: { compact?: boolean }) {
   const { t } = useTranslation();
 
   const { data, isLoading } = useQuery({
@@ -59,6 +59,33 @@ export default function FriendsWing() {
         >
           + {t("dashboard.addFriends")}
         </Link>
+      </div>
+    );
+  }
+
+  if (compact) {
+    const displayed = friends.slice(0, 4);
+    return (
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        {displayed.map((f) => (
+          <Link
+            key={f.id}
+            href={f.triforceUserId ? `/members/${f.triforceUserId}` : "/members"}
+            className="flex shrink-0 flex-col items-center gap-1 rounded-xl border border-[#eeeeee] bg-white px-3 py-2"
+          >
+            <Avatar name={f.name} />
+            <p className="max-w-[4rem] truncate text-[10px] font-semibold text-gray-700">{f.name}</p>
+          </Link>
+        ))}
+        {friends.length > 4 && (
+          <Link
+            href="/members"
+            className="flex shrink-0 flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-[#1D9E75]/40 bg-[#E1F5EE]/40 px-3 py-2 text-[#1D9E75]"
+          >
+            <span className="text-xs font-bold">+{friends.length - 4}</span>
+            <span className="text-[9px]">{t("dashboard.allFriends")}</span>
+          </Link>
+        )}
       </div>
     );
   }

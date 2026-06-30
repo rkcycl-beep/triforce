@@ -61,7 +61,27 @@
     "notOnTriforce": "לא על TriForce",
     "history": "היסטוריה",
     "events": "אירועים",
-    "settings": "הגדרות"
+    "settings": "הגדרות",
+    "myTrainings": "האימונים שלי",
+    "upcomingEvents": "אירועים קרובים",
+    "allEvents": "כל האירועים",
+    "recentActivity": "פעילות אחרונה",
+    "viewAll": "הצג הכל",
+    "loadMore": "טען עוד",
+    "noActivitiesInRange": "אין פעילויות בטווח שנבחר",
+    "allFriends": "כל החברים",
+    "sport": {
+      "all": "הכל",
+      "run": "ריצה",
+      "ride": "אופניים",
+      "swim": "שחייה",
+      "other": "אחר"
+    },
+    "range": {
+      "7d": "7 ימים",
+      "30d": "30 יום",
+      "all": "הכל"
+    }
   },
   "stats": {
     "runs": "ריצות",

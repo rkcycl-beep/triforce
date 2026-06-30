@@ -1004,3 +1004,49 @@ For each cube:
 - ✅ Every interactive element (create, edit, delete, invite) works end-to-end.
 - ✅ Navigation between cubes is logical and does not duplicate destinations.
 - ✅ `npm run build` passes clean and production deploy succeeded on 2026-06-26.
+
+
+---
+
+## Athlete Dashboard Redesign — Trainings First (2026-06-26)
+
+> Problem: the `/athlete` dashboard is dominated by the friends list. Trainings are hidden in a small "פעילות אחרונה" card with only 3 items, and upcoming events are not visible at all.
+> Goal: make the training cube focus on the athlete's trainings — upcoming events + recent history.
+
+### Design changes
+
+1. **Top section: "האימונים שלי" (My trainings)**
+   - First thing the athlete sees after the header.
+   - Two subsections:
+     - **אירועים קרובים** — upcoming coach/peer events (next 3–5).
+     - **היסטוריית אימונים** — last 30 days of activities (expandable, 10 by default).
+   - Sport filter toggle: All / Run / Ride / Swim / Other.
+   - Time range toggle: 7 days / 30 days / All.
+
+2. **Move friends section down**
+   - Collapse to a compact "חברים פעילים" strip showing 3–4 recent friends.
+   - "הצג הכל" link to `/members`.
+
+3. **Keep coach group section**
+   - Keep "עם המאמן שלי" but make it compact.
+   - Show active challenge and quick link.
+
+4. **Bottom quick-actions**
+   - Keep History / Events / Settings shortcuts.
+
+### Implementation tasks
+
+- [ ] Reorder sections in `/app/(athlete)/athlete/page.tsx`.
+- [ ] Add upcoming events fetch and section.
+- [ ] Expand recent activities list (10 items) with "load more" / "view all".
+- [ ] Add sport and time-range filters for activities.
+- [ ] Minimize friends section to compact horizontal strip.
+- [ ] Extract all new strings to `i18n/he.json` and `i18n/en.json`.
+- [ ] Build, test, deploy.
+
+### Completion criteria
+- Athlete sees trainings first when opening `/athlete`.
+- Upcoming events visible without navigating away.
+- At least 30 days of activity history accessible on the dashboard.
+- No Hebrew hardcoded strings remain in the dashboard.
+- Build passes and production deploy succeeds.
