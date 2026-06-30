@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useActivities } from "@/hooks/useActivities";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
@@ -24,12 +24,20 @@ export default function RecentActivityCard() {
   const [rangeFilter, setRangeFilter] = useState<(typeof RANGE_FILTERS)[number]["key"]>("30d");
   const [visibleCount, setVisibleCount] = useState(5);
 
-  const days = RANGE_FILTERS.find((r) => r.key === rangeFilter)?.days ?? 30;
-  const to = new Date();
-  const from = new Date();
-  from.setDate(to.getDate() - days);
+  const { from, to } = useMemo(() => {
+    const days = RANGE_FILTERS.find((r) => r.key === rangeFilter)?.days ?? 30;
+    const t = new Date();
+    const f = new Date();
+    f.setDate(t.getDate() - days);
+    return { from: f, to: t };
+  }, [rangeFilter]);
 
-  const { data, isLoading } = useActivities({ page: 1, perPage: 50, from, to });
+  const { data, isLoading } = useActivities({ page: 1, perPage: 20, from, to });
+
+  const handleRangeChange = useCallback((key: typeof rangeFilter) => {
+    setRangeFilter(key);
+    setVisibleCount(5);
+  }, []);
 
   const filtered = useMemo(() => {
     const list = data?.activities ?? [];
@@ -69,7 +77,7 @@ export default function RecentActivityCard() {
           {RANGE_FILTERS.map((r) => (
             <button
               key={r.key}
-              onClick={() => { setRangeFilter(r.key); setVisibleCount(5); }}
+              onClick={() => handleRangeChange(r.key)}
               className={`flex-1 rounded-md py-1 text-[10px] font-bold transition-colors ${
                 rangeFilter === r.key ? "bg-white text-[#1D9E75] shadow-sm" : "text-gray-500"
               }`}
