@@ -597,56 +597,56 @@ Goal: one challenge model for coaches and trainees, with sport-specific, age/gen
 - [x] Create actionable TODO list below.
 
 ### Cube 3 — הודעות (Messages) — quick win
-- [ ] Extract all English strings to `i18n/he.json` + `i18n/en.json`.
-- [ ] Translate page title, form labels, placeholders, buttons, empty states.
-- [ ] Translate message-type badges (ANNOUNCEMENT → הודעה, CHAT → הודעה אישית).
-- [ ] Align badge colors with athlete `/messages` page.
-- [ ] Add delete message action.
-- [ ] Build + test locally.
+- [x] Extract all English strings to `i18n/he.json` + `i18n/en.json`.
+- [x] Translate page title, form labels, placeholders, buttons, empty states.
+- [x] Translate message-type badges (ANNOUNCEMENT → הודעה, CHAT → הודעה אישית).
+- [x] Align badge colors with athlete `/messages` page.
+- [x] Add delete message action.
+- [x] Build + test locally.
 
 ### Cube 4 — אירועים (Events) — quick win
-- [ ] Extract all English strings to i18n.
-- [ ] Translate page title, form labels, placeholders, buttons, empty states, dates.
-- [ ] Fix non-functional delete button (`CoachEventDelete`).
-- [ ] Add edit event flow.
-- [ ] Verify RTL date/time inputs.
-- [ ] Build + test locally.
+- [x] Extract all English strings to i18n.
+- [x] Translate page title, form labels, placeholders, buttons, empty states, dates.
+- [x] Fix non-functional delete button (`CoachEventDelete`).
+- [x] Add edit event flow.
+- [x] Verify RTL date/time inputs.
+- [x] Build + test locally.
 
 ### Cube 2 — אתגרים (Challenges)
-- [ ] Fix coach hub challenge link when coach has multiple groups → `/challenges/new` with group selector visible.
-- [ ] Add `redirectTo` query param support on `/challenges/new` so coach returns to `/coach` or `/coach/groups/[id]` after creation.
-- [ ] Audit and fix any remaining old challenge URLs (`/coach/groups/[id]/challenges/new`) across the app.
-- [ ] Build + test locally.
+- [x] Fix coach hub challenge link when coach has multiple groups → `/challenges/new` with group selector visible.
+- [x] Add `redirectTo` query param support on `/challenges/new` so coach returns to `/coach` or `/coach/groups/[id]` after creation.
+- [x] Audit and fix any remaining old challenge URLs (`/coach/groups/[id]/challenges/new`) across the app.
+- [x] Build + test locally.
 
 ### Cube 1 — מתאמנים (Athletes)
-- [ ] Decide whether to merge Athletes + Statistics cubes or keep separate pages.
-- [ ] If merged: remove Statistics cube; if separate: create dedicated `/coach/statistics` page.
-- [ ] Make athlete rows in `/coach/stats` clickable → `/coach/athletes/[userId]`.
-- [ ] Create `/coach/athletes/[userId]` detail page with recent activity + message button.
-- [ ] Fix active-challenge card link to `/challenges/new?groupId=...`.
-- [ ] Fix "pending messages" stat to count unread messages or rename it.
-- [ ] Build + test locally.
+- [x] Decide whether to merge Athletes + Statistics cubes or keep separate pages.
+- [x] If merged: remove Statistics cube; if separate: create dedicated `/coach/statistics` page.
+- [x] Make athlete rows in `/coach/stats` clickable → `/coach/athletes/[userId]`.
+- [x] Create `/coach/athletes/[userId]` detail page with recent activity + message button.
+- [x] Fix active-challenge card link to `/challenges/new?groupId=...`.
+- [x] Fix "pending messages" stat to count unread messages or rename it.
+- [x] Build + test locally.
 
 ### Cube 5 — סטטיסטיקות (Statistics)
-- [ ] Apply merge/separate decision from Cube 1.
-- [ ] Add date-range filter.
-- [ ] Add per-sport activity breakdown.
-- [ ] Add CSV export.
-- [ ] Make weekly target configurable per group.
-- [ ] Build + test locally.
+- [x] Apply merge/separate decision from Cube 1.
+- [x] Add date-range filter.
+- [x] Add per-sport activity breakdown.
+- [x] Add CSV export.
+- [x] Make weekly target configurable per group.
+- [x] Build + test locally.
 
 ### Cube 6 — קבוצות (Groups)
-- [ ] Audit all challenge links in group detail page.
-- [ ] Add group settings: rename + delete from `/coach/groups` list.
-- [ ] Verify all hardcoded strings are i18n'd.
-- [ ] Build + test locally.
+- [x] Audit all challenge links in group detail page.
+- [x] Add group settings: rename + delete from `/coach/groups` list.
+- [x] Verify all hardcoded strings are i18n'd.
+- [x] Build + test locally.
 
 ### Cube 7 — חברים (Friends)
-- [ ] Verify `/members` works correctly for coach users.
-- [ ] Add "הזמן לקבוצה" action when navigating from coach context.
-- [ ] Build + test locally.
+- [x] Verify `/members` works correctly for coach users.
+- [x] Add "הזמן לקבוצה" action when navigating from coach context.
+- [x] Build + test locally.
 
 ### Final
-- [ ] Full `npm run build` clean.
-- [ ] Deploy to Vercel.
-- [ ] Smoke-test each coach cube in production.
+- [x] Full `npm run build` clean.
+- [x] Deploy to Vercel.
+- [x] Smoke-test each coach cube in production.

@@ -845,9 +845,11 @@ Existing challenges using `ScoringMethod` (`AGE_GRADE`, `CATEGORY`, `PERSONAL_IM
 
 ---
 
-## Coach Cube Audit & Repair Plan (2026-06-26)
+## Coach Cube Audit & Repair Plan (2026-06-26) ✅ COMPLETED
 
 > Goal: verify every cube in the coach hub works according to the original platform plan, then fix gaps.
+
+**Status:** All cubes audited and repaired. Deployed to production on 2026-06-26.
 
 ### Audit method
 For each cube:
@@ -856,14 +858,14 @@ For each cube:
 3. List gaps: functionality, Hebrew/i18n, UX, auth, data accuracy.
 4. Define concrete fixes.
 
-### Execution order
-1. **Messages** — full Hebrew i18n (quick win).
-2. **Events** — full Hebrew i18n + fix delete (quick win).
-3. **Challenges** — fix multi-group link + redirect back to coach context.
-4. **Athletes / Statistics** — separate or merge the two cubes; add athlete drill-down.
-5. **Groups** — audit links + add settings.
-6. **Friends** — add coach-context invite action.
-7. **Final polish** — build, test, deploy.
+### Execution order (completed)
+1. ✅ **Messages** — full Hebrew i18n (quick win).
+2. ✅ **Events** — full Hebrew i18n + fix delete (quick win).
+3. ✅ **Challenges** — fix multi-group link + redirect back to coach context.
+4. ✅ **Athletes / Statistics** — merged into one cube; added athlete drill-down.
+5. ✅ **Groups** — audit links + added rename/delete settings.
+6. ✅ **Friends** — added coach-context invite action banner.
+7. ✅ **Final polish** — build, test, deploy.
 
 ---
 
@@ -997,8 +999,8 @@ For each cube:
 
 ---
 
-### Completion criteria
-- Every coach cube has a Hebrew UI consistent with the rest of the app.
-- Every interactive element (create, edit, delete, invite) works end-to-end.
-- Navigation between cubes is logical and does not duplicate destinations.
-- `npm run build` passes clean and production deploy succeeds.
+### Completion criteria ✅
+- ✅ Every coach cube has a Hebrew UI consistent with the rest of the app.
+- ✅ Every interactive element (create, edit, delete, invite) works end-to-end.
+- ✅ Navigation between cubes is logical and does not duplicate destinations.
+- ✅ `npm run build` passes clean and production deploy succeeded on 2026-06-26.
