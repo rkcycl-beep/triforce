@@ -192,6 +192,14 @@
     "metricLabel": "Metric",
     "targetLabel": "Target",
     "scoringMethod": "Scoring method",
+    "status": {
+      "active": "Active",
+      "completed": "Completed",
+      "draft": "Draft",
+      "cancelled": "Cancelled"
+    },
+    "notParticipating": "Not participating",
+    "joinToSeeResult": "Join to see your result",
     "metrics": {
       "pace": "Pace",
       "time": "Time",

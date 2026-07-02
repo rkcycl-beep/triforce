@@ -192,6 +192,14 @@
     "metricLabel": "מדד",
     "targetLabel": "יעד",
     "scoringMethod": "שיטת ניקוד",
+    "status": {
+      "active": "פעיל",
+      "completed": "הסתיים",
+      "draft": "טיוטה",
+      "cancelled": "בוטל"
+    },
+    "notParticipating": "לא משתתף/ת",
+    "joinToSeeResult": "הצטרף/י כדי לראות תוצאה",
     "metrics": {
       "pace": "קצב",
       "time": "זמן",

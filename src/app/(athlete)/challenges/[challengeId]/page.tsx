@@ -27,6 +27,43 @@ function participantStatusLabel(status: string, t: (k: string) => string) {
   return status;
 }
 
+function statusColor(status: string) {
+  if (status === "ACTIVE") return "bg-green-100 text-green-700";
+  if (status === "COMPLETED") return "bg-gray-100 text-gray-600";
+  if (status === "DRAFT") return "bg-yellow-100 text-yellow-700";
+  return "bg-gray-100 text-gray-600";
+}
+
+const SPORT_GRADIENT: Record<string, string> = {
+  run: "from-orange-50 to-orange-100 text-orange-700",
+  ride: "from-blue-50 to-blue-100 text-blue-700",
+  swim: "from-cyan-50 to-cyan-100 text-cyan-700",
+  walk: "from-gray-50 to-gray-100 text-gray-700",
+  hike: "from-emerald-50 to-emerald-100 text-emerald-700",
+};
+
+const SPORT_ICON: Record<string, string> = {
+  run: "🏃", ride: "🚴", swim: "🏊", walk: "🚶", hike: "🥾",
+};
+
+interface StatTileProps {
+  icon: string;
+  label: string;
+  value: React.ReactNode;
+  sub?: React.ReactNode;
+  gradient?: string;
+}
+
+function StatTile({ icon, label, value, sub, gradient = "from-gray-50 to-gray-100" }: StatTileProps) {
+  return (
+    <div className={`rounded-xl bg-gradient-to-br ${gradient} p-2.5`}>
+      <p className="text-[9px] uppercase tracking-wide opacity-80">{icon} {label}</p>
+      <p className="text-base font-bold leading-tight">{value}</p>
+      {sub && <p className="text-[9px] opacity-70">{sub}</p>}
+    </div>
+  );
+}
+
 export default function ChallengeDetailPage() {
   const params = useParams();
   const { challengeId } = params as { challengeId: string };
@@ -67,197 +104,178 @@ export default function ChallengeDetailPage() {
   const myEntry = entries.find((e: { user: { id: string } }) => e.user.id === myUserId);
   const metadata = (myEntry?.metadata ?? {}) as Record<string, unknown>;
 
+  const sportGradient = SPORT_GRADIENT[c.sportType] ?? SPORT_GRADIENT.run;
+  const sportIcon = SPORT_ICON[c.sportType] ?? "🏃";
+
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">{c.name}</h1>
-        {c.description && <p className="mt-1 text-sm text-gray-600">{c.description}</p>}
-        <p className="mt-1 text-xs text-gray-500">
-          {c.distanceKm} {t("activities.km")} · {c.sportType === "run" ? t("sportTypes.run") : c.sportType} ·{" "}
-          {new Date(c.startDate).toLocaleDateString(locale === "he" ? "he-IL" : "en-US", { day: "numeric", month: "short" })}
-          {" – "}
-          {new Date(c.endDate).toLocaleDateString(locale === "he" ? "he-IL" : "en-US", { day: "numeric", month: "short", year: "numeric" })}
-        </p>
+    <div className="space-y-3" dir="rtl">
+      {/* Compact header */}
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <h1 className="text-xl font-extrabold text-gray-900">{c.name}</h1>
+          <p className="mt-0.5 text-[10px] text-gray-400">
+            {new Date(c.startDate).toLocaleDateString(locale === "he" ? "he-IL" : "en-US", { day: "numeric", month: "short" })}
+            {" – "}
+            {new Date(c.endDate).toLocaleDateString(locale === "he" ? "he-IL" : "en-US", { day: "numeric", month: "short" })}
+          </p>
+        </div>
+        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${statusColor(c.status)}`}>
+          {t(`challenges.status.${c.status.toLowerCase()}`) ?? c.status}
+        </span>
       </div>
 
-      {/* Invitation actions */}
-      {myEntry?.status === "INVITED" && (
-        <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-4">
-          <p className="text-sm text-yellow-900">{t("challenges.invitedPrompt")}</p>
-          <div className="mt-3 flex gap-3">
-            <Button onClick={() => respondMutation.mutate({ action: "accept" })} loading={respondMutation.isPending}>
-              {t("challenges.accept")}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => respondMutation.mutate({ action: "decline" })}
-              loading={respondMutation.isPending}
-            >
-              {t("challenges.decline")}
-            </Button>
-          </div>
+      {/* Box 1 — Challenge specs */}
+      <div className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-gray-100">
+        <div className="mb-2 flex items-center gap-1.5">
+          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-[#1D9E75] to-[#085041] text-xs text-white">🏆</span>
+          <h2 className="text-xs font-bold text-gray-700">{t("challenges.challengeDetails")}</h2>
         </div>
-      )}
+        <div className="grid grid-cols-3 gap-2">
+          <StatTile
+            icon="📏"
+            label={t("challenges.distance")}
+            value={<>{c.distanceKm} <span className="text-[10px] font-medium">{t("activities.km")}</span></>}
+            gradient="from-orange-50 to-orange-100"
+          />
+          <StatTile
+            icon={sportIcon}
+            label={t("challenges.sportType")}
+            value={t(`sportTypes.${c.sportType}`) ?? c.sportType}
+            gradient={sportGradient}
+          />
+          <StatTile
+            icon="🎯"
+            label={t("challenges.metricLabel")}
+            value={t(`challenges.metrics.${c.metric}`) ?? c.metric}
+            gradient="from-purple-50 to-purple-100"
+          />
+          <StatTile
+            icon="✅"
+            label={t("challenges.tolerance")}
+            value={`±${c.tolerancePercent}%`}
+            gradient="from-green-50 to-green-100"
+          />
+          {c.targetValue ? (
+            <StatTile
+              icon="🎯"
+              label={t("challenges.targetLabel")}
+              value={<>{c.targetValue} <span className="text-[10px] font-medium">{c.targetUnit ?? ""}</span></>}
+              gradient="from-pink-50 to-pink-100"
+            />
+          ) : null}
+          <StatTile
+            icon="⭐"
+            label={t("challenges.scoringMethod")}
+            value={
+              c.scoringMethod === "GOAL_BASED" ? t("challenges.goalBased") :
+              c.scoringMethod === "PERSONAL_IMPROVEMENT" ? t("challenges.personalImprovement") :
+              c.scoringMethod === "AGE_GRADE" ? t("challenges.ageGrade") :
+              c.scoringMethod === "CATEGORY" ? t("challenges.categoryScoring") :
+              c.scoringMethod
+            }
+            gradient="from-indigo-50 to-indigo-100"
+          />
+        </div>
+      </div>
 
-      {/* My result card */}
-      {myEntry && myEntry.status !== "INVITED" && myEntry.status !== "DECLINED" && (
-        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-blue-600">{t("challenges.yourResult")}</p>
-              <div className="mt-1 flex items-baseline gap-3">
-                <span className="text-3xl font-bold text-blue-900">
-                  {myEntry.score.toFixed(1)} {t("challenges.points")}
-                </span>
-                <span className="text-sm text-blue-700">
-                  {t("challenges.rankOf").replace("{rank}", String(myEntry.rank ?? "—")).replace("{total}", String(entries.length))}
-                </span>
-              </div>
+      {/* Box 2 — My result / action */}
+      <div className="rounded-2xl bg-gradient-to-br from-[#f0faf6] to-[#E1F5EE] p-3 shadow-sm ring-1 ring-[#D4EFE6]">
+        {myEntry?.status === "INVITED" ? (
+          <div>
+            <p className="text-xs font-bold text-[#085041]">{t("challenges.invitedPrompt")}</p>
+            <div className="mt-2 flex gap-2">
+              <Button onClick={() => respondMutation.mutate({ action: "accept" })} loading={respondMutation.isPending} className="flex-1 text-xs">
+                {t("challenges.accept")}
+              </Button>
+              <Button variant="secondary" onClick={() => respondMutation.mutate({ action: "decline" })} loading={respondMutation.isPending} className="flex-1 text-xs">
+                {t("challenges.decline")}
+              </Button>
             </div>
-            <Button variant="secondary" onClick={() => setShowTable(true)} className="text-xs">
+          </div>
+        ) : myEntry && myEntry.status !== "DECLINED" ? (
+          <div>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] uppercase tracking-wide text-[#1D9E75]">{t("challenges.yourResult")}</p>
+              <Button variant="secondary" onClick={() => setShowTable(true)} className="h-6 px-2 text-[10px]">
+                {t("challenges.referenceTable")}
+              </Button>
+            </div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <span className="text-2xl font-extrabold text-[#085041]">{myEntry.score.toFixed(1)}</span>
+              <span className="text-xs text-[#1D9E75]">{t("challenges.points")}</span>
+              <span className="text-[10px] text-gray-500">
+                {t("challenges.rankOf").replace("{rank}", String(myEntry.rank ?? "—")).replace("{total}", String(entries.length))}
+              </span>
+            </div>
+            {typeof metadata.actualPace === "number" && (
+              <div className="mt-2 grid grid-cols-3 gap-1 text-center text-[10px]">
+                <div className="rounded-lg bg-white p-1.5">
+                  <p className="text-gray-400">{t("challenges.myPace")}</p>
+                  <p className="font-bold text-gray-900">{formatPace(Number(metadata.actualPace))}</p>
+                </div>
+                <div className="rounded-lg bg-white p-1.5">
+                  <p className="text-gray-400">{t("challenges.expectedPace")}</p>
+                  <p className="font-bold text-gray-900">{formatPace(Number(metadata.expectedPace))}</p>
+                </div>
+                <div className="rounded-lg bg-white p-1.5">
+                  <p className="text-gray-400">{t("challenges.fullScoreRange")}</p>
+                  <p className="font-bold text-green-700">{t("challenges.upTo").replace("{pace}", formatPace(Number(metadata.tolerancePace)))}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold text-[#085041]">{t("challenges.notParticipating")}</p>
+              <p className="text-[10px] text-gray-500">{t("challenges.joinToSeeResult")}</p>
+            </div>
+            <Button variant="secondary" onClick={() => setShowTable(true)} className="h-7 px-2 text-[10px]">
               {t("challenges.referenceTable")}
             </Button>
           </div>
-          {typeof metadata.actualPace === "number" && (
-            <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="rounded-lg bg-white p-2">
-                <p className="text-gray-500">{t("challenges.myPace")}</p>
-                <p className="font-semibold text-gray-900">{formatPace(Number(metadata.actualPace))}</p>
-              </div>
-              <div className="rounded-lg bg-white p-2">
-                <p className="text-gray-500">{t("challenges.expectedPace")}</p>
-                <p className="font-semibold text-gray-900">{formatPace(Number(metadata.expectedPace))}</p>
-              </div>
-              <div className="rounded-lg bg-white p-2">
-                <p className="text-gray-500">{t("challenges.fullScoreRange")}</p>
-                <p className="font-semibold text-green-700">{t("challenges.upTo").replace("{pace}", formatPace(Number(metadata.tolerancePace)))}</p>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Reference table button for non-participants or pending */}
-      {(!myEntry || myEntry.status === "INVITED" || myEntry.status === "DECLINED") && (
-        <Button variant="secondary" onClick={() => setShowTable(true)} className="w-full">
-          {t("challenges.viewReferenceTable")}
-        </Button>
-      )}
-
-      {/* Challenge details breakdown */}
-      <div className="rounded-2xl border border-[#E1F5EE] bg-white p-4 shadow-sm">
-        <div className="mb-3 flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#1D9E75] to-[#085041] text-lg text-white">🏆</span>
-          <h2 className="font-semibold text-gray-900">{t("challenges.challengeDetails")}</h2>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="rounded-xl bg-gradient-to-br from-[#FFF4EB] to-[#FFE8D6] p-3">
-            <p className="text-[10px] uppercase tracking-wide text-[#D85A30]">📏 {t("challenges.distance")}</p>
-            <p className="text-lg font-bold text-[#A03D1F]">{c.distanceKm} <span className="text-xs font-medium">{t("activities.km")}</span></p>
-          </div>
-
-          <div className={`rounded-xl p-3 ${
-            c.sportType === "run" ? "bg-gradient-to-br from-orange-50 to-orange-100" :
-            c.sportType === "ride" ? "bg-gradient-to-br from-blue-50 to-blue-100" :
-            c.sportType === "swim" ? "bg-gradient-to-br from-cyan-50 to-cyan-100" :
-            "bg-gradient-to-br from-gray-50 to-gray-100"
-          }`}>
-            <p className={`text-[10px] uppercase tracking-wide ${
-              c.sportType === "run" ? "text-orange-600" :
-              c.sportType === "ride" ? "text-blue-600" :
-              c.sportType === "swim" ? "text-cyan-600" : "text-gray-500"
-            }`}>🏃 {t("challenges.sportType")}</p>
-            <p className="text-lg font-bold text-gray-900">{t(`sportTypes.${c.sportType}`) ?? c.sportType}</p>
-          </div>
-
-          <div className="rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 p-3">
-            <p className="text-[10px] uppercase tracking-wide text-purple-600">🎯 {t("challenges.metricLabel")}</p>
-            <p className="text-lg font-bold text-purple-900">{t(`challenges.metrics.${c.metric}`) ?? c.metric}</p>
-          </div>
-
-          <div className="rounded-xl bg-gradient-to-br from-green-50 to-green-100 p-3">
-            <p className="text-[10px] uppercase tracking-wide text-green-600">✅ {t("challenges.tolerance")}</p>
-            <p className="text-lg font-bold text-green-900">±{c.tolerancePercent}%</p>
-          </div>
-
-          {c.targetValue && (
-            <div className="rounded-xl bg-gradient-to-br from-pink-50 to-pink-100 p-3">
-              <p className="text-[10px] uppercase tracking-wide text-pink-600">🎯 {t("challenges.targetLabel")}</p>
-              <p className="text-lg font-bold text-pink-900">{c.targetValue} <span className="text-xs font-medium">{c.targetUnit ?? ""}</span></p>
-            </div>
-          )}
-
-          <div className="rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 p-3">
-            <p className="text-[10px] uppercase tracking-wide text-indigo-600">⭐ {t("challenges.scoringMethod")}</p>
-            <p className="text-lg font-bold text-indigo-900">
-              {c.scoringMethod === "GOAL_BASED"
-                ? t("challenges.goalBased")
-                : c.scoringMethod === "PERSONAL_IMPROVEMENT"
-                ? t("challenges.personalImprovement")
-                : c.scoringMethod === "AGE_GRADE"
-                ? t("challenges.ageGrade")
-                : c.scoringMethod === "CATEGORY"
-                ? t("challenges.categoryScoring")
-                : c.scoringMethod}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-3 rounded-xl bg-gradient-to-br from-[#f0faf6] to-[#E1F5EE] p-3">
-          <p className="text-[10px] uppercase tracking-wide text-[#1D9E75]">📜 {t("challenges.rules")}</p>
-          <p className="mt-1 text-xs leading-relaxed text-gray-700">
-            {t("challenges.toleranceHint").replace("{percent}", String(c.tolerancePercent))}
-          </p>
-          {c.description && <p className="mt-2 text-xs leading-relaxed text-gray-600">{c.description}</p>}
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
-          {c.createdBy?.name && (
-            <span>👤 {t("challenges.createdBy")}: {c.createdBy.name}</span>
-          )}
-          {c.group?.name && (
-            <span>👥 {t("challenges.group")}: {c.group.name}</span>
-          )}
-          <span>🎽 {t("challenges.participants")}: {entries.length}</span>
-        </div>
+        )}
       </div>
 
-      {/* Leaderboard */}
-      <div className="rounded-xl border border-gray-200 bg-white">
-        <div className="border-b border-gray-100 px-5 py-4">
-          <h2 className="font-semibold text-gray-900">{t("challenges.leaderboard")}</h2>
+      {/* Compact description / rules */}
+      {(c.description || true) && (
+        <div className="rounded-xl bg-white p-3 text-xs leading-relaxed text-gray-600 shadow-sm ring-1 ring-gray-100">
+          <p><span className="font-bold text-gray-900">{t("challenges.rules")}:</span> {t("challenges.toleranceHint").replace("{percent}", String(c.tolerancePercent))}</p>
+          {c.description && <p className="mt-1">{c.description}</p>}
+        </div>
+      )}
+
+      {/* Compact leaderboard */}
+      <div className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-gray-100">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-xs font-bold text-gray-700">{t("challenges.leaderboard")}</h2>
+          <span className="text-[10px] text-gray-400">{entries.length} {t("challenges.participants")}</span>
         </div>
         {entries.length === 0 ? (
-          <p className="px-5 py-4 text-sm text-gray-500">{t("challenges.noParticipants")}</p>
+          <p className="text-xs text-gray-400">{t("challenges.noParticipants")}</p>
         ) : (
-          <ol className="divide-y divide-gray-100">
-            {entries.map((entry: { id: string; status: string; rank: number; user: { id: string; name: string | null; image: string | null }; score: number }) => {
+          <ol className="space-y-1.5">
+            {entries.slice(0, 5).map((entry: { id: string; status: string; rank: number; user: { id: string; name: string | null; image: string | null }; score: number }) => {
               const isMe = entry.user.id === myUserId;
               return (
-                <li
-                  key={entry.id}
-                  className={`flex items-center gap-3 px-5 py-3 ${isMe ? "bg-blue-50" : ""}`}
-                >
-                  <span className={`w-6 shrink-0 text-center text-sm font-bold ${entry.rank === 1 ? "text-yellow-500" : entry.rank === 2 ? "text-gray-400" : entry.rank === 3 ? "text-amber-600" : "text-gray-400"}`}>
+                <li key={entry.id} className={`flex items-center gap-2 rounded-lg px-2 py-1.5 ${isMe ? "bg-blue-50" : "bg-gray-50"}`}>
+                  <span className={`w-5 text-center text-xs font-bold ${entry.rank === 1 ? "text-yellow-500" : entry.rank === 2 ? "text-gray-400" : entry.rank === 3 ? "text-amber-600" : "text-gray-400"}`}>
                     {entry.rank ?? "—"}
                   </span>
                   {entry.user.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={entry.user.image} alt="" width={32} height={32} className="h-8 w-8 rounded-full object-cover" />
+                    <img src={entry.user.image} alt="" width={24} height={24} className="h-6 w-6 rounded-full object-cover" />
                   ) : (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs font-medium text-gray-600">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-[10px] font-medium text-gray-600">
                       {(entry.user.name ?? "?")[0].toUpperCase()}
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className={`truncate text-sm font-medium ${isMe ? "text-blue-900" : "text-gray-900"}`}>
+                    <p className={`truncate text-xs font-medium ${isMe ? "text-blue-900" : "text-gray-900"}`}>
                       {entry.user.name ?? "?"}{isMe && ` (${t("challenges.you")})`}
                     </p>
-                    <p className="text-xs text-gray-500">{participantStatusLabel(entry.status, t)}</p>
                   </div>
-                  <span className="shrink-0 text-sm font-semibold text-gray-700">
-                    {entry.score > 0 ? `${entry.score.toFixed(1)} ${t("challenges.points")}` : "—"}
+                  <span className="shrink-0 text-xs font-bold text-gray-700">
+                    {entry.score > 0 ? `${entry.score.toFixed(1)}` : "—"}
                   </span>
                 </li>
               );
