@@ -18,7 +18,7 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, name: true, email: true, role: true, lastStravaSync: true },
+    select: { id: true, name: true, email: true, role: true, lastStravaSync: true, sex: true, dateOfBirth: true },
   });
 
   if (!user) {

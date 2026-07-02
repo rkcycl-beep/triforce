@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useChallengeDetail } from "@/hooks/useChallengeDetail";
+import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import Button from "@/components/ui/Button";
@@ -46,7 +47,7 @@ const SPORT_ICON: Record<string, string> = {
   run: "🏃", ride: "🚴", swim: "🏊", walk: "🚶", hike: "🥾",
 };
 
-interface StatTileProps {
+interface StatCubeProps {
   icon: string;
   label: string;
   value: React.ReactNode;
@@ -54,14 +55,37 @@ interface StatTileProps {
   gradient?: string;
 }
 
-function StatTile({ icon, label, value, sub, gradient = "from-gray-50 to-gray-100" }: StatTileProps) {
+function StatCube({ icon, label, value, sub, gradient = "from-gray-50 to-gray-100" }: StatCubeProps) {
   return (
-    <div className={`rounded-xl bg-gradient-to-br ${gradient} p-2.5`}>
+    <div className={`flex shrink-0 flex-col justify-center rounded-2xl bg-gradient-to-br ${gradient} px-4 py-3 shadow-sm`} style={{ minWidth: "7.5rem" }}>
       <p className="text-[9px] uppercase tracking-wide opacity-80">{icon} {label}</p>
-      <p className="text-base font-bold leading-tight">{value}</p>
+      <p className="text-lg font-extrabold leading-tight">{value}</p>
       {sub && <p className="text-[9px] opacity-70">{sub}</p>}
     </div>
   );
+}
+
+function computeAge(dateOfBirth: string | null): number | null {
+  if (!dateOfBirth) return null;
+  const birth = new Date(dateOfBirth);
+  const now = new Date();
+  let age = now.getFullYear() - birth.getFullYear();
+  const monthDiff = now.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) age--;
+  return age;
+}
+
+async function fetchProfile(): Promise<{ sex: string | null; dateOfBirth: string | null }> {
+  const res = await fetch("/api/athlete/me");
+  if (!res.ok) throw new Error("Failed");
+  return res.json();
+}
+
+async function fetchReferencePace(sportType: string, distanceKm: number, gender: string): Promise<{ paceMinPerKm: number } | null> {
+  const res = await fetch(`/api/challenges/reference-pace?sportType=${sportType}&distanceKm=${distanceKm}&gender=${gender}`);
+  if (!res.ok) return null;
+  const rows = await res.json();
+  return rows[0] ?? null;
 }
 
 export default function ChallengeDetailPage() {
@@ -72,6 +96,24 @@ export default function ChallengeDetailPage() {
   const { t, locale } = useTranslation();
   const queryClient = useQueryClient();
   const [showTable, setShowTable] = useState(false);
+
+  const { data: profile } = useQuery({
+    queryKey: ["athlete-me"],
+    queryFn: fetchProfile,
+    staleTime: Infinity,
+  });
+
+  const age = computeAge(profile?.dateOfBirth ?? null);
+
+  const { data: refPace } = useQuery({
+    queryKey: ["reference-pace", data?.challenge.sportType, data?.challenge.distanceKm, profile?.sex],
+    queryFn: async () => {
+      if (!data?.challenge || !profile?.sex) return null;
+      return fetchReferencePace(data.challenge.sportType, Number(data.challenge.distanceKm), profile.sex);
+    },
+    enabled: !!data?.challenge && !!profile?.sex,
+    staleTime: Infinity,
+  });
 
   const respondMutation = useMutation({
     mutationFn: async ({ action }: { action: "accept" | "decline" }) => {
@@ -107,78 +149,53 @@ export default function ChallengeDetailPage() {
   const sportGradient = SPORT_GRADIENT[c.sportType] ?? SPORT_GRADIENT.run;
   const sportIcon = SPORT_ICON[c.sportType] ?? "🏃";
 
+  const startDate = new Date(c.startDate).toLocaleDateString(locale === "he" ? "he-IL" : "en-US", { day: "numeric", month: "short" });
+  const endDate = new Date(c.endDate).toLocaleDateString(locale === "he" ? "he-IL" : "en-US", { day: "numeric", month: "short" });
+
   return (
-    <div className="space-y-3" dir="rtl">
-      {/* Compact header */}
+    <div className="space-y-4" dir="rtl">
+      {/* Title + sport */}
       <div className="flex items-start justify-between gap-2">
         <div>
           <h1 className="text-xl font-extrabold text-gray-900">{c.name}</h1>
-          <p className="mt-0.5 text-[10px] text-gray-400">
-            {new Date(c.startDate).toLocaleDateString(locale === "he" ? "he-IL" : "en-US", { day: "numeric", month: "short" })}
-            {" – "}
-            {new Date(c.endDate).toLocaleDateString(locale === "he" ? "he-IL" : "en-US", { day: "numeric", month: "short" })}
-          </p>
+          <div className="mt-1 flex items-center gap-1.5">
+            <span className={`rounded-lg bg-gradient-to-br ${sportGradient} px-2 py-0.5 text-[10px] font-bold`}>
+              {sportIcon} {t(`sportTypes.${c.sportType}`) ?? c.sportType}
+            </span>
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${statusColor(c.status)}`}>
+              {t(`challenges.status.${c.status.toLowerCase()}`) ?? c.status}
+            </span>
+          </div>
         </div>
-        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${statusColor(c.status)}`}>
-          {t(`challenges.status.${c.status.toLowerCase()}`) ?? c.status}
-        </span>
       </div>
 
-      {/* Box 1 — Challenge specs */}
-      <div className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-gray-100">
-        <div className="mb-2 flex items-center gap-1.5">
-          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-[#1D9E75] to-[#085041] text-xs text-white">🏆</span>
-          <h2 className="text-xs font-bold text-gray-700">{t("challenges.challengeDetails")}</h2>
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          <StatTile
+      {/* Horizontal cubes row */}
+      <div className="-mx-4 overflow-x-auto px-4">
+        <div className="flex gap-2 pb-1">
+          <StatCube
             icon="📏"
             label={t("challenges.distance")}
-            value={<>{c.distanceKm} <span className="text-[10px] font-medium">{t("activities.km")}</span></>}
+            value={<>{c.distanceKm} <span className="text-xs font-medium">{t("activities.km")}</span></>}
             gradient="from-orange-50 to-orange-100"
           />
-          <StatTile
-            icon={sportIcon}
-            label={t("challenges.sportType")}
-            value={t(`sportTypes.${c.sportType}`) ?? c.sportType}
-            gradient={sportGradient}
-          />
-          <StatTile
+          <StatCube
             icon="🎯"
-            label={t("challenges.metricLabel")}
-            value={t(`challenges.metrics.${c.metric}`) ?? c.metric}
+            label={t("challenges.expectedPace")}
+            value={refPace ? formatPace(refPace.paceMinPerKm) : t("challenges.noReference")}
+            sub={refPace ? `${t("challenges.perKm")} · ${profile?.sex === "F" ? t("challenges.women") : t("challenges.men")}${age ? ` · ${age}` : ""}` : undefined}
             gradient="from-purple-50 to-purple-100"
           />
-          <StatTile
-            icon="✅"
-            label={t("challenges.tolerance")}
-            value={`±${c.tolerancePercent}%`}
-            gradient="from-green-50 to-green-100"
-          />
-          {c.targetValue ? (
-            <StatTile
-              icon="🎯"
-              label={t("challenges.targetLabel")}
-              value={<>{c.targetValue} <span className="text-[10px] font-medium">{c.targetUnit ?? ""}</span></>}
-              gradient="from-pink-50 to-pink-100"
-            />
-          ) : null}
-          <StatTile
-            icon="⭐"
-            label={t("challenges.scoringMethod")}
-            value={
-              c.scoringMethod === "GOAL_BASED" ? t("challenges.goalBased") :
-              c.scoringMethod === "PERSONAL_IMPROVEMENT" ? t("challenges.personalImprovement") :
-              c.scoringMethod === "AGE_GRADE" ? t("challenges.ageGrade") :
-              c.scoringMethod === "CATEGORY" ? t("challenges.categoryScoring") :
-              c.scoringMethod
-            }
-            gradient="from-indigo-50 to-indigo-100"
+          <StatCube
+            icon="🗓"
+            label={t("challenges.dates")}
+            value={<span className="text-base">{startDate}</span>}
+            sub={`→ ${endDate}`}
+            gradient="from-blue-50 to-blue-100"
           />
         </div>
       </div>
 
-      {/* Box 2 — My result / action */}
+      {/* Result / action box */}
       <div className="rounded-2xl bg-gradient-to-br from-[#f0faf6] to-[#E1F5EE] p-3 shadow-sm ring-1 ring-[#D4EFE6]">
         {myEntry?.status === "INVITED" ? (
           <div>
@@ -237,13 +254,11 @@ export default function ChallengeDetailPage() {
         )}
       </div>
 
-      {/* Compact description / rules */}
-      {(c.description || true) && (
-        <div className="rounded-xl bg-white p-3 text-xs leading-relaxed text-gray-600 shadow-sm ring-1 ring-gray-100">
-          <p><span className="font-bold text-gray-900">{t("challenges.rules")}:</span> {t("challenges.toleranceHint").replace("{percent}", String(c.tolerancePercent))}</p>
-          {c.description && <p className="mt-1">{c.description}</p>}
-        </div>
-      )}
+      {/* Rules */}
+      <div className="rounded-xl bg-white p-3 text-xs leading-relaxed text-gray-600 shadow-sm ring-1 ring-gray-100">
+        <p><span className="font-bold text-gray-900">{t("challenges.rules")}:</span> {t("challenges.toleranceHint").replace("{percent}", String(c.tolerancePercent))}</p>
+        {c.description && <p className="mt-1">{c.description}</p>}
+      </div>
 
       {/* Compact leaderboard */}
       <div className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-gray-100">

@@ -200,6 +200,10 @@
     },
     "notParticipating": "לא משתתף/ת",
     "joinToSeeResult": "הצטרף/י כדי לראות תוצאה",
+    "noReference": "לא זמין",
+    "perKm": "לק\"מ",
+    "women": "נשים",
+    "men": "גברים",
     "metrics": {
       "pace": "קצב",
       "time": "זמן",

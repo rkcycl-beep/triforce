@@ -200,6 +200,10 @@
     },
     "notParticipating": "Not participating",
     "joinToSeeResult": "Join to see your result",
+    "noReference": "Not available",
+    "perKm": "min/km",
+    "women": "Women",
+    "men": "Men",
     "metrics": {
       "pace": "Pace",
       "time": "Time",
