@@ -78,6 +78,8 @@ export async function computeLeaderboard(challengeId: string) {
   const challenge = await prisma.challenge.findUnique({
     where: { id: challengeId },
     include: {
+      createdBy: { select: { id: true, name: true } },
+      group: { select: { id: true, name: true } },
       entries: {
         where: { status: { in: ["ACCEPTED", "COMPLETED"] } },
         include: { user: true },

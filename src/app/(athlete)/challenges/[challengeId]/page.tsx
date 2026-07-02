@@ -144,6 +144,68 @@ export default function ChallengeDetailPage() {
         </Button>
       )}
 
+      {/* Challenge details breakdown */}
+      <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <h2 className="mb-3 font-semibold text-gray-900">{t("challenges.challengeDetails")}</h2>
+
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="rounded-lg bg-gray-50 p-3">
+            <p className="text-[10px] uppercase tracking-wide text-gray-400">{t("challenges.distance")}</p>
+            <p className="font-semibold text-gray-900">{c.distanceKm} {t("activities.km")}</p>
+          </div>
+          <div className="rounded-lg bg-gray-50 p-3">
+            <p className="text-[10px] uppercase tracking-wide text-gray-400">{t("challenges.sportType")}</p>
+            <p className="font-semibold text-gray-900">{t(`sportTypes.${c.sportType}`) ?? c.sportType}</p>
+          </div>
+          <div className="rounded-lg bg-gray-50 p-3">
+            <p className="text-[10px] uppercase tracking-wide text-gray-400">{t("challenges.metricLabel")}</p>
+            <p className="font-semibold text-gray-900">{t(`challenges.metrics.${c.metric}`) ?? c.metric}</p>
+          </div>
+          <div className="rounded-lg bg-gray-50 p-3">
+            <p className="text-[10px] uppercase tracking-wide text-gray-400">{t("challenges.tolerance")}</p>
+            <p className="font-semibold text-gray-900">±{c.tolerancePercent}%</p>
+          </div>
+          {c.targetValue && (
+            <div className="rounded-lg bg-gray-50 p-3">
+              <p className="text-[10px] uppercase tracking-wide text-gray-400">{t("challenges.targetLabel")}</p>
+              <p className="font-semibold text-gray-900">{c.targetValue} {c.targetUnit ?? ""}</p>
+            </div>
+          )}
+          <div className="rounded-lg bg-gray-50 p-3">
+            <p className="text-[10px] uppercase tracking-wide text-gray-400">{t("challenges.scoringMethod")}</p>
+            <p className="font-semibold text-gray-900">
+              {c.scoringMethod === "GOAL_BASED"
+                ? t("challenges.goalBased")
+                : c.scoringMethod === "PERSONAL_IMPROVEMENT"
+                ? t("challenges.personalImprovement")
+                : c.scoringMethod === "AGE_GRADE"
+                ? t("challenges.ageGrade")
+                : c.scoringMethod === "CATEGORY"
+                ? t("challenges.categoryScoring")
+                : c.scoringMethod}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-3 rounded-lg bg-[#f0faf6] p-3">
+          <p className="text-[10px] uppercase tracking-wide text-[#1D9E75]">{t("challenges.rules")}</p>
+          <p className="mt-1 text-xs leading-relaxed text-gray-700">
+            {t("challenges.toleranceHint").replace("{percent}", String(c.tolerancePercent))}
+          </p>
+          {c.description && <p className="mt-2 text-xs leading-relaxed text-gray-600">{c.description}</p>}
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+          {c.createdBy?.name && (
+            <span>{t("challenges.createdBy")}: {c.createdBy.name}</span>
+          )}
+          {c.group?.name && (
+            <span>{t("challenges.group")}: {c.group.name}</span>
+          )}
+          <span>{t("challenges.participants")}: {entries.length}</span>
+        </div>
+      </div>
+
       {/* Leaderboard */}
       <div className="rounded-xl border border-gray-200 bg-white">
         <div className="border-b border-gray-100 px-5 py-4">
