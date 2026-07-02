@@ -114,7 +114,16 @@
     "km": "KM",
     "pace": "Pace",
     "time": "Time",
-    "hr": "HR"
+    "hr": "HR",
+    "turnIntoChallenge": "Turn into challenge",
+    "simulateAsChallenge": "Simulate as challenge",
+    "createChallengeFromActivity": "Create challenge from this activity",
+    "activityChallengePreview": "Activity challenge preview",
+    "derivedChallengeParams": "Derived parameters",
+    "originalActivity": "Original activity",
+    "calculatedScore": "Calculated score",
+    "createRealChallenge": "Create real challenge",
+    "simulateDescription": "See how this activity would score as a challenge."
   },
   "sportTypes": {
     "run": "Run",

@@ -18,10 +18,12 @@ import {
   formatSportType,
 } from "@/lib/utils";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export default function ActivityDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const { t, locale } = useTranslation();
   const rawId = params.id as string;
 

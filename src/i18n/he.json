@@ -114,7 +114,16 @@
     "km": "ק\"מ",
     "pace": "קצב",
     "time": "זמן",
-    "hr": "דופק"
+    "hr": "דופק",
+    "turnIntoChallenge": "הפוך לאתגר",
+    "simulateAsChallenge": "בדוק כאתגר",
+    "createChallengeFromActivity": "צור אתגר מפעילות זו",
+    "activityChallengePreview": "תצוגת אתגר מפעילות",
+    "derivedChallengeParams": "פרמטרים מופקים",
+    "originalActivity": "פעילות מקורית",
+    "calculatedScore": "ניקוד מחושב",
+    "createRealChallenge": "צור אתגר אמיתי",
+    "simulateDescription": "ראה איך הפעילות הזו הייתה מקבלת ניקוד כאתגר."
   },
   "sportTypes": {
     "run": "ריצה",

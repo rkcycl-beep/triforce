@@ -12,42 +12,95 @@ Starting with ~40 athletes in one coaching group in Israel.
 
 ---
 
-## Current State (as of 2026-06-21)
+## Current State (as of 2026-07-02)
 
 **Live at:** https://triforce-iota.vercel.app
 
 ### Working
 - Next.js 16 + TypeScript + Tailwind CSS + Neon PostgreSQL + Prisma 5
-- Strava OAuth (NextAuth v4, JWT) — single login for all users (athletes + coaches)
-- Activity sync to DB on login + manual sync button; Strava webhooks (create/update/delete)
-- Dashboard: stats cards, weekly chart, activity list (from DB)
+- Strava OAuth (NextAuth v4, JWT) — single login for all users
+- Activity sync: full history (months=0), webhooks, manual sync button; client-side filtering
+- Dashboard: trainings-first layout (events → activities → coach → friends), sport + time filters
 - Activity detail with route map (Leaflet.js)
 - Mobile-first Hebrew RTL layout (Heebo font, i18n/he.json + en.json)
-- Groups (COACH + PEER): create, list all, detail view, add/remove members, delete, messaging
-- Friends discovery: Strava kudos contacts + mutual club members (scan-once, stored in DB)
+- Groups (COACH + PEER): create, list all, detail, add/remove members, delete, messaging
+- Friends: Strava kudos + mutual clubs (scan-once), compare stats, invite via WhatsApp
+- **Unified challenges system**: GOAL_BASED scoring, coach or athlete creates, group or friend-based, invite flow, leaderboard, reference pace table
+- Notifications: in-app for group invites + challenge invites; badge in nav
+- Roles: any user can become a coach (multi-role capability model)
+- Coach hub: fully audited — all 7 cubes translated to Hebrew, athlete detail, group settings, stats with CSV export
 - Compare: side-by-side stats between any two TriForce users
-- Invite system: /invite/[userId] public page + WhatsApp share
-- Challenges: 3 scoring engines (age grade, category, personal improvement) + leaderboard
-- Coach hub: group management, challenges, messages, events, stats dashboard
-- Athlete hub: dashboard, groups, friends, history, messages, events, compare
 
 ### Deferred to pre-launch
-- COACH role gate (currently any authenticated user can access /coach)
+- COACH role gate re-enablement (currently any authenticated user can access /coach)
 - Personal conversation threads (athlete ↔ coach)
-- Unread message badges
 - PWA manifest + service worker
-- Error/loading/empty state audit
+- Full error/loading/empty state audit
 
 ### Next up
-- Peer challenges (inside peer groups)
-- Activity comparison tab inside group detail
-- Prize display on challenges (Phase 1C remainder)
+- Challenge UX polish: group challenges tab in `/groups/[groupId]`
+- Challenge leaderboard real-time updates
+- Prize display on challenges
 
 ### Architecture note — sync vs filter separation
 Sync and filtering are fully decoupled:
 - **Sync** (`POST /api/athlete/sync`) → pulls from Strava API → upserts to DB → records `lastStravaSync` timestamp
 - **Filter** → client-side `useMemo` on already-fetched data → zero network calls → instant
 - This pattern must be maintained for all future list views
+
+---
+
+## Unified Challenges Design
+
+Both coaches and athletes create challenges through the **same flow** and the **same data model**. The only differences are context (who invited whom) and default settings.
+
+### Core model
+```
+Challenge {
+  createdById   String           — who created it
+  groupId       String?          — optional: scoped to a group
+  sportType     String           — "run" | "ride" | "swim"
+  distanceKm    Float            — target distance
+  metric        String           — "pace" | "time" | "distance" | "elevation" | "activities"
+  targetValue   Float?           — optional explicit goal
+  scoringMethod GOAL_BASED       — score 0–100 based on tolerance % around expected pace
+  startDate / endDate
+  status        DRAFT → ACTIVE → COMPLETED
+}
+
+ChallengeEntry {
+  challengeId / userId
+  status   INVITED → ACCEPTED → DECLINED → ACTIVE → COMPLETED
+  score    Float
+}
+```
+
+### Two creation contexts — same form
+
+| | Coach creates | Athlete creates |
+|---|---|---|
+| Entry point | `/coach` → אתגרים cube OR `/coach/groups/[id]` | `/challenges/new` or `/groups/[id]` → אתגרים tab |
+| Scope | Linked to a group (`groupId` set) | Can be group-based or between friends (no `groupId`) |
+| Invite | All group members auto-enrolled | Manually invite chosen friends |
+| Scoring | GOAL_BASED (default) | GOAL_BASED (default) |
+| Reference pace | Shown from `SportReferencePace` table | Same |
+
+### Scoring — GOAL_BASED
+1. For each activity in the challenge window matching `sportType` and `distanceKm` (±30%):
+   - Compute expected pace from `SportReferencePace` for user's age/sex/distance
+   - Score = 100 × (expectedPace / actualPace), clamped 0–100
+   - Bonus for beating expected pace; penalty for falling short
+2. Athlete's entry score = best single activity score in the window
+3. Leaderboard ranks by score descending
+
+### Key API routes
+- `POST /api/challenges` — create (any authenticated user)
+- `GET  /api/challenges` — list user's challenges (all groups + friend challenges)
+- `GET  /api/challenges/[id]` — detail + leaderboard
+- `POST /api/challenges/[id]/accept` — accept invite
+- `POST /api/challenges/[id]/decline` — decline invite
+- `GET  /api/challenges/reference-pace` — pace table for the creation form
+- `GET  /api/athlete/groups/[groupId]/challenges` — challenges scoped to a group (member-accessible)
 
 ---
 

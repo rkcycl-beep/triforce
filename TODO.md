@@ -347,7 +347,7 @@
 - Rate limit: 100 req/15min (Standard Tier)
 
 ## Current Focus
-**History page complete.** Full Strava history synced (1,416 activities), client-side filtering, sync/filter separation explained. Next: peer challenges + activity comparison inside groups.
+**Challenges system live (GOAL_BASED scoring, coach + athlete creation, friend invites, leaderboard).** Coach hub fully audited + Hebrew. Dashboard trainings-first. Next: challenges UX polish + group challenges tab.
 
 ---
 
@@ -371,6 +371,61 @@
 - [x] Count shows "X פעילויות (מתוך Y בסה"כ)" when filtered
 - [x] Sync button subtitle: "מוסיף אימונים חדשים מ-Strava"
 - [x] Info note above filters: explains filter uses existing DB data, no re-sync needed
+
+---
+
+## Sessions 2026-06-23→07-02 — Challenges, Roles, Coach Audit, Dashboard
+
+### Unified Challenge System (KIMI + Claude)
+- [x] Schema: `Challenge` model updated — `createdById`, optional `groupId`, `sportType`, `distanceKm`, `metric`, `targetValue`, `tolerancePercent`, `scoringMethod: GOAL_BASED`
+- [x] New enums: `ScoringMethod.GOAL_BASED`, `ParticipantStatus` (INVITED/ACCEPTED/DECLINED)
+- [x] New models: `SportReferencePace` (608 rows: ages 10–85, M/F, 5K/10K/half/marathon), `Notification`, `GroupInvitation`
+- [x] Goal-based scoring engine with 30% tolerance and 0–100 score cap
+- [x] API routes: `GET/POST /api/challenges`, `GET /api/challenges/[id]`, `POST /api/challenges/[id]/accept`, `POST /api/challenges/[id]/decline`, `GET /api/challenges/reference-pace`
+- [x] `/challenges/new` — unified creation form (coach or athlete, group or friend-based)
+- [x] `/challenges` list page — shows all user's challenges across groups + friends
+- [x] `/challenges/[id]` — colorful detail page: stat tiles, reference pace, horizontal cube row, leaderboard
+- [x] Friend invites to challenges; invite tracking; joined-via-invite badges
+- [x] Strava webhook updated to score friend challenges
+- [x] Reference pace table modal
+- [x] Demo: 608 reference pace rows seeded; demo friends set up with mutual follows
+
+### Roles + Become-Coach flow
+- [x] `roles String[]` array added to User for multi-role support
+- [x] Capability model: any user can become a coach
+- [x] `/api/become-coach` endpoint — elevates user to COACH capability
+- [x] Become-coach UI flow in settings/profile
+
+### Coach invite flow
+- [x] `GroupInvitation` model — coach invites friend to group by TriForce user search
+- [x] `/api/groups/[groupId]/invite-friend` — send group invite
+- [x] Notifications tab: athlete accepts/declines group invitations inline
+- [x] Notifications badge in nav
+
+### Coach hub cube audit ✅ (2026-06-26)
+- [x] All 7 cubes audited and repaired: Hebrew translation throughout
+- [x] הודעות cube: i18n, delete message, badge alignment
+- [x] אירועים cube: i18n, fix delete button, add edit flow
+- [x] אתגרים cube: redirects to unified `/challenges/new`, `redirectTo` param support
+- [x] מתאמנים cube: clickable athlete rows → `/coach/athletes/[userId]` detail page
+- [x] סטטיסטיקות cube: date-range filter, per-sport breakdown, CSV export, configurable target
+- [x] קבוצות cube: challenge links, group rename/delete, full i18n
+- [x] חברים cube: new cube in coach hub, friends list, "הזמן לקבוצה" action
+- [x] Full `npm run build` clean, deployed to Vercel
+
+### Athlete dashboard redesign (2026-06-26)
+- [x] Trainings-first layout: upcoming events → recent activities → coach section → friends strip
+- [x] Activity filters: sport type + time range (7d/30d/All), load more
+- [x] Compact friends strip with "View all" link
+- [x] `UpcomingEventsSection` component added
+- [x] Dashboard sync note: clarifies sync reads local DB
+- [x] Memoized activity date range to stop infinite refetch loop
+
+### Challenge detail page polish (2026-07-02)
+- [x] Colorful stat tiles on `/challenges/[id]`
+- [x] Horizontal cube row showing distance, reference pace, dates
+- [x] `scoringMethod` i18n fixed (was showing raw enum value)
+- [x] Compact colorful challenge detail layout
 
 ---
 
