@@ -145,35 +145,52 @@ export default function ChallengeDetailPage() {
       )}
 
       {/* Challenge details breakdown */}
-      <div className="rounded-xl border border-gray-200 bg-white p-4">
-        <h2 className="mb-3 font-semibold text-gray-900">{t("challenges.challengeDetails")}</h2>
+      <div className="rounded-2xl border border-[#E1F5EE] bg-white p-4 shadow-sm">
+        <div className="mb-3 flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#1D9E75] to-[#085041] text-lg text-white">🏆</span>
+          <h2 className="font-semibold text-gray-900">{t("challenges.challengeDetails")}</h2>
+        </div>
 
         <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="rounded-lg bg-gray-50 p-3">
-            <p className="text-[10px] uppercase tracking-wide text-gray-400">{t("challenges.distance")}</p>
-            <p className="font-semibold text-gray-900">{c.distanceKm} {t("activities.km")}</p>
+          <div className="rounded-xl bg-gradient-to-br from-[#FFF4EB] to-[#FFE8D6] p-3">
+            <p className="text-[10px] uppercase tracking-wide text-[#D85A30]">📏 {t("challenges.distance")}</p>
+            <p className="text-lg font-bold text-[#A03D1F]">{c.distanceKm} <span className="text-xs font-medium">{t("activities.km")}</span></p>
           </div>
-          <div className="rounded-lg bg-gray-50 p-3">
-            <p className="text-[10px] uppercase tracking-wide text-gray-400">{t("challenges.sportType")}</p>
-            <p className="font-semibold text-gray-900">{t(`sportTypes.${c.sportType}`) ?? c.sportType}</p>
+
+          <div className={`rounded-xl p-3 ${
+            c.sportType === "run" ? "bg-gradient-to-br from-orange-50 to-orange-100" :
+            c.sportType === "ride" ? "bg-gradient-to-br from-blue-50 to-blue-100" :
+            c.sportType === "swim" ? "bg-gradient-to-br from-cyan-50 to-cyan-100" :
+            "bg-gradient-to-br from-gray-50 to-gray-100"
+          }`}>
+            <p className={`text-[10px] uppercase tracking-wide ${
+              c.sportType === "run" ? "text-orange-600" :
+              c.sportType === "ride" ? "text-blue-600" :
+              c.sportType === "swim" ? "text-cyan-600" : "text-gray-500"
+            }`}>🏃 {t("challenges.sportType")}</p>
+            <p className="text-lg font-bold text-gray-900">{t(`sportTypes.${c.sportType}`) ?? c.sportType}</p>
           </div>
-          <div className="rounded-lg bg-gray-50 p-3">
-            <p className="text-[10px] uppercase tracking-wide text-gray-400">{t("challenges.metricLabel")}</p>
-            <p className="font-semibold text-gray-900">{t(`challenges.metrics.${c.metric}`) ?? c.metric}</p>
+
+          <div className="rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 p-3">
+            <p className="text-[10px] uppercase tracking-wide text-purple-600">🎯 {t("challenges.metricLabel")}</p>
+            <p className="text-lg font-bold text-purple-900">{t(`challenges.metrics.${c.metric}`) ?? c.metric}</p>
           </div>
-          <div className="rounded-lg bg-gray-50 p-3">
-            <p className="text-[10px] uppercase tracking-wide text-gray-400">{t("challenges.tolerance")}</p>
-            <p className="font-semibold text-gray-900">±{c.tolerancePercent}%</p>
+
+          <div className="rounded-xl bg-gradient-to-br from-green-50 to-green-100 p-3">
+            <p className="text-[10px] uppercase tracking-wide text-green-600">✅ {t("challenges.tolerance")}</p>
+            <p className="text-lg font-bold text-green-900">±{c.tolerancePercent}%</p>
           </div>
+
           {c.targetValue && (
-            <div className="rounded-lg bg-gray-50 p-3">
-              <p className="text-[10px] uppercase tracking-wide text-gray-400">{t("challenges.targetLabel")}</p>
-              <p className="font-semibold text-gray-900">{c.targetValue} {c.targetUnit ?? ""}</p>
+            <div className="rounded-xl bg-gradient-to-br from-pink-50 to-pink-100 p-3">
+              <p className="text-[10px] uppercase tracking-wide text-pink-600">🎯 {t("challenges.targetLabel")}</p>
+              <p className="text-lg font-bold text-pink-900">{c.targetValue} <span className="text-xs font-medium">{c.targetUnit ?? ""}</span></p>
             </div>
           )}
-          <div className="rounded-lg bg-gray-50 p-3">
-            <p className="text-[10px] uppercase tracking-wide text-gray-400">{t("challenges.scoringMethod")}</p>
-            <p className="font-semibold text-gray-900">
+
+          <div className="rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 p-3">
+            <p className="text-[10px] uppercase tracking-wide text-indigo-600">⭐ {t("challenges.scoringMethod")}</p>
+            <p className="text-lg font-bold text-indigo-900">
               {c.scoringMethod === "GOAL_BASED"
                 ? t("challenges.goalBased")
                 : c.scoringMethod === "PERSONAL_IMPROVEMENT"
@@ -187,8 +204,8 @@ export default function ChallengeDetailPage() {
           </div>
         </div>
 
-        <div className="mt-3 rounded-lg bg-[#f0faf6] p-3">
-          <p className="text-[10px] uppercase tracking-wide text-[#1D9E75]">{t("challenges.rules")}</p>
+        <div className="mt-3 rounded-xl bg-gradient-to-br from-[#f0faf6] to-[#E1F5EE] p-3">
+          <p className="text-[10px] uppercase tracking-wide text-[#1D9E75]">📜 {t("challenges.rules")}</p>
           <p className="mt-1 text-xs leading-relaxed text-gray-700">
             {t("challenges.toleranceHint").replace("{percent}", String(c.tolerancePercent))}
           </p>
@@ -197,12 +214,12 @@ export default function ChallengeDetailPage() {
 
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
           {c.createdBy?.name && (
-            <span>{t("challenges.createdBy")}: {c.createdBy.name}</span>
+            <span>👤 {t("challenges.createdBy")}: {c.createdBy.name}</span>
           )}
           {c.group?.name && (
-            <span>{t("challenges.group")}: {c.group.name}</span>
+            <span>👥 {t("challenges.group")}: {c.group.name}</span>
           )}
-          <span>{t("challenges.participants")}: {entries.length}</span>
+          <span>🎽 {t("challenges.participants")}: {entries.length}</span>
         </div>
       </div>
 

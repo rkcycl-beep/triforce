@@ -191,6 +191,7 @@
     "categoryScoring": "Category",
     "metricLabel": "Metric",
     "targetLabel": "Target",
+    "scoringMethod": "Scoring method",
     "metrics": {
       "pace": "Pace",
       "time": "Time",

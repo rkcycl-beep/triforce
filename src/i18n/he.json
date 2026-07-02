@@ -191,6 +191,7 @@
     "categoryScoring": "קטגוריה",
     "metricLabel": "מדד",
     "targetLabel": "יעד",
+    "scoringMethod": "שיטת ניקוד",
     "metrics": {
       "pace": "קצב",
       "time": "זמן",
