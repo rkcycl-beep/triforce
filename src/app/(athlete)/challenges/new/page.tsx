@@ -18,17 +18,30 @@ function NewChallengeForm() {
   const userIsCoach = isCoach(session?.user?.roles, session?.user?.role);
   const preselectedGroupId = searchParams.get("groupId");
   const redirectTo = searchParams.get("redirectTo");
+  const activityId = searchParams.get("activityId");
 
   const today = new Date().toISOString().split("T")[0];
   const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
   const [name, setName] = useState("");
+  const [sportType, setSportType] = useState("run");
   const [distanceKm, setDistanceKm] = useState("5");
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(nextWeek);
   const [tolerance, setTolerance] = useState("30");
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
+
+  const { data: activityData, isLoading: activityLoading } = useQuery({
+    queryKey: ["activity-for-challenge", activityId],
+    queryFn: async () => {
+      const res = await fetch(`/api/athlete/activities/${activityId}`);
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    enabled: !!activityId,
+    staleTime: Infinity,
+  });
 
   useEffect(() => {
     if (preselectedGroupId && userIsCoach) {
@@ -37,6 +50,19 @@ function NewChallengeForm() {
       );
     }
   }, [preselectedGroupId, userIsCoach]);
+
+  useEffect(() => {
+    if (activityData?.activity) {
+      const a = activityData.activity;
+      const distance = a.distance / 1000;
+      setName(`${a.name}`);
+      setSportType(a.sportType ?? "run");
+      setDistanceKm(String(distance));
+      const start = new Date(a.startDate);
+      setStartDate(start.toISOString().split("T")[0]);
+      setEndDate(new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]);
+    }
+  }, [activityData]);
 
   // Chosen friends (marked by user in /members or /friends)
   const { data: chosenData, isLoading: chosenLoading } = useQuery({
@@ -67,7 +93,7 @@ function NewChallengeForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
-          sportType: "run",
+          sportType,
           distanceKm: Number(distanceKm),
           metric: "pace",
           tolerancePercent: Number(tolerance),
@@ -105,7 +131,7 @@ function NewChallengeForm() {
     endDate &&
     (selectedUserIds.length > 0 || selectedGroupIds.length > 0);
 
-  if (chosenLoading || groupsLoading) {
+  if (chosenLoading || groupsLoading || activityLoading) {
     return (
       <div className="flex justify-center py-16">
         <LoadingSpinner />
@@ -131,6 +157,23 @@ function NewChallengeForm() {
             placeholder={t("challenges.namePlaceholder")}
             className="mt-2 w-full rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
           />
+        </div>
+
+        {/* Sport type */}
+        <div className="rounded-xl bg-gradient-to-r from-violet-50 to-purple-50 p-3">
+          <label className="flex items-center gap-2 text-sm font-bold text-violet-800">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500 text-xs text-white">🏃</span>
+            {t("challenges.sportTypes")}
+          </label>
+          <select
+            value={sportType}
+            onChange={(e) => setSportType(e.target.value)}
+            className="mt-2 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm"
+          >
+            <option value="run">{t("sportTypes.run")}</option>
+            <option value="ride">{t("sportTypes.ride")}</option>
+            <option value="swim">{t("sportTypes.swim")}</option>
+          </select>
         </div>
 
         {/* Distance */}
