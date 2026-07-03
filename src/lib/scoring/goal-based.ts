@@ -42,6 +42,7 @@ export function calculatePaceMinPerKm(
 
 /**
  * Look up the expected average pace for a given sport/gender/age/distance.
+ * If the exact distance is not in the table, interpolate between the two nearest distances.
  */
 export async function getExpectedPace(
   sportType: string,
@@ -49,7 +50,7 @@ export async function getExpectedPace(
   age: number,
   distanceKm: number
 ): Promise<SportReferencePace | null> {
-  return prisma.sportReferencePace.findUnique({
+  const exact = await prisma.sportReferencePace.findUnique({
     where: {
       sportType_gender_age_distanceKm: {
         sportType,
@@ -59,6 +60,51 @@ export async function getExpectedPace(
       },
     },
   });
+  if (exact) return exact;
+
+  // Find nearest lower and upper rows for interpolation
+  const [lower, upper] = await Promise.all([
+    prisma.sportReferencePace.findFirst({
+      where: { sportType, gender, age, distanceKm: { lte: distanceKm } },
+      orderBy: { distanceKm: "desc" },
+    }),
+    prisma.sportReferencePace.findFirst({
+      where: { sportType, gender, age, distanceKm: { gte: distanceKm } },
+      orderBy: { distanceKm: "asc" },
+    }),
+  ]);
+
+  if (lower && upper && lower.distanceKm !== upper.distanceKm) {
+    const ratio =
+      (distanceKm - lower.distanceKm) /
+      (upper.distanceKm - lower.distanceKm);
+    const paceMinPerKm =
+      lower.paceMinPerKm + (upper.paceMinPerKm - lower.paceMinPerKm) * ratio;
+    return {
+      ...lower,
+      distanceKm,
+      paceMinPerKm: Number(paceMinPerKm.toFixed(2)),
+    };
+  }
+
+  if (sportType === "ride") {
+    // Fallback amateur cycling reference until ride data is seeded
+    const speedKmh = distanceKm >= 42.195 ? 22 : distanceKm >= 21.0975 ? 23.5 : distanceKm >= 10 ? 25 : 26;
+    const paceMinPerKm = Number((60 / speedKmh).toFixed(2));
+    return {
+      id: "fallback-ride",
+      sportType,
+      gender,
+      age,
+      distanceKm,
+      paceMinPerKm,
+      source: "Fallback amateur cycling average",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as SportReferencePace;
+  }
+
+  return lower ?? upper ?? null;
 }
 
 /**

@@ -153,6 +153,42 @@ async function main() {
   }
 
   console.log(`\nSeeded ${rows.length} reference pace rows for running.`);
+
+  // Seed fallback ride reference paces using amateur average speeds
+  console.log("Seeding SportReferencePace data for cycling...");
+  await prisma.sportReferencePace.deleteMany({ where: { sportType: "ride" } });
+
+  const rideRows: typeof rows = [];
+  const rideSpeeds: Record<number, number> = {
+    5: 26,
+    10: 25,
+    21.0975: 23.5,
+    42.195: 22,
+  };
+
+  for (const gender of ["M", "F"] as const) {
+    for (let age = 10; age <= 85; age++) {
+      for (const distanceKm of DISTANCES_KM) {
+        const speedKmh = rideSpeeds[distanceKm];
+        const paceMinPerKm = Number((60 / speedKmh).toFixed(2));
+        rideRows.push({
+          sportType: "ride",
+          gender,
+          age,
+          distanceKm,
+          paceMinPerKm,
+          source: "Fallback amateur cycling average speed by distance",
+        });
+      }
+    }
+  }
+
+  for (let i = 0; i < rideRows.length; i += batchSize) {
+    const batch = rideRows.slice(i, i + batchSize);
+    await prisma.sportReferencePace.createMany({ data: batch, skipDuplicates: true });
+  }
+
+  console.log(`Seeded ${rideRows.length} reference pace rows for cycling.`);
 }
 
 main()

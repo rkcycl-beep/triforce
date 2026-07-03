@@ -108,8 +108,9 @@ export async function POST(
     });
   } catch (error) {
     console.error("Failed to simulate challenge:", error);
+    const message = error instanceof Error ? error.message : "Failed to simulate challenge.";
     return NextResponse.json(
-      { error: "Failed to simulate challenge." },
+      { error: message },
       { status: 500 }
     );
   }

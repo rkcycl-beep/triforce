@@ -47,7 +47,10 @@ interface SimulationResponse {
 
 async function fetchSimulation(activityId: string): Promise<SimulationResponse> {
   const res = await fetch(`/api/athlete/activities/${activityId}/simulate-challenge`, { method: "POST" });
-  if (!res.ok) throw new Error("Failed");
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? "Failed");
+  }
   return res.json();
 }
 
@@ -57,7 +60,7 @@ export default function ActivityChallengeSimulatePage() {
   const { t, locale } = useTranslation();
   const activityId = params.id as string;
 
-  const { data, isLoading, isError } = useQuery<SimulationResponse>({
+  const { data, isLoading, isError, error } = useQuery<SimulationResponse>({
     queryKey: ["activity-challenge-simulate", activityId],
     queryFn: () => fetchSimulation(activityId),
     staleTime: Infinity,
@@ -72,9 +75,10 @@ export default function ActivityChallengeSimulatePage() {
   }
 
   if (isError || !data) {
+    const message = error instanceof Error ? error.message : t("activities.loadError");
     return (
       <div className="py-16 text-center">
-        <ErrorMessage message={t("activities.loadError")} />
+        <ErrorMessage message={message} />
         <button onClick={() => router.back()} className="mt-3 text-sm text-[#1D9E75] underline">{t("nav.back")}</button>
       </div>
     );
