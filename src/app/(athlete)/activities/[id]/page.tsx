@@ -62,6 +62,26 @@ export default function ActivityDetailPage() {
         </p>
       </div>
 
+      {/* Turn into challenge — moved to top for visibility */}
+      <div className="rounded-2xl bg-gradient-to-br from-[#f0faf6] to-[#E1F5EE] p-4 shadow-sm">
+        <p className="text-sm font-bold text-[#085041]">{t("activities.turnIntoChallenge")}</p>
+        <p className="mt-0.5 text-xs text-gray-500">{t("activities.simulateDescription")}</p>
+        <div className="mt-3 flex gap-2">
+          <button
+            onClick={() => router.push(`/activities/${rawId}/challenge-simulate`)}
+            className="flex-1 rounded-xl bg-[#1D9E75] py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#178c68]"
+          >
+            {t("activities.simulateAsChallenge")}
+          </button>
+          <Link
+            href={`/challenges/new?activityId=${rawId}`}
+            className="flex-1 rounded-xl bg-white py-2.5 text-center text-xs font-bold text-[#1D9E75] shadow-sm ring-1 ring-[#1D9E75]/30 hover:bg-[#E1F5EE]"
+          >
+            {t("activities.createChallengeFromActivity")}
+          </Link>
+        </div>
+      </div>
+
       {/* Route map */}
       {hasMap && (
         <RouteMapLazy polyline={a.mapPolyline!} height={280} />
@@ -113,26 +133,6 @@ export default function ActivityDetailPage() {
             unit="kcal"
           />
         )}
-      </div>
-
-      {/* Turn into challenge */}
-      <div className="rounded-2xl bg-gradient-to-br from-[#f0faf6] to-[#E1F5EE] p-4 shadow-sm">
-        <p className="text-sm font-bold text-[#085041]">{t("activities.turnIntoChallenge")}</p>
-        <p className="mt-0.5 text-xs text-gray-500">{t("activities.simulateDescription")}</p>
-        <div className="mt-3 flex gap-2">
-          <button
-            onClick={() => router.push(`/activities/${rawId}/challenge-simulate`)}
-            className="flex-1 rounded-xl bg-[#1D9E75] py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#178c68]"
-          >
-            {t("activities.simulateAsChallenge")}
-          </button>
-          <Link
-            href={`/challenges/new?activityId=${rawId}`}
-            className="flex-1 rounded-xl bg-white py-2.5 text-center text-xs font-bold text-[#1D9E75] shadow-sm ring-1 ring-[#1D9E75]/30 hover:bg-[#E1F5EE]"
-          >
-            {t("activities.createChallengeFromActivity")}
-          </Link>
-        </div>
       </div>
     </div>
   );
