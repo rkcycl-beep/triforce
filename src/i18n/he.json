@@ -123,7 +123,9 @@
     "originalActivity": "פעילות מקורית",
     "calculatedScore": "ניקוד מחושב",
     "createRealChallenge": "צור אתגר אמיתי",
-    "simulateDescription": "ראה איך הפעילות הזו הייתה מקבלת ניקוד כאתגר."
+    "simulateDescription": "ראה איך הפעילות הזו הייתה מקבלת ניקוד כאתגר.",
+    "profileMissingAgeGender": "חסרים פרטי גיל או מין בפרופיל שלך. נדרש כדי לחשב קצב ייחוס.",
+    "completeProfile": "השלם/י פרופיל"
   },
   "sportTypes": {
     "run": "ריצה",

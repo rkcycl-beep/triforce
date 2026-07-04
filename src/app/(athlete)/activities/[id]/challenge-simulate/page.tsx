@@ -76,10 +76,20 @@ export default function ActivityChallengeSimulatePage() {
 
   if (isError || !data) {
     const message = error instanceof Error ? error.message : t("activities.loadError");
+    const isProfileMissing = message.includes("age or gender");
     return (
       <div className="py-16 text-center">
-        <ErrorMessage message={message} />
-        <button onClick={() => router.back()} className="mt-3 text-sm text-[#1D9E75] underline">{t("nav.back")}</button>
+        <ErrorMessage message={isProfileMissing ? t("activities.profileMissingAgeGender") : message} />
+        {isProfileMissing ? (
+          <Link
+            href="/settings"
+            className="mt-3 inline-block rounded-xl bg-[#1D9E75] px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-[#178c68]"
+          >
+            {t("activities.completeProfile")}
+          </Link>
+        ) : (
+          <button onClick={() => router.back()} className="mt-3 text-sm text-[#1D9E75] underline">{t("nav.back")}</button>
+        )}
       </div>
     );
   }

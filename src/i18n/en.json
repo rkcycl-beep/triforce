@@ -123,7 +123,9 @@
     "originalActivity": "Original activity",
     "calculatedScore": "Calculated score",
     "createRealChallenge": "Create real challenge",
-    "simulateDescription": "See how this activity would score as a challenge."
+    "simulateDescription": "See how this activity would score as a challenge.",
+    "profileMissingAgeGender": "Your profile is missing age or gender. Required to calculate reference pace.",
+    "completeProfile": "Complete profile"
   },
   "sportTypes": {
     "run": "Run",
