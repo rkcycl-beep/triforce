@@ -1103,3 +1103,33 @@ For each cube:
 - At least 30 days of activity history accessible on the dashboard.
 - No Hebrew hardcoded strings remain in the dashboard.
 - Build passes and production deploy succeeds.
+
+
+---
+
+## Session Handoff — 2026-06-26
+
+This section summarizes the work completed at the end of the current conversation, before starting the next one.
+
+### Completed since last handoff
+1. **Athlete dashboard redesign** — `/dashboard` now shows trainings first: upcoming events, last-30-days activity history with sport/time filters, compact friends strip.
+2. **Coach cube audit & repair** — all 7 coach hub cubes reviewed and fixed:
+   - Messages and Events fully translated to Hebrew with delete/edit actions.
+   - Challenge creation links unified to the colorful `/challenges/new` form.
+   - Athletes and Statistics cubes merged; athlete rows drill down to new `/coach/athletes/[id]` detail page.
+   - Group list gained rename/delete actions.
+   - Friends cube added coach-context invite banner.
+3. **Challenge detail page** — compact, colorful breakdown with horizontal cube row (distance, expected pace from reference table, dates).
+4. **Activity → challenge** — any past activity can be simulated as a challenge or turned into a real challenge; form is pre-filled.
+5. **Reference pace** — interpolation added for non-standard distances; cycling fallback and seed data added.
+6. **Error handling** — simulation shows friendly Hebrew message when profile lacks age/gender.
+
+### Production
+- Latest deploy: **https://triforce-iota.vercel.app**
+- Git `main` is clean and up to date.
+
+### Suggested next topics
+- Audit remaining athlete cubes.
+- Finish challenge management (edit, cancel, reminders, prizes).
+- Build peer-group / friend-challenge flows.
+- Polish and deploy.

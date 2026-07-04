@@ -727,3 +727,26 @@ Goal: one challenge model for coaches and trainees, with sport-specific, age/gen
 - [x] Extract new strings to `i18n/he.json` + `i18n/en.json`.
 - [x] Run `npm run build` clean.
 - [x] Deploy to Vercel.
+
+
+---
+
+## Session Handoff — 2026-06-26 (end of conversation)
+
+### Last work completed
+- ✅ Athlete dashboard redesign — trainings first, upcoming events, activity filters, compact friends.
+- ✅ Coach cube audit & repair — messages, events, challenges, athletes/statistics merge, groups settings, friends banner.
+- ✅ Challenge detail page — colorful compact breakdown cube row.
+- ✅ Activity → challenge simulation + creation.
+- ✅ Reference pace interpolation + cycling fallback/seeding.
+- ✅ Friendly error handling for missing profile age/gender.
+- ✅ All changes committed and deployed to Vercel.
+
+### Production
+- https://triforce-iota.vercel.app
+
+### Known open items for next conversation
+- Continue athlete cubes audit (history, challenges, messages, members, settings).
+- Add prizes/reminders/editing to challenges.
+- Peer groups and friend comparison flows.
+- Further UI polish based on user testing.
