@@ -22,7 +22,7 @@ export default function LandingHero() {
       </div>
 
       <button
-        onClick={() => signIn("strava", { callbackUrl: "/dashboard" })}
+        onClick={() => signIn("strava", { callbackUrl: "/gate" })}
         className="mt-10 flex min-h-[48px] items-center gap-3 rounded-xl bg-[#FC4C02] px-8 py-3 text-base font-semibold text-white shadow-lg transition-all hover:bg-[#e34402] hover:shadow-xl active:scale-95"
       >
         <svg

@@ -81,11 +81,17 @@ async function fetchProfile(): Promise<{ sex: string | null; dateOfBirth: string
   return res.json();
 }
 
-async function fetchReferencePace(sportType: string, distanceKm: number, gender: string): Promise<{ paceMinPerKm: number } | null> {
-  const res = await fetch(`/api/challenges/reference-pace?sportType=${sportType}&distanceKm=${distanceKm}&gender=${gender}`);
+async function fetchReferencePace(
+  sportType: string,
+  distanceKm: number,
+  gender: string,
+  age: number
+): Promise<{ paceMinPerKm: number } | null> {
+  const res = await fetch(
+    `/api/challenges/reference-pace?sportType=${sportType}&distanceKm=${distanceKm}&gender=${gender}&age=${age}`
+  );
   if (!res.ok) return null;
-  const rows = await res.json();
-  return rows[0] ?? null;
+  return res.json();
 }
 
 export default function ChallengeDetailPage() {
@@ -106,12 +112,12 @@ export default function ChallengeDetailPage() {
   const age = computeAge(profile?.dateOfBirth ?? null);
 
   const { data: refPace } = useQuery({
-    queryKey: ["reference-pace", data?.challenge.sportType, data?.challenge.distanceKm, profile?.sex],
+    queryKey: ["reference-pace", data?.challenge.sportType, data?.challenge.distanceKm, profile?.sex, age],
     queryFn: async () => {
-      if (!data?.challenge || !profile?.sex) return null;
-      return fetchReferencePace(data.challenge.sportType, Number(data.challenge.distanceKm), profile.sex);
+      if (!data?.challenge || !profile?.sex || age === null) return null;
+      return fetchReferencePace(data.challenge.sportType, Number(data.challenge.distanceKm), profile.sex, age);
     },
-    enabled: !!data?.challenge && !!profile?.sex,
+    enabled: !!data?.challenge && !!profile?.sex && age !== null,
     staleTime: Infinity,
   });
 
@@ -232,11 +238,17 @@ export default function ChallengeDetailPage() {
                 </div>
                 <div className="rounded-lg bg-white p-1.5">
                   <p className="text-gray-400">{t("challenges.expectedPace")}</p>
-                  <p className="font-bold text-gray-900">{formatPace(Number(metadata.expectedPace))}</p>
+                  <p className="font-bold text-gray-900">
+                    {refPace ? formatPace(refPace.paceMinPerKm) : formatPace(Number(metadata.expectedPace))}
+                  </p>
                 </div>
                 <div className="rounded-lg bg-white p-1.5">
                   <p className="text-gray-400">{t("challenges.fullScoreRange")}</p>
-                  <p className="font-bold text-green-700">{t("challenges.upTo").replace("{pace}", formatPace(Number(metadata.tolerancePace)))}</p>
+                  <p className="font-bold text-green-700">
+                    {refPace
+                      ? t("challenges.upTo").replace("{pace}", formatPace(refPace.paceMinPerKm * (1 + (c.tolerancePercent ?? 30) / 100)))
+                      : t("challenges.upTo").replace("{pace}", formatPace(Number(metadata.tolerancePace)))}
+                  </p>
                 </div>
               </div>
             )}

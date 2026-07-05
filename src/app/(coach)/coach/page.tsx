@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -115,28 +114,25 @@ export default function CoachHomePage() {
 
       <div className="relative z-10 w-full max-w-[420px]">
         {/* Header */}
-        <div className="mb-8 text-center">
-          <div className="mb-3 flex items-center justify-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#1D9E75] to-[#085041] shadow-[0_6px_20px_rgba(29,158,117,0.3)]">
-              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="8" r="6" />
-                <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
-              </svg>
-            </div>
-          </div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-[#085041]">
-            {t("coach.greeting").replace("{name}", firstName)}
+        <div className="mb-6 text-start">
+          <p className="text-lg text-slate-500">בוקר טוב,</p>
+          <h1 className="text-4xl font-extrabold tracking-tight text-[#085041]">
+            {firstName}
           </h1>
-          <p className="mt-1 text-sm text-slate-400">
-            {hasGroups
-              ? data!.groups.map((g) => g.name).join(" · ")
-              : t("coach.coachPortal")}
-          </p>
           {data?.stats && (
-            <div className="mt-3 flex items-center justify-center gap-4 text-xs text-slate-400">
-              <span><strong className="text-[#1D9E75]">{data.stats.totalAthletes}</strong> {t("coach.athletes")}</span>
-              <span>·</span>
-              <span><strong className="text-[#1D9E75]">{data.stats.workoutsThisWeek}</strong> {t("coach.workoutsThisWeek")}</span>
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              <div className="rounded-2xl bg-white p-3 text-center shadow-sm">
+                <div className="text-2xl font-extrabold text-[#2563eb]">{data.stats.totalAthletes}</div>
+                <div className="text-xs text-slate-500">{t("coach.athletes")}</div>
+              </div>
+              <div className="rounded-2xl bg-white p-3 text-center shadow-sm">
+                <div className="text-2xl font-extrabold text-[#2563eb]">{data.stats.workoutsThisWeek}</div>
+                <div className="text-xs text-slate-500">{t("coach.workoutsThisWeek")}</div>
+              </div>
+              <div className="rounded-2xl bg-white p-3 text-center shadow-sm">
+                <div className="text-2xl font-extrabold text-[#2563eb]">{data.groups.length}</div>
+                <div className="text-xs text-slate-500">{t("groups.title")}</div>
+              </div>
             </div>
           )}
         </div>
@@ -147,22 +143,15 @@ export default function CoachHomePage() {
             <button
               key={cube.label}
               onClick={() => router.push(cube.href)}
-              className={`group flex aspect-square flex-col items-center justify-center gap-2 rounded-[20px] border border-white/15 bg-gradient-to-br ${cube.gradient} ${cube.shadow} transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1.5 hover:scale-[1.04] active:translate-y-0.5 active:scale-[0.98]`}
+              className={`group relative flex aspect-square flex-col items-start justify-end overflow-hidden rounded-[22px] border border-white/10 bg-gradient-to-br ${cube.gradient} ${cube.shadow} p-4 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1.5 hover:scale-[1.03] active:translate-y-0.5 active:scale-[0.98]`}
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-2xl backdrop-blur-sm">
+              <div className="absolute start-4 top-4 flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 text-2xl backdrop-blur-sm">
                 {cube.emoji}
               </div>
-              <span className="text-base font-bold text-white">{cube.label}</span>
-              <span className="text-[11px] text-white/60">{cube.sub}</span>
+              <span className="relative z-10 text-lg font-bold text-white">{cube.label}</span>
+              <span className="relative z-10 text-xs text-white/70">{cube.sub}</span>
             </button>
           ))}
-        </div>
-
-        {/* Sign out */}
-        <div className="mt-8 text-center">
-          <Link href="/" className="text-sm text-slate-400 underline underline-offset-2 hover:text-slate-600">
-            {t("coach.backToHome")}
-          </Link>
         </div>
       </div>
     </div>

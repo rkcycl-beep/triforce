@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TriForce — מרחב המתאמן</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Heebo', sans-serif;
+      background: #f8faf9;
+      min-height: 100vh;
+      color: #1f2937;
+    }
+    .header {
+      background: white;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      position: sticky;
+      top: 0;
+    }
+    .logo { font-size: 1.4rem; font-weight: 800; color: #16a34a; }
+    .header-actions { display: flex; gap: 12px; align-items: center; }
+    .role-pill {
+      background: #dcfce7;
+      color: #166534;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 999px;
+    }
+    .settings-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #f3f4f6; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .container { max-width: 420px; margin: 0 auto; padding: 24px 20px 100px; }
+    .greeting {
+      font-size: 1.15rem;
+      color: #6b7280;
+      margin-bottom: 4px;
+    }
+    .name { font-size: 1.6rem; font-weight: 800; margin-bottom: 24px; }
+    .section-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #9ca3af;
+      margin: 24px 0 12px;
+    }
+    .cube-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .cube {
+      aspect-ratio: 1;
+      border-radius: 20px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .cube:hover { transform: translateY(-2px); }
+    .cube-icon { font-size: 1.8rem; }
+    .cube-label { font-size: 1rem; font-weight: 700; }
+    .cube-green { background: linear-gradient(135deg, #22c55e, #16a34a); }
+    .cube-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    .cube-orange { background: linear-gradient(135deg, #f97316, #ea580c); }
+    .cube-purple { background: linear-gradient(135deg, #a855f7, #9333ea); }
+    .cube-pink { background: linear-gradient(135deg, #ec4899, #db2777); }
+    .cube-teal { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+    .cube-gold { background: linear-gradient(135deg, #eab308, #ca8a04); }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0 12px;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 0.65rem;
+      color: #9ca3af;
+      text-decoration: none;
+    }
+    .nav-item.active { color: #16a34a; }
+    .nav-icon { font-size: 1.25rem; }
+    .banner {
+      background: #dcfce7;
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .banner-text { flex: 1; font-size: 0.9rem; color: #166534; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">TriForce</div>
+    <div class="header-actions">
+      <span class="role-pill">מתאמן</span>
+      <button class="settings-btn" onclick="location.href='entry-gate.html'" title="שנה תפקיד">↩</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="greeting">בוקר טוב,</div>
+    <div class="name">רון 🏃</div>
+
+    <div class="banner">
+      <span>🎯</span>
+      <div class="banner-text">אתגר ריצת 5K פעיל — קצב יעד: 5:30 דק׳/ק״מ</div>
+    </div>
+
+    <div class="section-title">המרחב שלי</div>
+    <div class="cube-grid">
+      <div class="cube cube-green">
+        <div class="cube-icon">🏠</div>
+        <div class="cube-label">הבית שלי</div>
+      </div>
+      <div class="cube cube-blue">
+        <div class="cube-icon">🤝</div>
+        <div class="cube-label">חברים</div>
+      </div>
+      <div class="cube cube-orange">
+        <div class="cube-icon">🏆</div>
+        <div class="cube-label">אתגרים</div>
+      </div>
+      <div class="cube cube-purple">
+        <div class="cube-icon">📊</div>
+        <div class="cube-label">השוואה</div>
+      </div>
+      <div class="cube cube-pink">
+        <div class="cube-icon">🏃</div>
+        <div class="cube-label">היסטוריה</div>
+      </div>
+      <div class="cube cube-teal">
+        <div class="cube-icon">👥</div>
+        <div class="cube-label">קבוצות</div>
+      </div>
+      <div class="cube cube-gold">
+        <div class="cube-icon">📅</div>
+        <div class="cube-label">אירועים</div>
+      </div>
+      <div class="cube cube-green">
+        <div class="cube-icon">🔔</div>
+        <div class="cube-label">הודעות</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <a href="#" class="nav-item active"><span class="nav-icon">🏠</span><span>בית</span></a>
+    <a href="#" class="nav-item"><span class="nav-icon">🤝</span><span>חברים</span></a>
+    <a href="#" class="nav-item"><span class="nav-icon">🏃</span><span>היסטוריה</span></a>
+    <a href="#" class="nav-item"><span class="nav-icon">🏆</span><span>אתגרים</span></a>
+    <a href="#" class="nav-item"><span class="nav-icon">⚙</span><span>פרופיל</span></a>
+  </div>
+</body>
+</html>

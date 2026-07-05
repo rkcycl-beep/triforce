@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TriForce — בחר תפקוד</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Heebo', sans-serif;
+      background: linear-gradient(180deg, #f8faf9 0%, #eef2f0 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: #1f2937;
+    }
+    .logo {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #16a34a;
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+    }
+    .subtitle {
+      font-size: 1rem;
+      color: #6b7280;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+    .gate-container {
+      width: 100%;
+      max-width: 420px;
+    }
+    .gate-card {
+      background: white;
+      border-radius: 24px;
+      padding: 28px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      border: 2px solid transparent;
+    }
+    .gate-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    .gate-card.athlete:hover { border-color: #16a34a; }
+    .gate-card.coach:hover { border-color: #2563eb; }
+    .gate-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+    .athlete .gate-icon { background: #dcfce7; }
+    .coach .gate-icon { background: #dbeafe; }
+    .gate-text { flex: 1; }
+    .gate-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0 0 4px 0;
+    }
+    .gate-desc {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin: 0;
+      line-height: 1.4;
+    }
+    .gate-arrow {
+      font-size: 1.25rem;
+      color: #9ca3af;
+    }
+    .note {
+      margin-top: 28px;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      text-align: center;
+      line-height: 1.5;
+    }
+    .role-badge {
+      display: inline-block;
+      background: #f3f4f6;
+      color: #4b5563;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">TriForce</div>
+  <div class="subtitle">בחר את המערכת שבה תרצה להשתמש עכשיו</div>
+
+  <div class="gate-container">
+    <div class="gate-card athlete" onclick="location.href='athlete-opening-gate.html'">
+      <div class="gate-icon">🏃</div>
+      <div class="gate-text">
+        <div class="gate-title">אני מתאמן</div>
+        <p class="gate-desc">האימונים, האתגרים, החברים וההישגים שלי.</p>
+        <span class="role-badge">מערכת מתאמנים</span>
+      </div>
+      <div class="gate-arrow">←</div>
+    </div>
+
+    <div class="gate-card coach" onclick="location.href='coach-opening-gate.html'">
+      <div class="gate-icon">📋</div>
+      <div class="gate-text">
+        <div class="gate-title">אני מאמן</div>
+        <p class="gate-desc">ניהול קבוצות, אתגרים, הודעות וסטטיסטיקות של מתאמנים.</p>
+        <span class="role-badge">מערכת מאמנים</span>
+      </div>
+      <div class="gate-arrow">←</div>
+    </div>
+  </div>
+
+  <div class="note">
+    ניתן להיכנס גם כמתאמן וגם כמאמן, אך כל כניסה מחייבת בחירה בפתח.<br>
+    המעבר בין התפקידים מתבצע רק דרך יציאה ובחירה מחדש.
+  </div>
+</body>
+</html>

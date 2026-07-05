@@ -12,7 +12,7 @@ Starting with ~40 athletes in one coaching group in Israel.
 
 ---
 
-## Current State (as of 2026-07-02)
+## Current State (as of 2026-07-04)
 
 **Live at:** https://triforce-iota.vercel.app
 
@@ -30,6 +30,9 @@ Starting with ~40 athletes in one coaching group in Israel.
 - Roles: any user can become a coach (multi-role capability model)
 - Coach hub: fully audited — all 7 cubes translated to Hebrew, athlete detail, group settings, stats with CSV export
 - Compare: side-by-side stats between any two TriForce users
+- **Role-first entry gate** (`/gate`): athlete / personal trainer / team trainer selector with cookie-based routing
+- **Activity-to-challenge flow**: sport type and distance locked to source activity; simulation uses correct min/km formatting
+- **User-level tolerance setting**: stored on `User`, editable in Settings, default 30%
 
 ### Deferred to pre-launch
 - COACH role gate re-enablement (currently any authenticated user can access /coach)
@@ -38,6 +41,7 @@ Starting with ~40 athletes in one coaching group in Israel.
 - Full error/loading/empty state audit
 
 ### Next up
+- Wire user-level `tolerancePercent` default into new challenge creation
 - Challenge UX polish: group challenges tab in `/groups/[groupId]`
 - Challenge leaderboard real-time updates
 - Prize display on challenges
@@ -47,6 +51,70 @@ Sync and filtering are fully decoupled:
 - **Sync** (`POST /api/athlete/sync`) → pulls from Strava API → upserts to DB → records `lastStravaSync` timestamp
 - **Filter** → client-side `useMemo` on already-fetched data → zero network calls → instant
 - This pattern must be maintained for all future list views
+
+---
+
+## Role-First Architecture (2026-07-04)
+
+### Decision
+
+TriForce is now treated as **two separate in-app systems**, chosen explicitly by the user at an entry gate:
+
+- **Athlete System** — for trainees: dashboard, friends, challenges, history, messages, events, groups, compare.
+- **Coach System** — for coaches: athletes, challenges, messages, events, statistics, groups, friends.
+
+A user can still hold both capabilities in the database, but each session begins with a single active role. Switching roles requires returning to the entry gate.
+
+### Why
+
+The previous model allowed a logged-in user to fluidly move between `/athlete` and `/coach` contexts. In practice this created a confused mental model: the same navigation contained both trainee and coach actions, and permission logic had to be enforced per page. The role-first model gives each session a single, coherent identity.
+
+### Entry Gate (`/gate`)
+
+After authentication, the user lands on `/gate` and must choose one of three large, colorful rectangles:
+
+| Color | Label | Underlying system | Redirects to |
+|---|---|---|---|
+| Green | ספורטאי | Athlete System | `/athlete` |
+| Blue | מאמן אישי | Coach System | `/coach` |
+| Indigo | מאמן קבוצה | Coach System | `/coach` |
+
+Top of the gate shows the TriForce logo, a large **"Sports App"** caption, and the subtitle **"בחרו את המערכת המתאימה לכם"**. Each rectangle contains the title, description, and badge inside it — no separate icon boxes.
+
+Rules:
+1. No default selection — the user must actively choose.
+2. The choice is stored in an HTTP-only cookie: `triforce_role=athlete\|coach`.
+   - Personal trainer and team trainer both store `coach` because they share the same coach system; only the gate label differs.
+3. Route guards read this cookie; an athlete-cookie cannot access `/coach/*` and vice versa.
+4. The only way to switch roles is to return to `/gate` (via logout or a settings action).
+5. The database `roles String[]` capability remains, but the active role is determined by the cookie, not the user record.
+
+### Visual Identity
+
+| System | Primary Color | Logo Variant | Navigation |
+|---|---|---|---|
+| Athlete | Green (`#16a34a`) | TriForce | Bottom nav: בית / חברים / היסטוריה / אתגרים / פרופיל |
+| Coach | Blue (`#2563eb`) | TriForce Coach | Bottom nav: בית / מתאמנים / אתגרים / קבוצות / הגדרות |
+
+### Routing Changes
+
+| URL | Behavior |
+|---|---|
+| `/` | Public landing for unauthenticated users; authenticated users redirect to `/gate` |
+| `/gate` | Role selector; no shell layout |
+| `/athlete/*` | Requires `triforce_role=athlete` |
+| `/coach/*` | Requires `triforce_role=coach` |
+
+### Implementation Files
+
+1. `src/app/gate/page.tsx` — role selector UI
+2. `src/app/gate/layout.tsx` — clean gate layout
+3. `src/proxy.ts` — add role-cookie enforcement
+4. `src/lib/auth.ts` — redirect first login to `/gate`
+5. `src/app/page.tsx` — authenticated users go to `/gate`
+6. `src/app/(athlete)/layout.tsx` + `src/app/(coach)/layout.tsx` — enforce role cookie
+7. `src/components/layout/BottomNav.tsx` — render role-specific items
+8. `src/components/layout/Header.tsx` — remove cross-role links
 
 ---
 

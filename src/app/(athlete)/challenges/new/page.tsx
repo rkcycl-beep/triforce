@@ -159,21 +159,38 @@ function NewChallengeForm() {
           />
         </div>
 
+        {/* Source activity info (when creating from activity) */}
+        {activityData?.activity && (
+          <div className="rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 p-3">
+            <p className="text-xs font-bold text-blue-800">{t("challenges.sourceActivity")}</p>
+            <p className="mt-1 text-sm font-medium text-gray-900">{activityData.activity.name}</p>
+            <p className="text-xs text-gray-500">
+              {t(`sportTypes.${activityData.activity.sportType}`)} · {(activityData.activity.distance / 1000).toFixed(2)} {t("activities.km")}
+            </p>
+          </div>
+        )}
+
         {/* Sport type */}
         <div className="rounded-xl bg-gradient-to-r from-violet-50 to-purple-50 p-3">
           <label className="flex items-center gap-2 text-sm font-bold text-violet-800">
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500 text-xs text-white">🏃</span>
             {t("challenges.sportTypes")}
           </label>
-          <select
-            value={sportType}
-            onChange={(e) => setSportType(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm"
-          >
-            <option value="run">{t("sportTypes.run")}</option>
-            <option value="ride">{t("sportTypes.ride")}</option>
-            <option value="swim">{t("sportTypes.swim")}</option>
-          </select>
+          {activityData?.activity ? (
+            <div className="mt-2 rounded-lg border border-violet-200 bg-gray-100 px-3 py-2 text-sm text-gray-700">
+              {t(`sportTypes.${sportType}`)} <span className="text-xs text-gray-500">({t("challenges.lockedToActivity")})</span>
+            </div>
+          ) : (
+            <select
+              value={sportType}
+              onChange={(e) => setSportType(e.target.value)}
+              className="mt-2 w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm"
+            >
+              <option value="run">{t("sportTypes.run")}</option>
+              <option value="ride">{t("sportTypes.ride")}</option>
+              <option value="swim">{t("sportTypes.swim")}</option>
+            </select>
+          )}
         </div>
 
         {/* Distance */}
@@ -182,16 +199,22 @@ function NewChallengeForm() {
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-xs text-white">📏</span>
             {t("challenges.distance")}
           </label>
-          <select
-            value={distanceKm}
-            onChange={(e) => setDistanceKm(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm"
-          >
-            <option value="5">{t("challenges.distances.5k")}</option>
-            <option value="10">{t("challenges.distances.10k")}</option>
-            <option value="21.0975">{t("challenges.distances.halfMarathon")}</option>
-            <option value="42.195">{t("challenges.distances.marathon")}</option>
-          </select>
+          {activityData?.activity ? (
+            <div className="mt-2 rounded-lg border border-emerald-200 bg-gray-100 px-3 py-2 text-sm text-gray-700">
+              {Number(distanceKm).toFixed(2)} {t("activities.km")} <span className="text-xs text-gray-500">({t("challenges.lockedToActivity")})</span>
+            </div>
+          ) : (
+            <select
+              value={distanceKm}
+              onChange={(e) => setDistanceKm(e.target.value)}
+              className="mt-2 w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm"
+            >
+              <option value="5">{t("challenges.distances.5k")}</option>
+              <option value="10">{t("challenges.distances.10k")}</option>
+              <option value="21.0975">{t("challenges.distances.halfMarathon")}</option>
+              <option value="42.195">{t("challenges.distances.marathon")}</option>
+            </select>
+          )}
         </div>
 
         {/* Dates */}

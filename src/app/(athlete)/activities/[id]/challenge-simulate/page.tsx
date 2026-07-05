@@ -7,7 +7,7 @@ import Link from "next/link";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import { useTranslation } from "@/hooks/useTranslation";
-import { formatDistance, formatPace, formatDuration, formatDate } from "@/lib/utils";
+import { formatDistance, formatPace, formatPaceMinPerKm, formatDuration, formatDate } from "@/lib/utils";
 
 interface SimulationResponse {
   activity: {
@@ -138,12 +138,8 @@ export default function ActivityChallengeSimulatePage() {
           <div className="flex shrink-0 flex-col justify-center rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 px-4 py-3" style={{ minWidth: "7rem" }}>
             <p className="text-[9px] uppercase tracking-wide text-purple-700">🎯 {t("challenges.expectedPace")}</p>
             <p className="text-lg font-extrabold text-purple-900">
-              {reference ? formatPace(reference.paceMinPerKm, locale) : t("activities.noReference")}
+              {reference ? formatPaceMinPerKm(reference.paceMinPerKm, locale) : t("activities.noReference")}
             </p>
-          </div>
-          <div className="flex shrink-0 flex-col justify-center rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 px-4 py-3" style={{ minWidth: "7rem" }}>
-            <p className="text-[9px] uppercase tracking-wide text-blue-700">✅ {t("challenges.tolerance")}</p>
-            <p className="text-lg font-extrabold text-blue-900">±{challengeParams.tolerancePercent}%</p>
           </div>
         </div>
       </div>
@@ -158,15 +154,15 @@ export default function ActivityChallengeSimulatePage() {
             <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
               <div className="rounded-lg bg-white p-2">
                 <p className="text-gray-400">{t("challenges.myPace")}</p>
-                <p className="font-bold text-gray-900">{formatPace(simulation.actualPace, locale)}</p>
+                <p className="font-bold text-gray-900">{formatPaceMinPerKm(simulation.actualPace, locale)}</p>
               </div>
               <div className="rounded-lg bg-white p-2">
                 <p className="text-gray-400">{t("challenges.expectedPace")}</p>
-                <p className="font-bold text-gray-900">{formatPace(simulation.expectedPace, locale)}</p>
+                <p className="font-bold text-gray-900">{formatPaceMinPerKm(simulation.expectedPace, locale)}</p>
               </div>
               <div className="rounded-lg bg-white p-2">
                 <p className="text-gray-400">{t("challenges.fullScoreRange")}</p>
-                <p className="font-bold text-green-700">{formatPace(simulation.tolerancePace, locale)}</p>
+                <p className="font-bold text-green-700">{formatPaceMinPerKm(simulation.tolerancePace, locale)}</p>
               </div>
             </div>
           </>

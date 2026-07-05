@@ -1,17 +1,22 @@
 "use client";
 
+import { useEffect } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/hooks/useTranslation";
-import { isCoach } from "@/lib/roles";
+import { clearRoleCookie } from "@/lib/roleCookie";
 
 export default function LandingPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { t } = useTranslation();
   const isAuth = status === "authenticated";
-  const userIsCoach = isCoach(session?.user?.roles, session?.user?.role);
-  const isOnlyAthlete = isAuth && !userIsCoach;
+
+  useEffect(() => {
+    if (isAuth) {
+      router.replace("/gate");
+    }
+  }, [isAuth, router]);
 
   if (status === "loading") {
     return (
@@ -70,13 +75,7 @@ export default function LandingPage() {
         <div className="mt-10 grid grid-cols-2 gap-4">
           {/* Cube 1: Athlete */}
           <button
-            onClick={() => {
-              if (isAuth) {
-                router.push("/athlete");
-              } else {
-                signIn("strava", { callbackUrl: "/athlete" });
-              }
-            }}
+            onClick={() => signIn("strava", { callbackUrl: "/gate" })}
             className="group flex aspect-square flex-col items-center justify-center gap-2 rounded-[20px] border border-white/15 bg-gradient-to-br from-[#1D9E75] via-[#158a63] to-[#0d6b4d] shadow-[0_12px_28px_rgba(29,158,117,0.3),0_4px_8px_rgba(29,158,117,0.15)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1.5 hover:scale-[1.04] hover:shadow-[0_20px_40px_rgba(29,158,117,0.4),0_6px_12px_rgba(29,158,117,0.2)] active:translate-y-0.5 active:scale-[0.98]"
           >
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-xl backdrop-blur-sm">
@@ -90,13 +89,7 @@ export default function LandingPage() {
 
           {/* Cube 2: Coach */}
           <button
-            onClick={() => {
-              if (isAuth) {
-                router.push("/coach");
-              } else {
-                signIn("strava", { callbackUrl: "/coach" });
-              }
-            }}
+            onClick={() => signIn("strava", { callbackUrl: "/gate" })}
             className="group flex aspect-square flex-col items-center justify-center gap-2 rounded-[20px] border border-white/15 bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800 shadow-[0_12px_28px_rgba(51,65,85,0.25),0_4px_8px_rgba(51,65,85,0.12)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:-translate-y-1.5 hover:scale-[1.04] hover:shadow-[0_20px_40px_rgba(51,65,85,0.35),0_6px_12px_rgba(51,65,85,0.18)] active:translate-y-0.5 active:scale-[0.98]"
           >
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-xl backdrop-blur-sm">
@@ -146,7 +139,7 @@ export default function LandingPage() {
         {/* Sign out link when logged in */}
         {isAuth && (
           <button
-            onClick={() => signOut({ callbackUrl: "/" })}
+            onClick={() => { clearRoleCookie(); signOut({ callbackUrl: "/" }); }}
             className="mt-6 text-sm text-slate-400 underline underline-offset-2 transition-colors hover:text-slate-600"
           >
             {t("landing.signOut")}

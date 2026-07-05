@@ -15,12 +15,12 @@ export default function Header() {
   const { t } = useTranslation();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
-        {/* App name — always links to the main landing page */}
+    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/90 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-5">
+        {/* App name — athlete shell links to athlete home */}
         <Link
-          href="/"
-          className="text-xl font-bold tracking-tight text-gray-900"
+          href="/athlete"
+          className="text-2xl font-extrabold tracking-tight text-[#1D9E75]"
         >
           TriForce
         </Link>

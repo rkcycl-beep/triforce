@@ -7,6 +7,52 @@
 
 ---
 
+## Session 2026-07-04 — Simulation & Settings Polish
+
+### Completed
+- [x] Fix simulation page pace formatting (`min/km` values were passed to a `m/s` formatter)
+- [x] Remove tolerance-percent cube from athlete-facing simulation page
+- [x] Add `tolerancePercent` to `User` schema with default 30%
+- [x] Update `/api/athlete/me` to return and save `tolerancePercent`
+- [x] Add tolerance-percent input to athlete/coach settings page with helper text
+- [x] Extend `Input` component with `helperText` support
+- [x] Add Hebrew and English translations for tolerance setting
+- [x] Build clean and deploy to Vercel
+
+### Next
+- [ ] Wire user-level `tolerancePercent` default into new challenge creation
+
+---
+
+## Session 2026-07-04 — Role-First Architecture
+
+### Decision
+Move from a single mixed app to role-first entry. Gate has three cards:
+- אני ספורטאי → Athlete System
+- מאמן אישי → Coach System
+- מאמן קבוצה → Coach System
+
+Personal trainer and team trainer share the same coach system; only the gate label differs.
+
+### Completed today
+- [x] Created visual mockups: 3-card entry gate, athlete opening gate, coach opening gate (`mockups/`)
+- [x] Updated `PLAN.md` with role-first architecture section
+
+### Completed implementation
+- [x] Create `/gate` role-selector page with 3 large colorful rectangles
+- [x] Store `triforce_role` cookie on selection (athlete | coach)
+- [x] Update `proxy.ts` to enforce role cookie
+- [x] Update `(athlete)/layout.tsx` and `(coach)/layout.tsx` to enforce role cookie
+- [x] Update `src/app/page.tsx` to redirect authenticated users to `/gate`
+- [x] Update sign-in callbacks to `/gate`
+- [x] Make `BottomNav` and `CoachBottomNav` role-specific with larger labels
+- [x] Remove cross-role links from `Header` and `CoachShell`
+- [x] Larger text on athlete and coach home pages
+- [x] Run `npm run build` clean
+- [x] Deploy to Vercel
+
+---
+
 ## Architectural Rule — Scan Once, Read from DB
 
 > **Any data that requires an external scan is fetched once, saved to the DB with a timestamp, and read from the DB on every subsequent request. Re-scanning only happens on explicit user action or a system trigger (webhook / cron). This applies to: Strava activities, club members, kudos contacts, mutual friends, leaderboard scores, challenge scores, group members, achievements — everything.**

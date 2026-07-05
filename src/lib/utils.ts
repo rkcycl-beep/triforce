@@ -54,6 +54,19 @@ export function formatPace(metersPerSecond: number, locale: Locale = "he"): stri
 }
 
 /**
+ * Format pace from minutes/kilometer.
+ * Example: 7.62 min/km → "7:37 דק'/ק"מ" (he) or "7:37 /km" (en)
+ */
+export function formatPaceMinPerKm(minutesPerKm: number, locale: Locale = "he"): string {
+  if (minutesPerKm <= 0) return "-";
+  const totalSeconds = Math.round(minutesPerKm * 60);
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  const unit = locale === "he" ? 'דק\'/ק"מ' : "/km";
+  return `${mins}:${secs.toString().padStart(2, "0")} ${unit}`;
+}
+
+/**
  * Format a date string into a friendly format.
  * Example: "2024-03-15T10:30:00Z" → "15 במרץ 2024" (he) or "Mar 15, 2024" (en)
  */

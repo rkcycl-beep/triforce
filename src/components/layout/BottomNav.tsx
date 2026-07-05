@@ -13,7 +13,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    href: "/",
+    href: "/athlete",
     labelKey: "nav.dashboard",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -82,7 +82,7 @@ export default function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`relative flex min-h-[60px] min-w-[44px] flex-1 flex-col items-center justify-center gap-1 text-xs transition-colors ${
+              className={`relative flex min-h-[64px] min-w-[44px] flex-1 flex-col items-center justify-center gap-1 text-sm transition-colors ${
                 isActive
                   ? "text-[#1D9E75] font-semibold"
                   : "text-gray-400 hover:text-gray-600"

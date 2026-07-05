@@ -15,6 +15,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { clearRoleCookie } from "@/lib/roleCookie";
+import CoachBottomNav from "./CoachBottomNav";
 
 interface CoachShellProps {
   children: React.ReactNode;
@@ -23,9 +25,9 @@ interface CoachShellProps {
 function useNavItems(t: (key: string) => string) {
   return [
     { href: "/coach", label: t("coach.dashboard"), exact: true },
+    { href: "/coach/athletes", label: t("coach.athletes") },
+    { href: "/coach/stats", label: t("coach.stats") },
     { href: "/coach/groups", label: t("groups.title") },
-    { href: "/coach/groups/new", label: t("coach.newGroupShort") },
-    { href: "/members", label: t("coach.friends") },
   ];
 }
 
@@ -37,16 +39,11 @@ export default function CoachShell({ children }: CoachShellProps) {
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 md:flex-row">
       {/* Mobile top header */}
-      <header className="sticky top-0 z-50 flex items-center justify-between border-b border-gray-200 bg-white/90 px-4 py-3 backdrop-blur-md md:hidden">
-        <Link href="/coach" className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#1D9E75] to-[#085041]">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="8" r="6" /><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
-            </svg>
-          </div>
-          <span className="text-base font-bold text-gray-900">TriForce <span className="text-xs font-normal text-gray-400">· {t("members.coach")}</span></span>
+      <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-gray-200 bg-white/90 px-5 backdrop-blur-md md:hidden">
+        <Link href="/coach" className="text-2xl font-extrabold tracking-tight text-[#2563eb]">
+          TriForce Coach
         </Link>
-        <button onClick={() => signOut({ callbackUrl: "/" })} className="text-xs text-gray-400 hover:text-gray-700">
+        <button onClick={() => { clearRoleCookie(); signOut({ callbackUrl: "/" }); }} className="text-sm text-gray-400 hover:text-gray-700">
           {t("coach.signOut")}
         </button>
       </header>
@@ -86,7 +83,7 @@ export default function CoachShell({ children }: CoachShellProps) {
         </nav>
         <div className="px-3 pb-5">
           <button
-            onClick={() => signOut({ callbackUrl: "/" })}
+            onClick={() => { clearRoleCookie(); signOut({ callbackUrl: "/" }); }}
             className="block w-full rounded-xl px-3 py-2.5 text-start text-sm text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-700"
           >
             {t("coach.signOut")}
@@ -95,9 +92,11 @@ export default function CoachShell({ children }: CoachShellProps) {
       </aside>
 
       {/* Main content */}
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6">
+      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 pb-24 md:pb-6">
         {children}
       </main>
+
+      <CoachBottomNav />
     </div>
   );
 }

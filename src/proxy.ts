@@ -32,6 +32,7 @@ export function proxy(request: NextRequest): NextResponse {
     "/dashboard", "/activities", "/challenges", "/profile",
     "/messages", "/events", "/settings", "/friends",
     "/athlete", "/coach", "/groups", "/members", "/compare",
+    "/gate",
   ];
   const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
 
@@ -39,8 +40,16 @@ export function proxy(request: NextRequest): NextResponse {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // The "/" → role-aware redirect is handled by app/page.tsx (server component).
-  // We don't redirect from here because we can't read the role from the cookie.
+  // Role-first enforcement: each side requires the matching triforce_role cookie.
+  const role = request.cookies.get("triforce_role")?.value;
+
+  if (pathname.startsWith("/athlete") && role !== "athlete") {
+    return NextResponse.redirect(new URL("/gate", request.url));
+  }
+
+  if (pathname.startsWith("/coach") && role !== "coach") {
+    return NextResponse.redirect(new URL("/gate", request.url));
+  }
 
   return NextResponse.next();
 }

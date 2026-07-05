@@ -12,11 +12,13 @@ import type { InputHTMLAttributes } from "react";
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   error?: string;
+  helperText?: string;
 }
 
 export default function Input({
   label,
   error,
+  helperText,
   id,
   name,
   className = "",
@@ -36,6 +38,7 @@ export default function Input({
           error ? "border-red-400 focus:border-red-500 focus:ring-red-500" : ""
         } ${className}`}
       />
+      {helperText && <p className="text-xs text-gray-500">{helperText}</p>}
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );

@@ -34,6 +34,19 @@
     "signOut": "Sign out",
     "back": "Back"
   },
+  "gate": {
+    "title": "Choose the system that fits you",
+    "athleteTitle": "Athlete",
+    "athleteDesc": "My workouts, challenges, friends and achievements",
+    "athleteBadge": "Athlete system",
+    "personalTrainerTitle": "Personal trainer",
+    "personalTrainerDesc": "Personal coaching and one-on-one challenges",
+    "teamTrainerTitle": "Team trainer",
+    "teamTrainerDesc": "Manage teams, leagues, challenges and statistics",
+    "trainerBadge": "Coach system",
+    "note": "You can enter as both athlete and coach, but each entry requires a choice. Switching roles is only possible by returning to the gate.",
+    "signOut": "Sign out"
+  },
   "dashboard": {
     "greeting": "Hey, {name}!",
     "athleteFallback": "Athlete",
@@ -215,6 +228,8 @@
     "perKm": "min/km",
     "women": "Women",
     "men": "Men",
+    "sourceActivity": "Source activity",
+    "lockedToActivity": "Locked to activity",
     "metrics": {
       "pace": "Pace",
       "time": "Time",
@@ -268,7 +283,33 @@
     "becomeCoachDesc": "Get the ability to create coach groups, send messages, create challenges and track your athletes.",
     "becomeCoach": "Become a coach",
     "becomeCoachSuccess": "You now have coach permissions. Sign out and back in to see the coach dashboard.",
-    "becomeCoachError": "Failed to upgrade to coach. Please try again."
+    "becomeCoachError": "Failed to upgrade to coach. Please try again.",
+    "profile": "Personal Profile",
+    "profileDesc": "Personal details are used to calculate scores and age categories in challenges.",
+    "name": "Name",
+    "gender": "Gender",
+    "male": "Male",
+    "female": "Female",
+    "dateOfBirth": "Date of birth",
+    "tolerancePercent": "Allowed tolerance (%)",
+    "tolerancePercentHint": "The percentage deviation from reference pace that still gives 100 points. Default: 30%.",
+    "save": "Save changes",
+    "saving": "Saving...",
+    "saveSuccess": "Profile updated successfully.",
+    "saveError": "Failed to update profile.",
+    "referencePace": "Reference Pace Data",
+    "referencePaceDesc": "Reference paces are calculated from your age and gender, and used to evaluate challenge suitability and scores.",
+    "referencePaceMissing": "Complete your profile (gender and date of birth) to see reference paces.",
+    "age": "Age",
+    "distance": "Distance",
+    "expectedPace": "Expected pace",
+    "perKm": "min/km"
+  },
+  "referencePace": {
+    "5k": "5K",
+    "10k": "10K",
+    "halfMarathon": "Half marathon",
+    "marathon": "Marathon"
   },
   "coach": {
     "title": "Dashboard",
