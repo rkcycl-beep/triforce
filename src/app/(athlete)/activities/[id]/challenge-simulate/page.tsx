@@ -114,15 +114,15 @@ export default function ActivityChallengeSimulatePage() {
         <div className="mt-2 grid grid-cols-3 gap-2 text-center text-xs">
           <div className="rounded-lg bg-white p-2">
             <p className="text-gray-400">{t("activities.distance")}</p>
-            <p className="font-bold">{formatDistance(activity.distanceKm * 1000, locale)}</p>
+            <p className="font-bold">{formatDistance(activity.distanceKm * 1000, "en")}</p>
           </div>
           <div className="rounded-lg bg-white p-2">
             <p className="text-gray-400">{t("activities.movingTime")}</p>
-            <p className="font-bold">{formatDuration(activity.movingTime, locale)}</p>
+            <p className="font-bold">{formatDuration(activity.movingTime, "en")}</p>
           </div>
           <div className="rounded-lg bg-white p-2">
             <p className="text-gray-400">{t("activities.avgPace")}</p>
-            <p className="font-bold">{formatPace(activity.distanceKm * 1000 / activity.movingTime, locale)}</p>
+            <p className="font-bold">{formatPace(activity.distanceKm * 1000 / activity.movingTime, "en")}</p>
           </div>
         </div>
       </div>
@@ -133,12 +133,12 @@ export default function ActivityChallengeSimulatePage() {
         <div className="flex gap-2 overflow-x-auto pb-1">
           <div className="flex shrink-0 flex-col justify-center rounded-2xl bg-gradient-to-br from-orange-50 to-orange-100 px-4 py-3" style={{ minWidth: "7rem" }}>
             <p className="text-[9px] uppercase tracking-wide text-orange-700">📏 {t("challenges.distance")}</p>
-            <p className="text-lg font-extrabold text-orange-900">{challengeParams.distanceKm} <span className="text-xs font-medium">{t("activities.km")}</span></p>
+            <p className="text-lg font-extrabold text-orange-900">{challengeParams.distanceKm} <span className="text-xs font-medium">km</span></p>
           </div>
           <div className="flex shrink-0 flex-col justify-center rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 px-4 py-3" style={{ minWidth: "7rem" }}>
             <p className="text-[9px] uppercase tracking-wide text-purple-700">🎯 {t("challenges.expectedPace")}</p>
             <p className="text-lg font-extrabold text-purple-900">
-              {reference ? formatPaceMinPerKm(reference.paceMinPerKm, locale) : t("activities.noReference")}
+              {reference ? formatPaceMinPerKm(reference.paceMinPerKm, "en") : t("activities.noReference")}
             </p>
           </div>
         </div>
@@ -154,15 +154,15 @@ export default function ActivityChallengeSimulatePage() {
             <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
               <div className="rounded-lg bg-white p-2">
                 <p className="text-gray-400">{t("challenges.myPace")}</p>
-                <p className="font-bold text-gray-900">{formatPaceMinPerKm(simulation.actualPace, locale)}</p>
+                <p className="font-bold text-gray-900">{formatPaceMinPerKm(simulation.actualPace, "en")}</p>
               </div>
               <div className="rounded-lg bg-white p-2">
                 <p className="text-gray-400">{t("challenges.expectedPace")}</p>
-                <p className="font-bold text-gray-900">{formatPaceMinPerKm(simulation.expectedPace, locale)}</p>
+                <p className="font-bold text-gray-900">{formatPaceMinPerKm(simulation.expectedPace, "en")}</p>
               </div>
               <div className="rounded-lg bg-white p-2">
                 <p className="text-gray-400">{t("challenges.fullScoreRange")}</p>
-                <p className="font-bold text-green-700">{formatPaceMinPerKm(simulation.tolerancePace, locale)}</p>
+                <p className="font-bold text-green-700">{formatPaceMinPerKm(simulation.tolerancePace, "en")}</p>
               </div>
             </div>
           </>

@@ -42,28 +42,28 @@ export function formatDuration(seconds: number, locale: Locale = "he"): string {
 
 /**
  * Format pace from meters/second to min/km.
- * Example: 3.5 m/s → "4:46 דק'/ק"מ" (he) or "4:46 /km" (en)
+ * Example: 3.5 m/s → "4:46 דק'/ק"מ" (he) or "4:46(min/km)" (en)
  */
 export function formatPace(metersPerSecond: number, locale: Locale = "he"): string {
   if (metersPerSecond <= 0) return "-";
   const minutesPerKm = 1000 / metersPerSecond / 60;
   const mins = Math.floor(minutesPerKm);
   const secs = Math.round((minutesPerKm - mins) * 60);
-  const unit = locale === "he" ? 'דק\'/ק"מ' : "/km";
-  return `${mins}:${secs.toString().padStart(2, "0")} ${unit}`;
+  const unit = locale === "he" ? ' דק\'/ק"מ' : "(min/km)";
+  return `${mins}:${secs.toString().padStart(2, "0")}${unit}`;
 }
 
 /**
  * Format pace from minutes/kilometer.
- * Example: 7.62 min/km → "7:37 דק'/ק"מ" (he) or "7:37 /km" (en)
+ * Example: 7.62 min/km → "7:37 דק'/ק"מ" (he) or "7:37(min/km)" (en)
  */
 export function formatPaceMinPerKm(minutesPerKm: number, locale: Locale = "he"): string {
   if (minutesPerKm <= 0) return "-";
   const totalSeconds = Math.round(minutesPerKm * 60);
   const mins = Math.floor(totalSeconds / 60);
   const secs = totalSeconds % 60;
-  const unit = locale === "he" ? 'דק\'/ק"מ' : "/km";
-  return `${mins}:${secs.toString().padStart(2, "0")} ${unit}`;
+  const unit = locale === "he" ? ' דק\'/ק"מ' : "(min/km)";
+  return `${mins}:${secs.toString().padStart(2, "0")}${unit}`;
 }
 
 /**
