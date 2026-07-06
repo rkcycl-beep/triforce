@@ -7,6 +7,23 @@
 
 ---
 
+## Session 2026-07-06 — Data Sources & Progress Metrics Research
+
+### Completed
+- [x] Document all Strava API fields available per activity and per athlete
+- [x] Document Strava API limitations (no VO₂max, no training load, etc.)
+- [x] Document Garmin Health API capabilities and requirements
+- [x] Define interim manual-metric entry approach for unavailable data
+- [x] Define 6-phase progress-graph plan
+- [x] Update `PLAN.md` with data-sources section
+
+### Next
+- [ ] Research Garmin Health API partner approval restrictions and timeline
+- [ ] Decide which progress-graph parameters to implement first
+- [ ] Design `UserMetric` schema for manual entry
+
+---
+
 ## Session 2026-07-04 — Athlete-Mode Full Audit & Fixes
 
 ### Completed

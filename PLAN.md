@@ -44,7 +44,9 @@ Starting with ~40 athletes in one coaching group in Israel.
 - Full error/loading/empty state audit
 
 ### Next up
-- Wire user-level `tolerancePercent` default into new challenge creation
+- Research Garmin Health API restrictions and approval process
+- Manual athlete metrics entry (VO₂max, FTP, weight, resting HR) as interim solution
+- Progress graphs for training/sports parameters
 - Challenge UX polish: group challenges tab in `/groups/[groupId]`
 - Challenge leaderboard real-time updates
 - Prize display on challenges
@@ -54,6 +56,69 @@ Sync and filtering are fully decoupled:
 - **Sync** (`POST /api/athlete/sync`) → pulls from Strava API → upserts to DB → records `lastStravaSync` timestamp
 - **Filter** → client-side `useMemo` on already-fetched data → zero network calls → instant
 - This pattern must be maintained for all future list views
+
+---
+
+## Data Sources & Progress Metrics (2026-07-06)
+
+### Strava API — currently connected
+
+**Per-activity fields available:**
+- Basic: name, description, distance, moving_time, elapsed_time, elevation_gain, sport_type, start_date, timezone, start/end coordinates, map polyline
+- Performance: average/max speed, average cadence, average/max watts, weighted_average_watts, kilojoules, device_watts, average/max heart rate, calories, suffer_score, perceived_exertion, average temp
+- Splits & efforts: laps, splits (metric/standard), best_efforts, segment_efforts, achievements
+- Other: gear_id, device_name, workout_type, visibility, photos
+
+**Athlete-level stats available:**
+- Recent / YTD / all-time totals by sport (count, distance, moving_time, elapsed_time, elevation_gain)
+- Athlete profile: name, location, sex, weight, premium status, follower/friend counts
+
+**Not available from Strava API:**
+- VO₂max
+- Training load / fitness / fatigue / form curves
+- Detailed power profile
+- Sleep, recovery, HRV, body battery
+
+### Garmin Health API — planned
+
+Garmin exposes the physiological metrics Strava hides:
+- VO₂max
+- Training status, training load, recovery time
+- Body Battery
+- Stress level
+- Sleep score and stages
+- Resting heart rate
+- Pulse Ox (SpO₂)
+- Respiration rate
+- Lactate threshold
+- HRV status
+- FTP estimate
+- Daily summaries and .FIT activity files
+
+**Requirements & restrictions:**
+- Garmin partner approval required
+- OAuth 1.0a authentication
+- Per-user consent in Garmin Connect
+- Webhook push of daily summaries and .FIT files
+- Parsing .FIT files or Garmin JSON summaries
+
+### Interim solution before Garmin
+
+Because VO₂max and several advanced metrics are unavailable from Strava, TriForce will support **manual athlete metric entry**:
+- Date + value forms for VO₂max, FTP, weight, resting HR, body fat, sleep/recovery score
+- Stored in a new `UserMetric` table
+- Graphed over time alongside Strava-derived activity data
+
+### Progress graph plan
+
+| Phase | Work |
+|-------|------|
+| 1 | Extend `Activity` model to store additional Strava fields (power, cadence, temp, suffer_score, etc.) |
+| 2 | Manual metric entry screen + `UserMetric` table |
+| 3 | Graph components (Recharts) with ranges: 1M, 2M, 3M, 6M, 1Y, custom date range |
+| 4 | Apply for Garmin Health API access |
+| 5 | Build Garmin OAuth + sync + parse .FIT data |
+| 6 | Replace/supplement manual metrics with Garmin data where available |
 
 ---
 
