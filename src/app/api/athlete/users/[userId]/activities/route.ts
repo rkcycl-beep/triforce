@@ -14,6 +14,21 @@ export async function GET(
 
   const { userId } = await params;
 
+  // Privacy: caller must be the user, follow them, or share a group.
+  if (session.user.id !== userId) {
+    const [follow, sharedGroup] = await Promise.all([
+      prisma.follow.findUnique({
+        where: { followerId_followingId: { followerId: session.user.id, followingId: userId } },
+      }),
+      prisma.groupMembership.findFirst({
+        where: { userId, group: { memberships: { some: { userId: session.user.id } } } },
+      }),
+    ]);
+    if (!follow && !sharedGroup) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
   const [user, activities] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },

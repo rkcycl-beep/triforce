@@ -216,6 +216,7 @@ function FollowButton({
 function InviteSection() {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<string>("");
 
   const { data } = useQuery<{
     groups: { id: string; name: string; inviteCode: string }[];
@@ -228,9 +229,10 @@ function InviteSection() {
     },
   });
 
-  const group = data?.groups?.[0];
-  const inviteUrl = group
-    ? `${window.location.origin}/join/${group.inviteCode}`
+  const groups = data?.groups ?? [];
+  const selectedGroup = groups.find((g) => g.id === selectedGroupId) ?? groups[0];
+  const inviteUrl = selectedGroup
+    ? `${window.location.origin}/join/${selectedGroup.inviteCode}`
     : "";
 
   const handleCopy = () => {
@@ -244,13 +246,28 @@ function InviteSection() {
     <div className="text-center">
       <p className="text-xs font-bold text-gray-700">{t("friends.inviteTitle")}</p>
       <p className="mt-1 text-xs text-gray-500">{t("friends.inviteDesc")}</p>
-      {group ? (
-        <button
-          onClick={handleCopy}
-          className="mt-3 inline-flex items-center gap-1 rounded-xl bg-[#1D9E75] px-4 py-2 text-xs font-bold text-white shadow-md transition-all hover:bg-[#178c68] active:scale-95"
-        >
-          {copied ? t("common.copied") : t("common.copy")}
-        </button>
+      {groups.length > 0 ? (
+        <>
+          {groups.length > 1 && (
+            <select
+              value={selectedGroupId}
+              onChange={(e) => setSelectedGroupId(e.target.value)}
+              className="mt-2 block w-full rounded-lg border border-gray-300 px-2 py-1.5 text-xs text-gray-900"
+            >
+              {groups.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
+            </select>
+          )}
+          <button
+            onClick={handleCopy}
+            className="mt-3 inline-flex items-center gap-1 rounded-xl bg-[#1D9E75] px-4 py-2 text-xs font-bold text-white shadow-md transition-all hover:bg-[#178c68] active:scale-95"
+          >
+            {copied ? t("common.copied") : t("common.copy")}
+          </button>
+        </>
       ) : (
         <p className="mt-1 text-xs text-gray-400">{t("friends.noGroup")}</p>
       )}

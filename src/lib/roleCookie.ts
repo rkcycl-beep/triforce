@@ -8,3 +8,10 @@ export function setRoleCookie(role: "athlete" | "coach") {
 export function clearRoleCookie() {
   document.cookie = `${ROLE_COOKIE}=; path=/; max-age=0; SameSite=Lax`;
 }
+
+export function getRoleCookie(): "athlete" | "coach" | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp(`(?:^|; )${ROLE_COOKIE}=([^;]+)`));
+  const value = match?.[1];
+  return value === "athlete" || value === "coach" ? value : null;
+}

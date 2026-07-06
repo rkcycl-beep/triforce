@@ -17,7 +17,7 @@ export async function getGroupMessages(groupId: string, limit = 50) {
   return prisma.message.findMany({
     where: { groupId },
     include: { user: { select: { id: true, name: true, image: true, role: true } } },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: "asc" },
     take: limit,
   });
 }

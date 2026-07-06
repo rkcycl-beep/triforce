@@ -91,9 +91,20 @@ export default function CompareHubPage() {
       </div>
 
       {/* Scan result banner */}
+      {/* Scan button */}
+      {session?.user?.id && (
+        <button
+          onClick={scanFollowing}
+          disabled={scanning}
+          className="w-full rounded-xl bg-[#1D9E75] py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-[#178c68] disabled:opacity-60"
+        >
+          {scanning ? "סורק עוקבים..." : "🔍 סרוק עוקבים"}
+        </button>
+      )}
+
       {/* Invite banner */}
       {session?.user?.id && (() => {
-        const inviteUrl = `https://triforce-iota.vercel.app/invite/${session.user.id}`;
+        const inviteUrl = `${typeof window !== "undefined" ? window.location.origin : "https://triforce-iota.vercel.app"}/invite/${session.user.id}`;
         const waMsg = `*TriForce – ספורט חברתי*\n\nהצטרף/י אלי לאפליקציה!\nריצה | אופניים | שחייה | כושר\n\nהשווה ביצועים עם חברים\nאתגרים קבוצתיים\n\n${inviteUrl}`;
         const waUrl = `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
         return (

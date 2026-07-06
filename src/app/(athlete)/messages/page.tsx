@@ -194,7 +194,7 @@ export default function MessagesPage() {
           <p className="mt-0.5 text-xs text-gray-400">{t("messages.subtitle")}</p>
         </div>
         <Link
-          href="/"
+          href="/athlete"
           className="rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-200"
         >
           {t("nav.back")}

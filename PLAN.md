@@ -32,7 +32,10 @@ Starting with ~40 athletes in one coaching group in Israel.
 - Compare: side-by-side stats between any two TriForce users
 - **Role-first entry gate** (`/gate`): athlete / personal trainer / team trainer selector with cookie-based routing
 - **Activity-to-challenge flow**: sport type and distance locked to source activity; simulation uses correct min/km formatting
-- **User-level tolerance setting**: stored on `User`, editable in Settings, default 30%
+- **User-level tolerance setting**: stored on `User`, editable in Settings, default 30%; wired into simulation and new-challenge form
+- **Challenge leaderboard**: persisted on `ChallengeEntry`; detail page reads from DB; recalculated on webhooks and invite accepts
+- **Webhook reliability**: Strava push events are awaited before returning 200
+- **Privacy guard**: user activities endpoint requires follow or shared-group relationship
 
 ### Deferred to pre-launch
 - COACH role gate re-enablement (currently any authenticated user can access /coach)

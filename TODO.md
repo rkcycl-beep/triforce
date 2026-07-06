@@ -7,6 +7,38 @@
 
 ---
 
+## Session 2026-07-04 — Athlete-Mode Full Audit & Fixes
+
+### Completed
+- [x] Fix webhook scoring: await `processWebhookEvent` before returning 200
+- [x] Fix challenge detail API: read persisted leaderboard instead of recomputing on every GET
+- [x] Recalculate scores when a user accepts a challenge invitation
+- [x] Create `/profile` redirect to `/settings`
+- [x] Add "Scan followers" button to compare hub
+- [x] Use `window.location.origin` for compare invite URL
+- [x] Wire user-level `tolerancePercent` into simulation API and new-challenge form
+- [x] Add privacy check to `/api/athlete/users/[userId]/activities`
+- [x] Fix group chat message order to oldest-first
+- [x] Fix messages back link to `/athlete`
+- [x] Hide coach group-create button when active role is `athlete`
+- [x] Update compare API to accept TriForce user IDs with relationship check
+- [x] Add group selector to member invite section
+- [x] Redirect orphaned `/friends` → `/members`
+- [x] Build clean
+
+### Remaining (lower priority)
+- [ ] i18n: hardcoded Hebrew in activities list, athlete hub, settings loading, compare, challenges
+- [ ] RTL: replace literal arrows with `rtl:rotate-180` icons
+- [ ] Activities list pagination (currently capped at 500)
+- [ ] Score bonus above 100 or remove `bonusFactor`
+- [ ] Persist `ChallengeEntry` pace columns and `ChallengeActivityLink.isBest`
+- [ ] Handle multi-group challenge creation
+- [ ] HTTP-only `triforce_role` cookie
+- [ ] Gate hides coach cards for non-coaches
+- [ ] Dashboard onboarding banner for missing group/profile
+
+---
+
 ## Session 2026-07-04 — Simulation & Settings Polish
 
 ### Completed
@@ -20,7 +52,7 @@
 - [x] Build clean and deploy to Vercel
 
 ### Next
-- [ ] Wire user-level `tolerancePercent` default into new challenge creation
+- [x] Wire user-level `tolerancePercent` default into new challenge creation
 
 ---
 

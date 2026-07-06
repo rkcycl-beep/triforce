@@ -73,8 +73,8 @@ export async function getAthleteChallenges(userId: string) {
   });
 }
 
-/** Recalculate all active/accepted entries for a challenge and return the sorted leaderboard. */
-export async function computeLeaderboard(challengeId: string) {
+/** Recalculate all active/accepted entries for a challenge and persist scores + ranks. */
+export async function recalculateLeaderboard(challengeId: string) {
   const challenge = await prisma.challenge.findUnique({
     where: { id: challengeId },
     include: {
@@ -148,6 +148,26 @@ export async function computeLeaderboard(challengeId: string) {
   });
 
   return { challenge, entries: allEntries };
+}
+
+/** Read a challenge and its persisted leaderboard without recomputing scores. */
+export async function getChallengeLeaderboard(challengeId: string) {
+  const challenge = await prisma.challenge.findUnique({
+    where: { id: challengeId },
+    include: {
+      createdBy: { select: { id: true, name: true } },
+      group: { select: { id: true, name: true } },
+    },
+  });
+  if (!challenge) return null;
+
+  const entries = await prisma.challengeEntry.findMany({
+    where: { challengeId },
+    orderBy: [{ score: "desc" }, { invitedAt: "asc" }],
+    include: { user: { select: { id: true, name: true, image: true } } },
+  });
+
+  return { challenge, entries };
 }
 
 export async function getChallengeForCoach(challengeId: string, coachId: string) {
@@ -343,6 +363,9 @@ export async function acceptChallengeInvitation(challengeId: string, userId: str
       },
     }),
   ]);
+
+  // Score any activities the user already has in the challenge window.
+  await recalculateLeaderboard(challengeId);
 
   return updated;
 }

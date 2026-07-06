@@ -43,6 +43,15 @@ function NewChallengeForm() {
     staleTime: Infinity,
   });
 
+  const { data: meData } = useQuery({
+    queryKey: ["athlete", "me"],
+    queryFn: async () => {
+      const res = await fetch("/api/athlete/me");
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+  });
+
   useEffect(() => {
     if (preselectedGroupId && userIsCoach) {
       setSelectedGroupIds((prev) =>
@@ -63,6 +72,12 @@ function NewChallengeForm() {
       setEndDate(new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]);
     }
   }, [activityData]);
+
+  useEffect(() => {
+    if (meData?.tolerancePercent != null) {
+      setTolerance(String(meData.tolerancePercent));
+    }
+  }, [meData]);
 
   // Chosen friends (marked by user in /members or /friends)
   const { data: chosenData, isLoading: chosenLoading } = useQuery({

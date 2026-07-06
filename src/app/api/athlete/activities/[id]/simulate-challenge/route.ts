@@ -33,6 +33,8 @@ export async function POST(
       prisma.user.findUnique({ where: { id: session.user.id } }),
     ]);
 
+    const tolerancePercent = user?.tolerancePercent ?? 30;
+
     if (!activity) {
       return NextResponse.json({ error: "Activity not found." }, { status: 404 });
     }
@@ -62,7 +64,7 @@ export async function POST(
       metric: "pace",
       targetValue: null,
       targetUnit: null,
-      tolerancePercent: 30,
+      tolerancePercent,
       bonusFactor: 50,
       penaltyFactor: 100,
       scoringMethod: "GOAL_BASED" as const,
@@ -93,7 +95,7 @@ export async function POST(
         sportType,
         distanceKm,
         metric: "pace",
-        tolerancePercent: 30,
+        tolerancePercent,
         startDate: activity.startDate,
         endDate: activity.startDate,
       },

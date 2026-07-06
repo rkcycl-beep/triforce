@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { isCoach } from "@/lib/roles";
+import { getRoleCookie } from "@/lib/roleCookie";
 
 interface GroupRow {
   id: string;
@@ -65,6 +66,11 @@ export default function GroupsPage() {
   const [joinError, setJoinError] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState("");
+  const [activeRole, setActiveRole] = useState<"athlete" | "coach" | null>(null);
+
+  useEffect(() => {
+    setActiveRole(getRoleCookie());
+  }, []);
 
   const { data: groups = [], isLoading, isError } = useQuery({
     queryKey: ["all-groups"],
@@ -114,7 +120,7 @@ export default function GroupsPage() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-extrabold text-[#085041]">קבוצות</h1>
-        {userIsCoach ? (
+        {userIsCoach && activeRole === "coach" ? (
           <Link
             href="/coach/groups/new"
             className="rounded-xl bg-[#1D9E75] px-4 py-2 text-sm font-bold text-white shadow-md"

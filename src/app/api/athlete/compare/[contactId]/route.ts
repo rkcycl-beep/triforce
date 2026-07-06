@@ -127,17 +127,44 @@ export async function GET(
   const period = searchParams.get("period") ?? "30d";
   const sportType = searchParams.get("sportType") ?? "run";
 
-  const contact = await prisma.stravaContact.findFirst({
+  let contact = await prisma.stravaContact.findFirst({
     where: { id: contactId, userId: session.user.id },
     select: { triforceUserId: true, stravaAthleteId: true, name: true },
   });
 
+  let friendUserId: string | null = contact?.triforceUserId ?? null;
+  let friendName: string | null = contact?.name ?? null;
+  let friendStravaAthleteId: string | null = contact?.stravaAthleteId ?? null;
+
+  // If no StravaContact matches, treat contactId as a TriForce User ID.
   if (!contact) {
-    return NextResponse.json({ error: "Contact not found" }, { status: 404 });
+    const targetUser = await prisma.user.findUnique({
+      where: { id: contactId },
+      select: { id: true, name: true, image: true },
+    });
+    if (!targetUser) {
+      return NextResponse.json({ error: "Contact not found" }, { status: 404 });
+    }
+
+    // Privacy check: caller must follow target or share a group.
+    const [follow, sharedGroup] = await Promise.all([
+      prisma.follow.findUnique({
+        where: { followerId_followingId: { followerId: session.user.id, followingId: targetUser.id } },
+      }),
+      prisma.groupMembership.findFirst({
+        where: { userId: targetUser.id, group: { memberships: { some: { userId: session.user.id } } } },
+      }),
+    ]);
+    if (!follow && !sharedGroup) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    friendUserId = targetUser.id;
+    friendName = targetUser.name;
   }
 
   // ── Mode A: both on TriForce — use DB activities (exact date filter) ──
-  if (contact.triforceUserId) {
+  if (friendUserId) {
     const cutoff = period === "all" ? undefined : new Date(
       Date.now() - (period === "90d" ? 90 : 30) * 24 * 60 * 60 * 1000
     );
@@ -150,9 +177,9 @@ export async function GET(
 
     const [meUser, friendUser, myActivities, friendActivities] = await Promise.all([
       prisma.user.findUnique({ where: { id: session.user.id }, select: { id: true, name: true, image: true } }),
-      prisma.user.findUnique({ where: { id: contact.triforceUserId }, select: { id: true, name: true, image: true } }),
+      prisma.user.findUnique({ where: { id: friendUserId }, select: { id: true, name: true, image: true } }),
       prisma.activity.findMany({ where: { userId: session.user.id, ...activityFilter }, select: sel }),
-      prisma.activity.findMany({ where: { userId: contact.triforceUserId, ...activityFilter }, select: sel }),
+      prisma.activity.findMany({ where: { userId: friendUserId }, select: sel }),
     ]);
 
     if (!meUser || !friendUser) return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -165,7 +192,7 @@ export async function GET(
   }
 
   // ── Mode B: friend has Strava ID — pull stats directly from Strava API ──
-  if (contact.stravaAthleteId) {
+  if (friendStravaAthleteId) {
     const myAccount = await prisma.account.findFirst({
       where: { userId: session.user.id, provider: "strava" },
       select: { providerAccountId: true },
@@ -179,7 +206,7 @@ export async function GET(
       const accessToken = await getStravaToken(session.user.id);
       const [myStats, friendStats] = await Promise.all([
         fetchStravaStats(accessToken, myAccount!.providerAccountId),
-        fetchStravaStats(accessToken, contact.stravaAthleteId),
+        fetchStravaStats(accessToken, friendStravaAthleteId),
       ]);
 
       if (!myStats) return NextResponse.json({ error: "Could not load your Strava stats" }, { status: 500 });
@@ -192,8 +219,8 @@ export async function GET(
           stats: stravaStatsToCompare(myStats, period, sportType),
         },
         friend: {
-          id: contact.stravaAthleteId,
-          name: contact.name,
+          id: friendStravaAthleteId,
+          name: friendName,
           image: null,
           stats: friendStats ? stravaStatsToCompare(friendStats, period, sportType) : { totalDistance: 0, totalActivities: 0, totalElevation: 0, totalTime: 0, avgPace: null, longestActivity: 0, fastestPace: null },
         },

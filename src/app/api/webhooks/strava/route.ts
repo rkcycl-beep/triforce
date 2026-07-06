@@ -31,14 +31,11 @@ export async function POST(request: NextRequest) {
     const event = (await request.json()) as StravaWebhookEvent;
     console.log("[webhook] Received event:", event);
 
-    // Process asynchronously so we return 200 quickly.
-    // Strava retries if we don't respond within ~2 seconds.
-    // NOTE: On serverless platforms (Vercel) the async work may be cut short
-    // after the response is sent. For high-reliability production use a
-    // queue (Inngest, QStash, etc.). For MVP / self-hosted this is fine.
-    processWebhookEvent(event).catch((err) => {
-      console.error("[webhook] Async processing error:", err);
-    });
+    // Await processing so the activity is persisted and challenge scores are
+    // recalculated before Strava receives the 200 acknowledgment. Strava may
+    // retry if this takes longer than ~2 seconds, but upsert/scoring is
+    // idempotent so retries are safe. For very high traffic, move to a queue.
+    await processWebhookEvent(event);
 
     return NextResponse.json({ received: true });
   } catch (error) {
