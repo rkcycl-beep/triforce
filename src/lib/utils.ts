@@ -10,17 +10,17 @@ import type { Locale } from "@/lib/i18n";
 
 /**
  * Format meters into km with 1 decimal place.
- * Example: 10543 → "10.5 ק"מ" (he) or "10.5(km)" (en)
+ * Example: 10543 → "10.5 ק"מ" (he) or "(km)10.5" (en)
  */
 export function formatDistance(meters: number, locale: Locale = "en"): string {
   const km = meters / 1000;
   const unit = locale === "he" ? 'ק"מ' : "(km)";
-  return `${km.toFixed(1)}${unit}`;
+  return `${unit}${km.toFixed(1)}`;
 }
 
 /**
  * Format seconds into a human-readable duration.
- * Example: 3665 → "שעה ו-01 דק'" (he) or "61.08 min" (en)
+ * Example: 3665 → "שעה ו-01 דק'" (he) or "(min)61.08" (en)
  */
 export function formatDuration(seconds: number, locale: Locale = "en"): string {
   if (locale === "he") {
@@ -34,33 +34,33 @@ export function formatDuration(seconds: number, locale: Locale = "en"): string {
   }
 
   const totalMinutes = seconds / 60;
-  return `${totalMinutes.toFixed(2)} min`;
+  return `(min)${totalMinutes.toFixed(2)}`;
 }
 
 /**
  * Format pace from meters/second to min/km.
- * Example: 3.5 m/s → "4:46 דק'/ק"מ" (he) or "4:46(min/km)" (en)
+ * Example: 3.5 m/s → "4:46 דק'/ק"מ" (he) or "(min/km)4:46" (en)
  */
 export function formatPace(metersPerSecond: number, locale: Locale = "en"): string {
   if (metersPerSecond <= 0) return "-";
   const minutesPerKm = 1000 / metersPerSecond / 60;
   const mins = Math.floor(minutesPerKm);
   const secs = Math.round((minutesPerKm - mins) * 60);
-  const unit = locale === "he" ? ' דק\'/ק"מ' : "(min/km)";
-  return `${mins}:${secs.toString().padStart(2, "0")}${unit}`;
+  const unit = locale === "he" ? 'דק\'/ק"מ ' : "(min/km)";
+  return `${unit}${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
 /**
  * Format pace from minutes/kilometer.
- * Example: 7.62 min/km → "7:37 דק'/ק"מ" (he) or "7:37(min/km)" (en)
+ * Example: 7.62 min/km → "7:37 דק'/ק"מ" (he) or "(min/km)7:37" (en)
  */
 export function formatPaceMinPerKm(minutesPerKm: number, locale: Locale = "en"): string {
   if (minutesPerKm <= 0) return "-";
   const totalSeconds = Math.round(minutesPerKm * 60);
   const mins = Math.floor(totalSeconds / 60);
   const secs = totalSeconds % 60;
-  const unit = locale === "he" ? ' דק\'/ק"מ' : "(min/km)";
-  return `${mins}:${secs.toString().padStart(2, "0")}${unit}`;
+  const unit = locale === "he" ? 'דק\'/ק"מ ' : "(min/km)";
+  return `${unit}${mins}:${secs.toString().padStart(2, "0")}`;
 }
 
 /**
