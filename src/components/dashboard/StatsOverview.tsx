@@ -48,11 +48,11 @@ export default function StatsOverview() {
     });
     cards.push({
       label: t("stats.runDistance"),
-      value: formatDistance(ytd_run_totals.distance, locale),
+      value: formatDistance(ytd_run_totals.distance),
     });
     cards.push({
       label: t("stats.runTime"),
-      value: formatDuration(ytd_run_totals.moving_time, locale),
+      value: formatDuration(ytd_run_totals.moving_time),
     });
   }
 
@@ -64,7 +64,7 @@ export default function StatsOverview() {
     });
     cards.push({
       label: t("stats.rideDistance"),
-      value: formatDistance(ytd_ride_totals.distance, locale),
+      value: formatDistance(ytd_ride_totals.distance),
     });
   }
 
@@ -76,7 +76,7 @@ export default function StatsOverview() {
     });
     cards.push({
       label: t("stats.swimDistance"),
-      value: formatDistance(ytd_swim_totals.distance, locale),
+      value: formatDistance(ytd_swim_totals.distance),
     });
   }
 

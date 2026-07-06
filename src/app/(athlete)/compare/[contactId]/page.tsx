@@ -98,13 +98,13 @@ const SPORTS = [
 
 function buildStats(stats: CompareStats, locale: "he" | "en") {
   return {
-    totalDistance: formatDistance(stats.totalDistance, locale),
+    totalDistance: formatDistance(stats.totalDistance),
     totalActivities: String(stats.totalActivities),
-    totalTime: formatDuration(stats.totalTime, locale),
+    totalTime: formatDuration(stats.totalTime),
     totalElevation: `${Math.round(stats.totalElevation)} מ'`,
-    longestActivity: formatDistance(stats.longestActivity, locale),
-    avgPace: stats.avgPace != null ? formatPace(stats.avgPace, locale) : "—",
-    fastestPace: stats.fastestPace != null ? formatPace(stats.fastestPace, locale) : "—",
+    longestActivity: formatDistance(stats.longestActivity),
+    avgPace: stats.avgPace != null ? formatPace(stats.avgPace) : "—",
+    fastestPace: stats.fastestPace != null ? formatPace(stats.fastestPace) : "—",
   };
 }
 

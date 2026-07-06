@@ -53,7 +53,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
             </h3>
             <p className="text-xs text-gray-500">
               {sportTypeLabel(activity.sportType, locale)} &middot;{" "}
-              {formatRelativeTime(activity.startDate, locale)}
+              {formatRelativeTime(activity.startDate)}
             </p>
           </div>
         </div>
@@ -61,10 +61,10 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
 
       {/* Stats row */}
       <div className="mt-3 flex items-center gap-4 text-sm">
-        <Stat label={t("activities.distance")} value={formatDistance(activity.distance, locale)} />
-        <Stat label={t("activities.time")} value={formatDuration(activity.movingTime, locale)} />
+        <Stat label={t("activities.distance")} value={formatDistance(activity.distance)} />
+        <Stat label={t("activities.time")} value={formatDuration(activity.movingTime)} />
         {activity.sportType === "run" && activity.averageSpeed > 0 && (
-          <Stat label={t("activities.pace")} value={formatPace(activity.averageSpeed, locale)} />
+          <Stat label={t("activities.pace")} value={formatPace(activity.averageSpeed)} />
         )}
         {activity.hasHeartrate && activity.averageHeartrate && (
           <Stat

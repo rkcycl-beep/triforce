@@ -103,10 +103,10 @@ export default function RecentActivityCard() {
               <div className="min-w-0 flex-1">
                 <div className="truncate text-xs font-semibold text-gray-900">{a.name}</div>
                 <div className="text-[10px] text-gray-400">
-                  {formatSportType(a.sportType, locale)} · {formatDistance(a.distance, locale)}
+                  {formatSportType(a.sportType, locale)} · {formatDistance(a.distance)}
                 </div>
               </div>
-              <div className="text-[10px] text-gray-400">{formatRelativeTime(a.startDate, locale)}</div>
+              <div className="text-[10px] text-gray-400">{formatRelativeTime(a.startDate)}</div>
             </Link>
           ))}
         </div>

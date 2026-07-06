@@ -58,7 +58,7 @@ export default function ActivityDetailPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">{a.name}</h1>
         <p className="text-sm text-gray-500">
-          {formatSportType(a.sportType, locale)} &middot; {formatDate(a.startDate, locale)}
+          {formatSportType(a.sportType, locale)} &middot; {formatDate(a.startDate)}
         </p>
       </div>
 
@@ -91,11 +91,11 @@ export default function ActivityDetailPage() {
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <StatCard
           label={t("activities.distance")}
-          value={formatDistance(a.distance, locale)}
+          value={formatDistance(a.distance)}
         />
         <StatCard
           label={t("activities.movingTime")}
-          value={formatDuration(a.movingTime, locale)}
+          value={formatDuration(a.movingTime)}
         />
         {a.averageSpeed > 0 && (
           <StatCard
@@ -103,7 +103,7 @@ export default function ActivityDetailPage() {
             value={
               a.sportType === "ride"
                 ? `${(a.averageSpeed * 3.6).toFixed(1)} km/h`
-                : formatPace(a.averageSpeed, locale)
+                : formatPace(a.averageSpeed)
             }
           />
         )}

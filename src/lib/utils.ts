@@ -10,19 +10,19 @@ import type { Locale } from "@/lib/i18n";
 
 /**
  * Format meters into km with 1 decimal place.
- * Example: 10543 → "10.5 ק"מ" (he) or "10.5 km" (en)
+ * Example: 10543 → "10.5 ק"מ" (he) or "10.5(km)" (en)
  */
-export function formatDistance(meters: number, locale: Locale = "he"): string {
+export function formatDistance(meters: number, locale: Locale = "en"): string {
   const km = meters / 1000;
-  const unit = locale === "he" ? 'ק"מ' : "km";
-  return `${km.toFixed(1)} ${unit}`;
+  const unit = locale === "he" ? 'ק"מ' : "(km)";
+  return `${km.toFixed(1)}${unit}`;
 }
 
 /**
  * Format seconds into a human-readable duration.
- * Example: 3665 → "שעה ו-01 דק'" (he) or "1h 01m" (en)
+ * Example: 3665 → "שעה ו-01 דק'" (he) or "1(h)01(min)" (en)
  */
-export function formatDuration(seconds: number, locale: Locale = "he"): string {
+export function formatDuration(seconds: number, locale: Locale = "en"): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = Math.floor(seconds % 60);
@@ -35,16 +35,16 @@ export function formatDuration(seconds: number, locale: Locale = "he"): string {
   }
 
   if (hours > 0) {
-    return `${hours}h ${minutes.toString().padStart(2, "0")}m`;
+    return `${hours}(h)${minutes.toString().padStart(2, "0")}(min)`;
   }
-  return `${minutes}m ${secs.toString().padStart(2, "0")}s`;
+  return `${minutes}(min)${secs.toString().padStart(2, "0")}(sec)`;
 }
 
 /**
  * Format pace from meters/second to min/km.
  * Example: 3.5 m/s → "4:46 דק'/ק"מ" (he) or "4:46(min/km)" (en)
  */
-export function formatPace(metersPerSecond: number, locale: Locale = "he"): string {
+export function formatPace(metersPerSecond: number, locale: Locale = "en"): string {
   if (metersPerSecond <= 0) return "-";
   const minutesPerKm = 1000 / metersPerSecond / 60;
   const mins = Math.floor(minutesPerKm);
@@ -57,7 +57,7 @@ export function formatPace(metersPerSecond: number, locale: Locale = "he"): stri
  * Format pace from minutes/kilometer.
  * Example: 7.62 min/km → "7:37 דק'/ק"מ" (he) or "7:37(min/km)" (en)
  */
-export function formatPaceMinPerKm(minutesPerKm: number, locale: Locale = "he"): string {
+export function formatPaceMinPerKm(minutesPerKm: number, locale: Locale = "en"): string {
   if (minutesPerKm <= 0) return "-";
   const totalSeconds = Math.round(minutesPerKm * 60);
   const mins = Math.floor(totalSeconds / 60);
@@ -70,7 +70,7 @@ export function formatPaceMinPerKm(minutesPerKm: number, locale: Locale = "he"):
  * Format a date string into a friendly format.
  * Example: "2024-03-15T10:30:00Z" → "15 במרץ 2024" (he) or "Mar 15, 2024" (en)
  */
-export function formatDate(dateString: string, locale: Locale = "he"): string {
+export function formatDate(dateString: string, locale: Locale = "en"): string {
   const date = new Date(dateString);
   return date.toLocaleDateString(locale === "he" ? "he-IL" : "en-US", {
     month: "short",
@@ -83,7 +83,7 @@ export function formatDate(dateString: string, locale: Locale = "he"): string {
  * Format a date string into a relative time.
  * Example: 2 hours ago → "לפני 2 שעות" (he) or "2h ago" (en)
  */
-export function formatRelativeTime(dateString: string, locale: Locale = "he"): string {
+export function formatRelativeTime(dateString: string, locale: Locale = "en"): string {
   const now = new Date();
   const date = new Date(dateString);
   const diffMs = now.getTime() - date.getTime();

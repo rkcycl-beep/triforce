@@ -71,7 +71,7 @@ export default function WeeklyStatsCard() {
               </div>
             </div>
             <div className="w-16 shrink-0 text-end text-xs font-semibold text-gray-700">
-              {formatDistance(dist, locale)}
+              {formatDistance(dist)}
             </div>
           </div>
         );
