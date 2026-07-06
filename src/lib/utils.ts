@@ -20,24 +20,21 @@ export function formatDistance(meters: number, locale: Locale = "en"): string {
 
 /**
  * Format seconds into a human-readable duration.
- * Example: 3665 → "שעה ו-01 דק'" (he) or "1(h)01(min)" (en)
+ * Example: 3665 → "שעה ו-01 דק'" (he) or "61.08 min" (en)
  */
 export function formatDuration(seconds: number, locale: Locale = "en"): string {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
-
   if (locale === "he") {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
     if (hours > 0) {
       return `${hours} שעות ${minutes.toString().padStart(2, "0")} דק'`;
     }
     return `${minutes} דק' ${secs.toString().padStart(2, "0")} ש"`;
   }
 
-  if (hours > 0) {
-    return `${hours}(h)${minutes.toString().padStart(2, "0")}(min)`;
-  }
-  return `${minutes}(min)${secs.toString().padStart(2, "0")}(sec)`;
+  const totalMinutes = seconds / 60;
+  return `${totalMinutes.toFixed(2)} min`;
 }
 
 /**
@@ -68,15 +65,24 @@ export function formatPaceMinPerKm(minutesPerKm: number, locale: Locale = "en"):
 
 /**
  * Format a date string into a friendly format.
- * Example: "2024-03-15T10:30:00Z" → "15 במרץ 2024" (he) or "Mar 15, 2024" (en)
+ * Example: "2024-03-15T10:30:00Z" → "15 במרץ 2024" (he) or "3-15-2024" (en)
  */
 export function formatDate(dateString: string, locale: Locale = "en"): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString(locale === "he" ? "he-IL" : "en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  if (locale === "he") {
+    return date.toLocaleDateString("he-IL", {
+      month: "numeric",
+      day: "2-digit",
+      year: "numeric",
+    });
+  }
+  return date
+    .toLocaleDateString("en-US", {
+      month: "numeric",
+      day: "2-digit",
+      year: "numeric",
+    })
+    .replace(/\//g, "-");
 }
 
 /**
