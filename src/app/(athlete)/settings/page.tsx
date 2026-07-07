@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocale } from "@/providers/LocaleProvider";
@@ -392,6 +393,20 @@ export default function SettingsPage() {
         <h2 className="font-semibold text-gray-900">{t("settings.garmin")}</h2>
         <p className="mt-2 text-sm text-gray-500">{t("settings.garminNote")}</p>
       </div>
+
+      {/* Personal metrics */}
+      <Link
+        href="/metrics"
+        className="block rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:bg-gray-50"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold text-gray-900">{t("settings.metricsLink")}</h2>
+            <p className="mt-1 text-sm text-gray-500">{t("settings.metricsDesc")}</p>
+          </div>
+          <span className="text-2xl text-gray-300">‹</span>
+        </div>
+      </Link>
     </div>
   );
 }

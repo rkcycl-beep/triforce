@@ -28,9 +28,15 @@
 - Relation: `User.metrics`
 - Unique constraint: one value per `(userId, type, date)`
 
+### Implemented entry screen (2026-07-07)
+- [x] Apply schema to Neon DB (`npx prisma db push`)
+- [x] Create `GET /api/athlete/metrics`, `POST /api/athlete/metrics`, `DELETE /api/athlete/metrics/[id]`
+- [x] Create `/metrics` page with form + history grouped by metric type
+- [x] Add i18n strings (`metrics.*`) to `he.json` and `en.json`
+- [x] Add link from `/settings` to `/metrics`
+- [x] Build passes clean
+
 ### Next steps
-- [ ] Apply schema to Neon DB (`npx prisma db push`)
-- [ ] Build manual metric entry screen (athlete settings or dedicated `/metrics` page)
 - [ ] Build first progress graph using `UserMetric` + `Activity` data
 - [ ] Research Garmin Health API approval restrictions and timeline
 

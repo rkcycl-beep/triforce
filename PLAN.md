@@ -107,6 +107,7 @@ Garmin exposes the physiological metrics Strava hides:
 Because VO₂max and several advanced metrics are unavailable from Strava, TriForce will support **manual athlete metric entry**:
 - Date + value forms for VO₂max, FTP, weight, resting HR, body fat, sleep/recovery score
 - Stored in a new `UserMetric` table
+- Entry UI lives at `/metrics`, linked from athlete Settings
 - Graphed over time alongside Strava-derived activity data
 
 #### `UserMetric` schema

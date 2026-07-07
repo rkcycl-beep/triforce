@@ -303,7 +303,43 @@
     "age": "Age",
     "distance": "Distance",
     "expectedPace": "Expected pace",
-    "perKm": "min/km"
+    "perKm": "min/km",
+    "metricsLink": "Personal metrics",
+    "metricsDesc": "Enter metrics like weight, VO₂max, resting heart rate, and more."
+  },
+  "metrics": {
+    "title": "Personal Metrics",
+    "subtitle": "Track fitness and health metrics over time. Data is stored for you and will power future graphs.",
+    "addNew": "Add metric",
+    "type": "Metric type",
+    "date": "Date",
+    "value": "Value",
+    "valuePlaceholder": "e.g. 72.5",
+    "notes": "Notes",
+    "notesPlaceholder": "e.g. measured in the morning before breakfast",
+    "save": "Save metric",
+    "saving": "Saving...",
+    "saveSuccess": "Metric saved successfully.",
+    "history": "History",
+    "empty": "No metrics saved yet. Add your first metric above.",
+    "types": {
+      "VO2MAX": "VO₂max",
+      "FTP": "FTP",
+      "WEIGHT": "Weight",
+      "BODY_FAT": "Body fat",
+      "RESTING_HEART_RATE": "Resting heart rate",
+      "SLEEP_SCORE": "Sleep score",
+      "RECOVERY_SCORE": "Recovery score"
+    },
+    "units": {
+      "VO2MAX": "ml/kg/min",
+      "FTP": "watts",
+      "WEIGHT": "kg",
+      "BODY_FAT": "%",
+      "RESTING_HEART_RATE": "bpm",
+      "SLEEP_SCORE": "0-100",
+      "RECOVERY_SCORE": "0-100"
+    }
   },
   "referencePace": {
     "5k": "5K",

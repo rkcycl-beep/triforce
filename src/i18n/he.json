@@ -303,7 +303,43 @@
     "age": "גיל",
     "distance": "מרחק",
     "expectedPace": "קצב ייחוס",
-    "perKm": "דק'/ק''מ"
+    "perKm": "דק'/ק''מ",
+    "metricsLink": "מדדים אישיים",
+    "metricsDesc": "הזן מדדים כמו משקל, VO₂max, דופק מנוחה ועוד."
+  },
+  "metrics": {
+    "title": "מדדים אישיים",
+    "subtitle": "עקוב אחרי מדדי כושר ובריאות לאורך זמן. הנתונים נשמרים אצלך וישמשו לגרפים עתידיים.",
+    "addNew": "הוספת מדד",
+    "type": "סוג מדד",
+    "date": "תאריך",
+    "value": "ערך",
+    "valuePlaceholder": "למשל 72.5",
+    "notes": "הערות",
+    "notesPlaceholder": "למשל: מדידה בבוקר לפני ארוחה",
+    "save": "שמור מדד",
+    "saving": "שומר...",
+    "saveSuccess": "המדד נשמר בהצלחה.",
+    "history": "היסטוריה",
+    "empty": "עדיין לא נשמרו מדדים. הוסף את המדד הראשון למעלה.",
+    "types": {
+      "VO2MAX": "VO₂max",
+      "FTP": "FTP",
+      "WEIGHT": "משקל",
+      "BODY_FAT": "אחוז שומן",
+      "RESTING_HEART_RATE": "דופק מנוחה",
+      "SLEEP_SCORE": "ציון שינה",
+      "RECOVERY_SCORE": "ציון התאוששות"
+    },
+    "units": {
+      "VO2MAX": "ml/kg/min",
+      "FTP": "watts",
+      "WEIGHT": "ק\"ג",
+      "BODY_FAT": "%",
+      "RESTING_HEART_RATE": "bpm",
+      "SLEEP_SCORE": "0-100",
+      "RECOVERY_SCORE": "0-100"
+    }
   },
   "referencePace": {
     "5k": "5 ק\"מ",
