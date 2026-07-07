@@ -320,8 +320,11 @@
     "save": "Save metric",
     "saving": "Saving...",
     "saveSuccess": "Metric saved successfully.",
+    "trend": "Trend",
     "history": "History",
     "empty": "No metrics saved yet. Add your first metric above.",
+    "noGraphData": "No data for this metric yet. Add metrics to see a graph.",
+    "needMoreData": "At least two measurements are needed to show a trend.",
     "types": {
       "VO2MAX": "VO₂max",
       "FTP": "FTP",

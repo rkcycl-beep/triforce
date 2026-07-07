@@ -7,6 +7,7 @@ import { MetricType } from "@prisma/client";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import MetricChart from "@/components/metrics/MetricChart";
 
 interface UserMetric {
   id: string;
@@ -29,11 +30,22 @@ const METRIC_ORDER: MetricType[] = [
   MetricType.RECOVERY_SCORE,
 ];
 
+const METRIC_COLORS: Record<MetricType, string> = {
+  [MetricType.VO2MAX]: "#8B5CF6",
+  [MetricType.FTP]: "#F59E0B",
+  [MetricType.WEIGHT]: "#3B82F6",
+  [MetricType.BODY_FAT]: "#EC4899",
+  [MetricType.RESTING_HEART_RATE]: "#EF4444",
+  [MetricType.SLEEP_SCORE]: "#10B981",
+  [MetricType.RECOVERY_SCORE]: "#06B6D4",
+};
+
 export default function MetricsPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const [type, setType] = useState<MetricType>(MetricType.WEIGHT);
+  const [graphType, setGraphType] = useState<MetricType>(MetricType.WEIGHT);
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [value, setValue] = useState("");
   const [notes, setNotes] = useState("");
@@ -97,6 +109,14 @@ export default function MetricsPage() {
     })).filter((group) => group.items.length > 0);
   }, [metrics]);
 
+  const graphData = useMemo(() => {
+    if (!metrics) return [];
+    return metrics
+      .filter((m) => m.type === graphType)
+      .map((m) => ({ date: m.date, value: m.value }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [metrics, graphType]);
+
   function formatDate(dateString: string) {
     return new Date(dateString).toLocaleDateString("he-IL");
   }
@@ -117,6 +137,40 @@ export default function MetricsPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">{t("metrics.title")}</h1>
       <p className="text-sm text-gray-500">{t("metrics.subtitle")}</p>
+
+      {/* Trend graph */}
+      <div className="rounded-xl border border-gray-200 bg-white p-5">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-lg font-semibold text-gray-900">{t("metrics.trend")}</h2>
+          <select
+            value={graphType}
+            onChange={(e) => setGraphType(e.target.value as MetricType)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            {metricOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <LoadingSpinner />
+          </div>
+        ) : graphData.length === 0 ? (
+          <p className="py-6 text-center text-sm text-gray-500">{t("metrics.noGraphData")}</p>
+        ) : graphData.length === 1 ? (
+          <p className="py-6 text-center text-sm text-gray-500">{t("metrics.needMoreData")}</p>
+        ) : (
+          <MetricChart
+            data={graphData}
+            unit={t(`metrics.units.${graphType}`)}
+            color={METRIC_COLORS[graphType]}
+          />
+        )}
+      </div>
 
       {/* Entry form */}
       <div className="rounded-xl border border-gray-200 bg-white p-5">
@@ -214,7 +268,7 @@ export default function MetricsPage() {
                         className="text-sm text-red-600 hover:text-red-700 disabled:opacity-50"
                       >
                         {t("common.delete")}
-                      </button>
+                    </button>
                     </div>
                   ))}
                 </div>

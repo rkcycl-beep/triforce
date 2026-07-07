@@ -36,9 +36,14 @@
 - [x] Add link from `/settings` to `/metrics`
 - [x] Build passes clean
 
+### Implemented graph (2026-07-07)
+- [x] Create `MetricChart` component using Recharts `LineChart`
+- [x] Add trend graph to `/metrics` with type selector (defaults to weight)
+- [x] Per-metric colors; empty/minimum-data states handled
+- [x] Build passes clean
+
 ### Next steps
-- [ ] Build first progress graph using `UserMetric` + `Activity` data
-- [ ] Research Garmin Health API approval restrictions and timeline
+- [ ] Research Garmin Health API partner approval restrictions and timeline
 
 ---
 
