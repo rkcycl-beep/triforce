@@ -20,7 +20,19 @@
 ### Next
 - [ ] Research Garmin Health API partner approval restrictions and timeline
 - [ ] Decide which progress-graph parameters to implement first
-- [ ] Design `UserMetric` schema for manual entry
+- [x] Design `UserMetric` schema for manual entry
+
+### Implemented schema (2026-07-07)
+- New enums: `MetricType` (VO2MAX, FTP, WEIGHT, BODY_FAT, RESTING_HEART_RATE, SLEEP_SCORE, RECOVERY_SCORE), `MetricSource` (MANUAL, GARMIN, STRAVA)
+- New model: `UserMetric` — `userId`, `date`, `type`, `value`, `unit`, `source`, `notes`, `createdAt`, `updatedAt`
+- Relation: `User.metrics`
+- Unique constraint: one value per `(userId, type, date)`
+
+### Next steps
+- [ ] Apply schema to Neon DB (`npx prisma db push`)
+- [ ] Build manual metric entry screen (athlete settings or dedicated `/metrics` page)
+- [ ] Build first progress graph using `UserMetric` + `Activity` data
+- [ ] Research Garmin Health API approval restrictions and timeline
 
 ---
 

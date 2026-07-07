@@ -109,6 +109,49 @@ Because VO₂max and several advanced metrics are unavailable from Strava, TriFo
 - Stored in a new `UserMetric` table
 - Graphed over time alongside Strava-derived activity data
 
+#### `UserMetric` schema
+
+```prisma
+enum MetricType {
+  VO2MAX              // ml/kg/min
+  FTP                 // watts
+  WEIGHT              // kg
+  BODY_FAT            // %
+  RESTING_HEART_RATE  // bpm
+  SLEEP_SCORE         // 0-100
+  RECOVERY_SCORE      // 0-100
+}
+
+enum MetricSource {
+  MANUAL
+  GARMIN
+  STRAVA
+}
+
+model UserMetric {
+  id        String       @id @default(cuid())
+  userId    String
+  date      DateTime     @db.Date
+  type      MetricType
+  value     Float
+  unit      String?
+  source    MetricSource @default(MANUAL)
+  notes     String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, date])
+  @@index([userId, type, date])
+  @@index([userId, date])
+}
+```
+
+- One record per user, metric type, and date (upsert-friendly)
+- `source` defaults to `MANUAL`; will later be set to `GARMIN` or `STRAVA` when auto-synced
+- `unit` is optional and can override the default unit for the metric type
+
 ### Progress graph plan
 
 | Phase | Work |
