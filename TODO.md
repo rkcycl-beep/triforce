@@ -7,6 +7,27 @@
 
 ---
 
+## Session 2026-07-07 — Manual Metrics + First Graph + Garmin Research
+
+### Completed
+- [x] Designed `UserMetric` schema (`MetricType`, `MetricSource`, `UserMetric` model, `User.metrics` relation)
+- [x] Applied schema to Neon DB (`npx prisma db push`)
+- [x] Built API routes: `GET/POST /api/athlete/metrics`, `DELETE /api/athlete/metrics/[id]`
+- [x] Built `/metrics` page: form, grouped history, delete action
+- [x] Added trend graph (`MetricChart` Recharts component) to `/metrics` with type selector
+- [x] Added Hebrew + English i18n for metrics and graph states
+- [x] Linked `/metrics` from `/settings`
+- [x] Researched Garmin Health API approval restrictions, timeline, OAuth 1.0a, and webhook model
+- [x] Updated `PLAN.md` Data Sources section with `UserMetric` schema and Garmin details
+- [x] All changes committed and pushed; build passes clean
+
+### Next (for tomorrow)
+- [ ] Draft Garmin Connect Developer Program application
+- [ ] Prepare public privacy-policy page if not already available
+- [ ] Begin Garmin OAuth 1.0a + webhook handler implementation using sandbox
+
+---
+
 ## Session 2026-07-06 — Data Sources & Progress Metrics Research
 
 ### Completed

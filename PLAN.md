@@ -44,12 +44,17 @@ Starting with ~40 athletes in one coaching group in Israel.
 - Full error/loading/empty state audit
 
 ### Next up
-- Research Garmin Health API restrictions and approval process
-- Manual athlete metrics entry (VO₂max, FTP, weight, resting HR) as interim solution
-- Progress graphs for training/sports parameters
+- Draft and submit Garmin Connect Developer Program application
+- Begin Garmin OAuth 1.0a + webhook handler implementation using sandbox
+- Prepare public privacy-policy page
 - Challenge UX polish: group challenges tab in `/groups/[groupId]`
 - Challenge leaderboard real-time updates
 - Prize display on challenges
+
+### Recently completed
+- Manual athlete metrics entry (`/metrics`) with form, history, and trend graph
+- `UserMetric` schema and API
+- Garmin Health API approval research
 
 ### Architecture note — sync vs filter separation
 Sync and filtering are fully decoupled:
