@@ -42,8 +42,20 @@
 - [x] Per-metric colors; empty/minimum-data states handled
 - [x] Build passes clean
 
+### Garmin Health API research (2026-07-07)
+- [x] Approval is required via [Garmin Connect Developer Program](https://developer.garmin.com/gc-developer-program/overview/); not self-serve
+- [x] Timeline: typically days to weeks (3–5 business days commonly cited for complete apps)
+- [x] Apply as company/institution with company-domain email; free/generic inboxes often rejected
+- [x] Requires clear use case, data-handling explanation, and public privacy policy
+- [x] Uses OAuth 1.0a (HMAC-SHA1), not OAuth 2.0
+- [x] Push/webhook delivery model
+- [x] Sandbox available for development before approval
+- [x] Historical data: activity ~5 years, other health ~2 years
+
 ### Next steps
-- [ ] Research Garmin Health API partner approval restrictions and timeline
+- [ ] Draft and submit Garmin Connect Developer Program application
+- [ ] Prepare privacy-policy page if not already public
+- [ ] Begin Garmin OAuth 1.0a + webhook handler implementation using sandbox
 
 ---
 

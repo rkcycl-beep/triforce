@@ -96,11 +96,17 @@ Garmin exposes the physiological metrics Strava hides:
 - Daily summaries and .FIT activity files
 
 **Requirements & restrictions:**
-- Garmin partner approval required
-- OAuth 1.0a authentication
+- **Garmin partner approval required** — apply through the [Garmin Connect Developer Program](https://developer.garmin.com/gc-developer-program/overview/); not self-serve
+- Approval timeline: typically **days to weeks** (commonly cited as 3–5 business days for complete applications, but can take longer)
+- Apply as a **company/institution** with a company-domain email; free/personal inboxes are often rejected
+- Must provide a clear **use case**, **data-handling explanation**, and a public **privacy policy** link
+- **OAuth 1.0a** authentication with HMAC-SHA1 signed requests (not OAuth 2.0)
 - Per-user consent in Garmin Connect
-- Webhook push of daily summaries and .FIT files
-- Parsing .FIT files or Garmin JSON summaries
+- Data is delivered via **webhook push**; TriForce must implement a push receiver, not poll
+- A **sandbox** is available for development without full approval
+- Historical backfill: activity payloads up to ~5 years, other health payloads up to ~2 years
+- Some premium/commercial metrics may require additional licensing fees
+- Parsing .FIT files or Garmin JSON summaries is required on TriForce side
 
 ### Interim solution before Garmin
 
